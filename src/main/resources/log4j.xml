@@ -16,8 +16,8 @@
 		<param name="ImmediateFlush" value="true" />
 		<param name="encoding" value="UTF-8" />
 		<rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
-			<param name="FileNamePattern" value="archiver%d{yyyy-MM-dd}.log" />
-			<param name="ActiveFileName" value="archiver.log" />
+			<param name="FileNamePattern" value="apache.thrift%d{yyyy-MM-dd}.log" />
+			<param name="ActiveFileName" value="apache.thrift.log" />
 		</rollingPolicy>
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%d{[yyyy-MM-dd]} %d{[HH:mm:ss:SSS]} %C{1} [%p] %m%n" />
