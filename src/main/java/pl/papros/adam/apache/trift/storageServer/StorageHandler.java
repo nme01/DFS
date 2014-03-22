@@ -12,6 +12,11 @@ import org.apache.thrift.TException;
 
 import pl.papros.adam.apache.trift.generated.*;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class StorageHandler implements StorageService.Iface {
 
 	static Storage storage;

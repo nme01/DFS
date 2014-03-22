@@ -8,6 +8,11 @@ import org.apache.thrift.transport.TServerTransport;
 
 import pl.papros.adam.apache.trift.generated.NamingService;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class NameServer {
 
 	static NameHandler handler;

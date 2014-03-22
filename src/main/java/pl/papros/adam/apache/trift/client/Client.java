@@ -15,6 +15,11 @@ import org.apache.thrift.transport.TTransport;
 import pl.papros.adam.apache.trift.generated.NamingService;
 import pl.papros.adam.apache.trift.generated.StorageService;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class Client {
 
 	public static String command = "put";

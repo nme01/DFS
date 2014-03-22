@@ -6,6 +6,11 @@ import org.apache.thrift.TException;
 
 import pl.papros.adam.apache.trift.generated.*;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class NameHandler implements NamingService.Iface {
 
 	static ArrayList<File> files;

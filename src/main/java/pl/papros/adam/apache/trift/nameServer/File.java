@@ -1,5 +1,10 @@
 package pl.papros.adam.apache.trift.nameServer;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class File {
 
 	private String name;

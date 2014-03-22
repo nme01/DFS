@@ -8,6 +8,11 @@ import org.apache.thrift.transport.TServerTransport;
 
 import pl.papros.adam.apache.trift.generated.StorageService;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class StorageServer {
 
 	static StorageHandler handler;

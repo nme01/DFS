@@ -2,6 +2,11 @@ package pl.papros.adam.apache.trift.storageServer;
 
 import java.util.ArrayList;
 
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * 
+ * */
+
 public class Storage {
 
 	private ArrayList<Data> data;

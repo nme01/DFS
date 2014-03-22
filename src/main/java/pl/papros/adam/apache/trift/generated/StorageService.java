@@ -1,5 +1,10 @@
 package pl.papros.adam.apache.trift.generated;
 
+/**
+ * @generated
+ * 
+ * */
+
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
