@@ -21,6 +21,7 @@ public class NameHandler implements NamingService.Iface {
 
 	@Override
 	public int put(String fileName) throws TException {
+		files.add(new File(fileName, files.size()));
 		return files.size();
 	}
 
