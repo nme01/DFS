@@ -18,7 +18,7 @@ public class NameServer {
 	static NameHandler handler;
 
 	static NamingService.Processor procesor;
-	
+
 	static final int portNumber = 9090;
 
 	public static void main(String[] args) {
@@ -43,8 +43,7 @@ public class NameServer {
 	public static void simple(NamingService.Processor processor) {
 		try {
 			TServerTransport serverTransport = new TServerSocket(portNumber);
-			TServer server = new TSimpleServer(
-					new Args(serverTransport).processor(processor));
+			TServer server = new TSimpleServer(new Args(serverTransport).processor(processor));
 
 			System.out.println("Starting Naming server...");
 			server.serve();

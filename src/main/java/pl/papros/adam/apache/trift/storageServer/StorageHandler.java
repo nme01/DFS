@@ -37,8 +37,7 @@ public class StorageHandler implements StorageService.Iface {
 	}
 
 	private void writeToDisc(int fileId, ArrayList<Byte> body) {
-		Path path = Paths.get(storagePathString
-				+ FileSystems.getDefault().getSeparator() + fileId);
+		Path path = Paths.get(assemblyPath(fileId));
 		byte[] bytes = new byte[body.size()];
 		for (int i = 0; i < body.size(); ++i) {
 			bytes[i] = body.get(i);
@@ -55,8 +54,22 @@ public class StorageHandler implements StorageService.Iface {
 
 	@Override
 	public List<Byte> getFile(int fileId) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		Path path = Paths.get(assemblyPath(fileId));
+		byte[] bytes;
+		try {
+			bytes = Files.readAllBytes(path);
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to read file. " + e);
+		}
+		ArrayList<Byte> body = new ArrayList<Byte>();
+		for (byte b : bytes) {
+			body.add(b);
+		}
+		return body;
+	}
+
+	private  static String assemblyPath(int fileId) {
+		return storagePathString + FileSystems.getDefault().getSeparator() + fileId;
 	}
 
 }

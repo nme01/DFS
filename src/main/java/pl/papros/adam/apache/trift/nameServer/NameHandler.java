@@ -21,14 +21,19 @@ public class NameHandler implements NamingService.Iface {
 
 	@Override
 	public int put(String fileName) throws TException {
-		files.add(new File(fileName, files.size()));
-		return files.size();
+		File f = new File(fileName, files.size());
+		files.add(f);
+		return f.getId();
 	}
 
 	@Override
 	public int get(String fileName) throws TException {
-		// TODO Auto-generated method stub
-		return 0;
+		for (File f : files) {
+			if (fileName.equals(f.getName())) {
+				return f.getId();
+			}
+		}
+		throw new RuntimeException("unable to find file, fileName=" + fileName);
 	}
 
 }

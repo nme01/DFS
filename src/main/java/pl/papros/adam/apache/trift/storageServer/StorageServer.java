@@ -43,8 +43,7 @@ public class StorageServer {
 	public static void simple(StorageService.Processor processor) {
 		try {
 			TServerTransport serverTransport = new TServerSocket(portNumber);
-			TServer server = new TSimpleServer(
-					new Args(serverTransport).processor(processor));
+			TServer server = new TSimpleServer(new Args(serverTransport).processor(processor));
 
 			System.out.println("Starting storage server...");
 			server.serve();
