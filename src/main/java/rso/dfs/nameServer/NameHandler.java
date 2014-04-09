@@ -1,10 +1,10 @@
-package pl.papros.adam.apache.trift.nameServer;
+package rso.dfs.nameServer;
 
 import java.util.ArrayList;
 
 import org.apache.thrift.TException;
 
-import pl.papros.adam.apache.trift.generated.*;
+import rso.dfs.generated.*;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

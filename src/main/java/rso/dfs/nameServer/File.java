@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift.nameServer;
+package rso.dfs.nameServer;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift.client;
+package rso.dfs.client;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +13,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-import pl.papros.adam.apache.trift.generated.NamingService;
-import pl.papros.adam.apache.trift.generated.StorageService;
+import rso.dfs.generated.NamingService;
+import rso.dfs.generated.StorageService;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

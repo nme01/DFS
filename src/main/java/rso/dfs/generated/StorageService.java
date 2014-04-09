@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift.generated;
+package rso.dfs.generated;
 
 /**
  * @generated

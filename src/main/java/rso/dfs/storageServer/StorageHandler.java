@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift.storageServer;
+package rso.dfs.storageServer;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 
-import pl.papros.adam.apache.trift.generated.*;
+import rso.dfs.generated.StorageService;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

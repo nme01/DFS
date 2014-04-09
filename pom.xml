@@ -3,11 +3,11 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>pl.papros.adam</groupId>
-	<artifactId>apache.trift</artifactId>
+	<groupId>rso</groupId>
+	<artifactId>dfs</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>Trift tutorial</name>
+	<name>RSO - Distributed File System</name>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,8 +18,8 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<package.output.dir>dist</package.output.dir>
-		<main-class>pl.papros.adam.apache.trift.App</main-class>
-		<main-package>pl.papros.adam.apache.trift</main-package>
+		<main-class>rso.dfs.App</main-class>
+		<main-package>rso.dfs</main-package>
 	</properties>
 
 	<dependencies>
@@ -42,6 +42,7 @@
 			<version>${lombok-version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<!-- logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -114,7 +115,7 @@
 
 					<outputDirectory>${package.output.dir}/lib</outputDirectory>
 					<includes>
-						<include>pl/**/*</include>
+						<include>rso/**/*</include>
 					</includes>
 
 				</configuration>

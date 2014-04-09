@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift.storageServer;
+package rso.dfs.storageServer;
 
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
@@ -6,7 +6,7 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import pl.papros.adam.apache.trift.generated.StorageService;
+import rso.dfs.generated.StorageService;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

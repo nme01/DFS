@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift.storageServer;
+package rso.dfs.storageServer;
 
 import java.util.ArrayList;
 

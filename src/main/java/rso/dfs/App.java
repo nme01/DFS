@@ -1,4 +1,4 @@
-package pl.papros.adam.apache.trift;
+package rso.dfs;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
