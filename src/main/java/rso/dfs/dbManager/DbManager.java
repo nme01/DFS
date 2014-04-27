@@ -136,6 +136,36 @@ public class DbManager {
 	}
 
 	/**
+	 * @param fileName
+	 * @return
+	 */
+	public FileStatus getFileStatus(int id) {
+		char status = 0;
+		final String selectServersSQL = "SELECT status FROM files WHERE id = ?;";
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = getLocalConnection().prepareStatement(selectServersSQL);
+			stmt.setInt(1, id);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				status = (char) rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se) {
+			}
+		}
+		return FileStatus.getFileStatus(status);
+	}
+
+	/**
 	 * @param name
 	 * @param size
 	 * @return
