@@ -140,7 +140,7 @@ public class DbManager {
 	 * @param size
 	 * @return
 	 */
-	public int addNewFile(String name, int size) {
+	public int addNewFile(String name, long size) {
 		final String selectServersSQL = "INSERT INTO files VALUES ( nextval(file_seq),?,?,?)";
 		PreparedStatement stmt = null;
 		int rowsInserted;
@@ -148,7 +148,7 @@ public class DbManager {
 		try {
 			stmt = getLocalConnection().prepareStatement(selectServersSQL);
 			stmt.setString(1, name);
-			stmt.setInt(2, size);
+			stmt.setLong(2, size);
 			stmt.setString(2, String.valueOf(FileStatus.Upload.getStatusChar()));
 			rowsInserted = stmt.executeUpdate();
 
@@ -168,7 +168,7 @@ public class DbManager {
 			try {
 				stmt = con.prepareStatement(selectServersSQL);
 				stmt.setString(1, name);
-				stmt.setInt(2, size);
+				stmt.setLong(2, size);
 				stmt.setInt(3, FileStatus.Upload.getStatusChar());
 				rowsInserted = stmt.executeUpdate();
 			} catch (SQLException e1) {
