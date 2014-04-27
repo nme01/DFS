@@ -80,10 +80,23 @@ public class ServerHandler implements Service.Iface {
 		
 	}
 
+	/**
+	 * Invoked on master by client. Return to client info about desired file.
+	 * 
+	 * @param filepath
+	 * @return GetFileParams
+	 */
 	@Override
 	public GetFileParams getFile(String filepath) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO check if file exists?
+		int fileId = dbManager.getFileId(filepath);
+		GetFileParams getFileParams = new GetFileParams();
+		getFileParams.setFileId(fileId);
+		ArrayList<InetAddress> slaves = (ArrayList<InetAddress>) dbManager.getServersByFile(fileId);
+		// get first slave which has desired file
+		int slaveIp = ByteBuffer.wrap(slaves.get(0).getAddress()).getInt();
+		getFileParams.setSlaveIp(slaveIp);
+		return getFileParams;
 	}
 
 	@Override
@@ -93,7 +106,7 @@ public class ServerHandler implements Service.Iface {
 	}
 
 	/**
-	 * Invoked on master by client
+	 * Invoked on master by client. Return to client info where to put new file. Add new file to DB.
 	 * 
 	 * @param filepath
 	 * @param size
@@ -132,7 +145,7 @@ public class ServerHandler implements Service.Iface {
 	}
 
 	/**
-	 * Invoked on master by client
+	 * Invoked on master by client. Order master to remove file.
 	 * 
 	 * @param filepath
 	 * @return boolean
