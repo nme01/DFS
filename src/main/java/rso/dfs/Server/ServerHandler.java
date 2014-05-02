@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.thrift.TException;
 
 import rso.dfs.ServerRole;
@@ -24,6 +25,10 @@ public class ServerHandler implements Service.Iface {
 	
 	public ServerHandler(){
 		dbManager =  new DbManager();
+	}
+	
+	public ServerHandler(DbManager dbm){
+		this.dbManager = dbm;
 	}
 
 	@Override
@@ -70,6 +75,7 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public boolean isFileUsed(int fileID) throws TException {
+		// to w ogole potrzebne??
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -88,8 +94,10 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public GetFileParams getFile(String filepath) throws TException {
-		// TODO check if file exists?
 		int fileId = dbManager.getFileId(filepath);
+		if(fileId == -1){
+			return null;
+		}
 		GetFileParams getFileParams = new GetFileParams();
 		getFileParams.setFileId(fileId);
 		ArrayList<InetAddress> slaves = (ArrayList<InetAddress>) dbManager.getServersByFile(fileId);
@@ -114,13 +122,13 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public PutFileParams putFile(String filepath, long size) throws TException {
-		ArrayList<InetAddress> slaves = (ArrayList<InetAddress>) dbManager.getServersByRole(ServerRole.Slave);
+		ArrayList<Pair<InetAddress, Long>> slaves = (ArrayList<Pair<InetAddress, Long>>) dbManager.getServersByRoleMemory(ServerRole.Slave);
 		Collections.shuffle(slaves);
 		int slaveAddress = 0;
-		for(InetAddress addr : slaves){
+		for(Pair<InetAddress, Long> server : slaves){
 			// TODO check if there is space on slave
-			if(true){
-				slaveAddress = ByteBuffer.wrap(addr.getAddress()).getInt();
+			if(server.getRight() > size){
+				slaveAddress = ByteBuffer.wrap(server.getLeft().getAddress()).getInt();
 				break;
 			}
 		}

@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import rso.dfs.FileStatus;
 import rso.dfs.ServerRole;
 
@@ -37,6 +39,22 @@ public class DbManager {
 		db_password = "dfs_pass";
 	}
 
+	
+	/**
+	 * to moze nawet zamiast tej funkcji ponizej
+	 * @param r
+	 * @return
+	 */
+	public Collection<Pair<InetAddress, Long>> getServersByRoleMemory(ServerRole r){
+		// TODO
+		return new ArrayList<Pair<InetAddress, Long>>();
+	}
+	
+	public FileStatus getFileStatus(int FileId){
+		// TODO
+		return FileStatus.Held;
+	}
+	
 	/**
 	 * @param r
 	 *            - server role
