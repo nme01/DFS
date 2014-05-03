@@ -1,4 +1,4 @@
-package rso.dfs.nameServer;
+package rso.dfs.dummy.server;
 
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
@@ -6,7 +6,7 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import rso.dfs.generated.NamingService;
+import rso.dfs.dummy.generated.NamingService;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

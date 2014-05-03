@@ -1,4 +1,4 @@
-package rso.dfs.nameServer;
+package rso.dfs.dummy.server;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

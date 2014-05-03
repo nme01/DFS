@@ -18,7 +18,10 @@ import rso.dfs.ServerRole;
 /**
  * @author Mateusz Statkiewicz
  * 
+ * @deprecated @see rso.dfs.model package
+ * 
  */
+@Deprecated
 public class DbManager {
 
 	private static final String db_driver = "org.postgresql.Driver";

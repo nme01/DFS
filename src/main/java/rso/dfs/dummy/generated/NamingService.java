@@ -1,8 +1,4 @@
-package rso.dfs.generated;
-/**
- * @generated
- * 
- * */
+package rso.dfs.dummy.generated;
 
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
@@ -30,6 +26,15 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * TODO: DELETE THIS SHIT
+ * 
+ * @deprecated DELETE THIS SHIT
+ * @generated
+ * 
+ * */
+@Deprecated
 public class NamingService {
 
 	public interface Iface {
@@ -42,20 +47,14 @@ public class NamingService {
 
 	public interface AsyncIface {
 
-		public void put(String fileName,
-				org.apache.thrift.async.AsyncMethodCallback resultHandler)
-				throws org.apache.thrift.TException;
+		public void put(String fileName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-		public void get(String fileName,
-				org.apache.thrift.async.AsyncMethodCallback resultHandler)
-				throws org.apache.thrift.TException;
+		public void get(String fileName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
 	}
 
-	public static class Client extends org.apache.thrift.TServiceClient
-			implements Iface {
-		public static class Factory implements
-				org.apache.thrift.TServiceClientFactory<Client> {
+	public static class Client extends org.apache.thrift.TServiceClient implements Iface {
+		public static class Factory implements org.apache.thrift.TServiceClientFactory<Client> {
 			public Factory() {
 			}
 
@@ -63,8 +62,7 @@ public class NamingService {
 				return new Client(prot);
 			}
 
-			public Client getClient(org.apache.thrift.protocol.TProtocol iprot,
-					org.apache.thrift.protocol.TProtocol oprot) {
+			public Client getClient(org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) {
 				return new Client(iprot, oprot);
 			}
 		}
@@ -73,8 +71,7 @@ public class NamingService {
 			super(prot, prot);
 		}
 
-		public Client(org.apache.thrift.protocol.TProtocol iprot,
-				org.apache.thrift.protocol.TProtocol oprot) {
+		public Client(org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) {
 			super(iprot, oprot);
 		}
 
@@ -83,8 +80,7 @@ public class NamingService {
 			return recv_put();
 		}
 
-		public void send_put(String fileName)
-				throws org.apache.thrift.TException {
+		public void send_put(String fileName) throws org.apache.thrift.TException {
 			put_args args = new put_args();
 			args.setFileName(fileName);
 			sendBase("put", args);
@@ -96,9 +92,7 @@ public class NamingService {
 			if (result.isSetSuccess()) {
 				return result.success;
 			}
-			throw new org.apache.thrift.TApplicationException(
-					org.apache.thrift.TApplicationException.MISSING_RESULT,
-					"put failed: unknown result");
+			throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "put failed: unknown result");
 		}
 
 		public int get(String fileName) throws org.apache.thrift.TException {
@@ -106,8 +100,7 @@ public class NamingService {
 			return recv_get();
 		}
 
-		public void send_get(String fileName)
-				throws org.apache.thrift.TException {
+		public void send_get(String fileName) throws org.apache.thrift.TException {
 			get_args args = new get_args();
 			args.setFileName(fileName);
 			sendBase("get", args);
@@ -119,70 +112,47 @@ public class NamingService {
 			if (result.isSetSuccess()) {
 				return result.success;
 			}
-			throw new org.apache.thrift.TApplicationException(
-					org.apache.thrift.TApplicationException.MISSING_RESULT,
-					"get failed: unknown result");
+			throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "get failed: unknown result");
 		}
 
 	}
 
-	public static class AsyncClient extends
-			org.apache.thrift.async.TAsyncClient implements AsyncIface {
-		public static class Factory implements
-				org.apache.thrift.async.TAsyncClientFactory<AsyncClient> {
+	public static class AsyncClient extends org.apache.thrift.async.TAsyncClient implements AsyncIface {
+		public static class Factory implements org.apache.thrift.async.TAsyncClientFactory<AsyncClient> {
 			private org.apache.thrift.async.TAsyncClientManager clientManager;
 			private org.apache.thrift.protocol.TProtocolFactory protocolFactory;
 
-			public Factory(
-					org.apache.thrift.async.TAsyncClientManager clientManager,
-					org.apache.thrift.protocol.TProtocolFactory protocolFactory) {
+			public Factory(org.apache.thrift.async.TAsyncClientManager clientManager, org.apache.thrift.protocol.TProtocolFactory protocolFactory) {
 				this.clientManager = clientManager;
 				this.protocolFactory = protocolFactory;
 			}
 
-			public AsyncClient getAsyncClient(
-					org.apache.thrift.transport.TNonblockingTransport transport) {
-				return new AsyncClient(protocolFactory, clientManager,
-						transport);
+			public AsyncClient getAsyncClient(org.apache.thrift.transport.TNonblockingTransport transport) {
+				return new AsyncClient(protocolFactory, clientManager, transport);
 			}
 		}
 
-		public AsyncClient(
-				org.apache.thrift.protocol.TProtocolFactory protocolFactory,
-				org.apache.thrift.async.TAsyncClientManager clientManager,
-				org.apache.thrift.transport.TNonblockingTransport transport) {
+		public AsyncClient(org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.async.TAsyncClientManager clientManager, org.apache.thrift.transport.TNonblockingTransport transport) {
 			super(protocolFactory, clientManager, transport);
 		}
 
-		public void put(String fileName,
-				org.apache.thrift.async.AsyncMethodCallback resultHandler)
-				throws org.apache.thrift.TException {
+		public void put(String fileName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
 			checkReady();
-			put_call method_call = new put_call(fileName, resultHandler, this,
-					___protocolFactory, ___transport);
+			put_call method_call = new put_call(fileName, resultHandler, this, ___protocolFactory, ___transport);
 			this.___currentMethod = method_call;
 			___manager.call(method_call);
 		}
 
-		public static class put_call extends
-				org.apache.thrift.async.TAsyncMethodCall {
+		public static class put_call extends org.apache.thrift.async.TAsyncMethodCall {
 			private String fileName;
 
-			public put_call(
-					String fileName,
-					org.apache.thrift.async.AsyncMethodCallback resultHandler,
-					org.apache.thrift.async.TAsyncClient client,
-					org.apache.thrift.protocol.TProtocolFactory protocolFactory,
-					org.apache.thrift.transport.TNonblockingTransport transport)
-					throws org.apache.thrift.TException {
+			public put_call(String fileName, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
 				super(client, protocolFactory, transport, resultHandler, false);
 				this.fileName = fileName;
 			}
 
-			public void write_args(org.apache.thrift.protocol.TProtocol prot)
-					throws org.apache.thrift.TException {
-				prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage(
-						"put", org.apache.thrift.protocol.TMessageType.CALL, 0));
+			public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+				prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("put", org.apache.thrift.protocol.TMessageType.CALL, 0));
 				put_args args = new put_args();
 				args.setFileName(fileName);
 				args.write(prot);
@@ -193,43 +163,29 @@ public class NamingService {
 				if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
 					throw new IllegalStateException("Method call not finished!");
 				}
-				org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(
-						getFrameBuffer().array());
-				org.apache.thrift.protocol.TProtocol prot = client
-						.getProtocolFactory().getProtocol(memoryTransport);
+				org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+				org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
 				return (new Client(prot)).recv_put();
 			}
 		}
 
-		public void get(String fileName,
-				org.apache.thrift.async.AsyncMethodCallback resultHandler)
-				throws org.apache.thrift.TException {
+		public void get(String fileName, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
 			checkReady();
-			get_call method_call = new get_call(fileName, resultHandler, this,
-					___protocolFactory, ___transport);
+			get_call method_call = new get_call(fileName, resultHandler, this, ___protocolFactory, ___transport);
 			this.___currentMethod = method_call;
 			___manager.call(method_call);
 		}
 
-		public static class get_call extends
-				org.apache.thrift.async.TAsyncMethodCall {
+		public static class get_call extends org.apache.thrift.async.TAsyncMethodCall {
 			private String fileName;
 
-			public get_call(
-					String fileName,
-					org.apache.thrift.async.AsyncMethodCallback resultHandler,
-					org.apache.thrift.async.TAsyncClient client,
-					org.apache.thrift.protocol.TProtocolFactory protocolFactory,
-					org.apache.thrift.transport.TNonblockingTransport transport)
-					throws org.apache.thrift.TException {
+			public get_call(String fileName, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
 				super(client, protocolFactory, transport, resultHandler, false);
 				this.fileName = fileName;
 			}
 
-			public void write_args(org.apache.thrift.protocol.TProtocol prot)
-					throws org.apache.thrift.TException {
-				prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage(
-						"get", org.apache.thrift.protocol.TMessageType.CALL, 0));
+			public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+				prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("get", org.apache.thrift.protocol.TMessageType.CALL, 0));
 				get_args args = new get_args();
 				args.setFileName(fileName);
 				args.write(prot);
@@ -240,43 +196,32 @@ public class NamingService {
 				if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
 					throw new IllegalStateException("Method call not finished!");
 				}
-				org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(
-						getFrameBuffer().array());
-				org.apache.thrift.protocol.TProtocol prot = client
-						.getProtocolFactory().getProtocol(memoryTransport);
+				org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+				org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
 				return (new Client(prot)).recv_get();
 			}
 		}
 
 	}
 
-	public static class Processor<I extends Iface> extends
-			org.apache.thrift.TBaseProcessor<I> implements
-			org.apache.thrift.TProcessor {
-		private static final Logger LOGGER = LoggerFactory
-				.getLogger(Processor.class.getName());
+	public static class Processor<I extends Iface> extends org.apache.thrift.TBaseProcessor<I> implements org.apache.thrift.TProcessor {
+		private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
 
 		public Processor(I iface) {
-			super(
-					iface,
-					getProcessMap(new HashMap<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>>()));
+			super(iface, getProcessMap(new HashMap<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>>()));
 		}
 
-		protected Processor(
-				I iface,
-				Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> processMap) {
+		protected Processor(I iface, Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> processMap) {
 			super(iface, getProcessMap(processMap));
 		}
 
-		private static <I extends Iface> Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> getProcessMap(
-				Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> processMap) {
+		private static <I extends Iface> Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> getProcessMap(Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> processMap) {
 			processMap.put("put", new put());
 			processMap.put("get", new get());
 			return processMap;
 		}
 
-		public static class put<I extends Iface> extends
-				org.apache.thrift.ProcessFunction<I, put_args> {
+		public static class put<I extends Iface> extends org.apache.thrift.ProcessFunction<I, put_args> {
 			public put() {
 				super("put");
 			}
@@ -289,8 +234,7 @@ public class NamingService {
 				return false;
 			}
 
-			public put_result getResult(I iface, put_args args)
-					throws org.apache.thrift.TException {
+			public put_result getResult(I iface, put_args args) throws org.apache.thrift.TException {
 				put_result result = new put_result();
 				result.success = iface.put(args.fileName);
 				result.setSuccessIsSet(true);
@@ -298,8 +242,7 @@ public class NamingService {
 			}
 		}
 
-		public static class get<I extends Iface> extends
-				org.apache.thrift.ProcessFunction<I, get_args> {
+		public static class get<I extends Iface> extends org.apache.thrift.ProcessFunction<I, get_args> {
 			public get() {
 				super("get");
 			}
@@ -312,8 +255,7 @@ public class NamingService {
 				return false;
 			}
 
-			public get_result getResult(I iface, get_args args)
-					throws org.apache.thrift.TException {
+			public get_result getResult(I iface, get_args args) throws org.apache.thrift.TException {
 				get_result result = new get_result();
 				result.success = iface.get(args.fileName);
 				result.setSuccessIsSet(true);
@@ -323,32 +265,24 @@ public class NamingService {
 
 	}
 
-	public static class AsyncProcessor<I extends AsyncIface> extends
-			org.apache.thrift.TBaseAsyncProcessor<I> {
-		private static final Logger LOGGER = LoggerFactory
-				.getLogger(AsyncProcessor.class.getName());
+	public static class AsyncProcessor<I extends AsyncIface> extends org.apache.thrift.TBaseAsyncProcessor<I> {
+		private static final Logger LOGGER = LoggerFactory.getLogger(AsyncProcessor.class.getName());
 
 		public AsyncProcessor(I iface) {
-			super(
-					iface,
-					getProcessMap(new HashMap<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>>()));
+			super(iface, getProcessMap(new HashMap<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>>()));
 		}
 
-		protected AsyncProcessor(
-				I iface,
-				Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> processMap) {
+		protected AsyncProcessor(I iface, Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> processMap) {
 			super(iface, getProcessMap(processMap));
 		}
 
-		private static <I extends AsyncIface> Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> getProcessMap(
-				Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> processMap) {
+		private static <I extends AsyncIface> Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> getProcessMap(Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> processMap) {
 			processMap.put("put", new put());
 			processMap.put("get", new get());
 			return processMap;
 		}
 
-		public static class put<I extends AsyncIface> extends
-				org.apache.thrift.AsyncProcessFunction<I, put_args, Integer> {
+		public static class put<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, put_args, Integer> {
 			public put() {
 				super("put");
 			}
@@ -357,8 +291,7 @@ public class NamingService {
 				return new put_args();
 			}
 
-			public AsyncMethodCallback<Integer> getResultHandler(
-					final AsyncFrameBuffer fb, final int seqid) {
+			public AsyncMethodCallback<Integer> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
 				final org.apache.thrift.AsyncProcessFunction fcall = this;
 				return new AsyncMethodCallback<Integer>() {
 					public void onComplete(Integer o) {
@@ -366,16 +299,10 @@ public class NamingService {
 						result.success = o;
 						result.setSuccessIsSet(true);
 						try {
-							fcall.sendResponse(
-									fb,
-									result,
-									org.apache.thrift.protocol.TMessageType.REPLY,
-									seqid);
+							fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY, seqid);
 							return;
 						} catch (Exception e) {
-							LOGGER.error(
-									"Exception writing to internal frame buffer",
-									e);
+							LOGGER.error("Exception writing to internal frame buffer", e);
 						}
 						fb.close();
 					}
@@ -386,17 +313,13 @@ public class NamingService {
 						put_result result = new put_result();
 						{
 							msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
-							msg = (org.apache.thrift.TBase) new org.apache.thrift.TApplicationException(
-									org.apache.thrift.TApplicationException.INTERNAL_ERROR,
-									e.getMessage());
+							msg = (org.apache.thrift.TBase) new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
 						}
 						try {
 							fcall.sendResponse(fb, msg, msgType, seqid);
 							return;
 						} catch (Exception ex) {
-							LOGGER.error(
-									"Exception writing to internal frame buffer",
-									ex);
+							LOGGER.error("Exception writing to internal frame buffer", ex);
 						}
 						fb.close();
 					}
@@ -407,17 +330,12 @@ public class NamingService {
 				return false;
 			}
 
-			public void start(
-					I iface,
-					put_args args,
-					org.apache.thrift.async.AsyncMethodCallback<Integer> resultHandler)
-					throws TException {
+			public void start(I iface, put_args args, org.apache.thrift.async.AsyncMethodCallback<Integer> resultHandler) throws TException {
 				iface.put(args.fileName, resultHandler);
 			}
 		}
 
-		public static class get<I extends AsyncIface> extends
-				org.apache.thrift.AsyncProcessFunction<I, get_args, Integer> {
+		public static class get<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, get_args, Integer> {
 			public get() {
 				super("get");
 			}
@@ -426,8 +344,7 @@ public class NamingService {
 				return new get_args();
 			}
 
-			public AsyncMethodCallback<Integer> getResultHandler(
-					final AsyncFrameBuffer fb, final int seqid) {
+			public AsyncMethodCallback<Integer> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
 				final org.apache.thrift.AsyncProcessFunction fcall = this;
 				return new AsyncMethodCallback<Integer>() {
 					public void onComplete(Integer o) {
@@ -435,16 +352,10 @@ public class NamingService {
 						result.success = o;
 						result.setSuccessIsSet(true);
 						try {
-							fcall.sendResponse(
-									fb,
-									result,
-									org.apache.thrift.protocol.TMessageType.REPLY,
-									seqid);
+							fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY, seqid);
 							return;
 						} catch (Exception e) {
-							LOGGER.error(
-									"Exception writing to internal frame buffer",
-									e);
+							LOGGER.error("Exception writing to internal frame buffer", e);
 						}
 						fb.close();
 					}
@@ -455,17 +366,13 @@ public class NamingService {
 						get_result result = new get_result();
 						{
 							msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
-							msg = (org.apache.thrift.TBase) new org.apache.thrift.TApplicationException(
-									org.apache.thrift.TApplicationException.INTERNAL_ERROR,
-									e.getMessage());
+							msg = (org.apache.thrift.TBase) new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
 						}
 						try {
 							fcall.sendResponse(fb, msg, msgType, seqid);
 							return;
 						} catch (Exception ex) {
-							LOGGER.error(
-									"Exception writing to internal frame buffer",
-									ex);
+							LOGGER.error("Exception writing to internal frame buffer", ex);
 						}
 						fb.close();
 					}
@@ -476,30 +383,21 @@ public class NamingService {
 				return false;
 			}
 
-			public void start(
-					I iface,
-					get_args args,
-					org.apache.thrift.async.AsyncMethodCallback<Integer> resultHandler)
-					throws TException {
+			public void start(I iface, get_args args, org.apache.thrift.async.AsyncMethodCallback<Integer> resultHandler) throws TException {
 				iface.get(args.fileName, resultHandler);
 			}
 		}
 
 	}
 
-	public static class put_args implements
-			org.apache.thrift.TBase<put_args, put_args._Fields>,
-			java.io.Serializable, Cloneable, Comparable<put_args> {
-		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct(
-				"put_args");
+	public static class put_args implements org.apache.thrift.TBase<put_args, put_args._Fields>, java.io.Serializable, Cloneable, Comparable<put_args> {
+		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("put_args");
 
-		private static final org.apache.thrift.protocol.TField FILE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField(
-				"fileName", org.apache.thrift.protocol.TType.STRING, (short) 1);
+		private static final org.apache.thrift.protocol.TField FILE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("fileName", org.apache.thrift.protocol.TType.STRING, (short) 1);
 
 		private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
 		static {
-			schemes.put(StandardScheme.class,
-					new put_argsStandardSchemeFactory());
+			schemes.put(StandardScheme.class, new put_argsStandardSchemeFactory());
 			schemes.put(TupleScheme.class, new put_argsTupleSchemeFactory());
 		}
 
@@ -540,8 +438,7 @@ public class NamingService {
 			public static _Fields findByThriftIdOrThrow(int fieldId) {
 				_Fields fields = findByThriftId(fieldId);
 				if (fields == null)
-					throw new IllegalArgumentException("Field " + fieldId
-							+ " doesn't exist!");
+					throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
 				return fields;
 			}
 
@@ -573,16 +470,10 @@ public class NamingService {
 		// isset id assignments
 		public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 		static {
-			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(
-					_Fields.class);
-			tmpMap.put(_Fields.FILE_NAME,
-					new org.apache.thrift.meta_data.FieldMetaData("fileName",
-							org.apache.thrift.TFieldRequirementType.DEFAULT,
-							new org.apache.thrift.meta_data.FieldValueMetaData(
-									org.apache.thrift.protocol.TType.STRING)));
+			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+			tmpMap.put(_Fields.FILE_NAME, new org.apache.thrift.meta_data.FieldMetaData("fileName", org.apache.thrift.TFieldRequirementType.DEFAULT, new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
 			metaDataMap = Collections.unmodifiableMap(tmpMap);
-			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(
-					put_args.class, metaDataMap);
+			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(put_args.class, metaDataMap);
 		}
 
 		public put_args() {
@@ -709,20 +600,17 @@ public class NamingService {
 		@Override
 		public int compareTo(put_args other) {
 			if (!getClass().equals(other.getClass())) {
-				return getClass().getName().compareTo(
-						other.getClass().getName());
+				return getClass().getName().compareTo(other.getClass().getName());
 			}
 
 			int lastComparison = 0;
 
-			lastComparison = Boolean.valueOf(isSetFileName()).compareTo(
-					other.isSetFileName());
+			lastComparison = Boolean.valueOf(isSetFileName()).compareTo(other.isSetFileName());
 			if (lastComparison != 0) {
 				return lastComparison;
 			}
 			if (isSetFileName()) {
-				lastComparison = org.apache.thrift.TBaseHelper.compareTo(
-						this.fileName, other.fileName);
+				lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fileName, other.fileName);
 				if (lastComparison != 0) {
 					return lastComparison;
 				}
@@ -734,13 +622,11 @@ public class NamingService {
 			return _Fields.findByThriftId(fieldId);
 		}
 
-		public void read(org.apache.thrift.protocol.TProtocol iprot)
-				throws org.apache.thrift.TException {
+		public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
 			schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
 		}
 
-		public void write(org.apache.thrift.protocol.TProtocol oprot)
-				throws org.apache.thrift.TException {
+		public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
 			schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
 		}
 
@@ -765,38 +651,31 @@ public class NamingService {
 			// check for sub-struct validity
 		}
 
-		private void writeObject(java.io.ObjectOutputStream out)
-				throws java.io.IOException {
+		private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
 			try {
-				write(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(out)));
+				write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private void readObject(java.io.ObjectInputStream in)
-				throws java.io.IOException, ClassNotFoundException {
+		private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
 			try {
-				read(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(in)));
+				read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private static class put_argsStandardSchemeFactory implements
-				SchemeFactory {
+		private static class put_argsStandardSchemeFactory implements SchemeFactory {
 			public put_argsStandardScheme getScheme() {
 				return new put_argsStandardScheme();
 			}
 		}
 
-		private static class put_argsStandardScheme extends
-				StandardScheme<put_args> {
+		private static class put_argsStandardScheme extends StandardScheme<put_args> {
 
-			public void read(org.apache.thrift.protocol.TProtocol iprot,
-					put_args struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol iprot, put_args struct) throws org.apache.thrift.TException {
 				org.apache.thrift.protocol.TField schemeField;
 				iprot.readStructBegin();
 				while (true) {
@@ -810,13 +689,11 @@ public class NamingService {
 							struct.fileName = iprot.readString();
 							struct.setFileNameIsSet(true);
 						} else {
-							org.apache.thrift.protocol.TProtocolUtil.skip(
-									iprot, schemeField.type);
+							org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 						}
 						break;
 					default:
-						org.apache.thrift.protocol.TProtocolUtil.skip(iprot,
-								schemeField.type);
+						org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 					}
 					iprot.readFieldEnd();
 				}
@@ -827,8 +704,7 @@ public class NamingService {
 				struct.validate();
 			}
 
-			public void write(org.apache.thrift.protocol.TProtocol oprot,
-					put_args struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol oprot, put_args struct) throws org.apache.thrift.TException {
 				struct.validate();
 
 				oprot.writeStructBegin(STRUCT_DESC);
@@ -843,8 +719,7 @@ public class NamingService {
 
 		}
 
-		private static class put_argsTupleSchemeFactory implements
-				SchemeFactory {
+		private static class put_argsTupleSchemeFactory implements SchemeFactory {
 			public put_argsTupleScheme getScheme() {
 				return new put_argsTupleScheme();
 			}
@@ -853,8 +728,7 @@ public class NamingService {
 		private static class put_argsTupleScheme extends TupleScheme<put_args> {
 
 			@Override
-			public void write(org.apache.thrift.protocol.TProtocol prot,
-					put_args struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol prot, put_args struct) throws org.apache.thrift.TException {
 				TTupleProtocol oprot = (TTupleProtocol) prot;
 				BitSet optionals = new BitSet();
 				if (struct.isSetFileName()) {
@@ -867,8 +741,7 @@ public class NamingService {
 			}
 
 			@Override
-			public void read(org.apache.thrift.protocol.TProtocol prot,
-					put_args struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol prot, put_args struct) throws org.apache.thrift.TException {
 				TTupleProtocol iprot = (TTupleProtocol) prot;
 				BitSet incoming = iprot.readBitSet(1);
 				if (incoming.get(0)) {
@@ -880,19 +753,14 @@ public class NamingService {
 
 	}
 
-	public static class put_result implements
-			org.apache.thrift.TBase<put_result, put_result._Fields>,
-			java.io.Serializable, Cloneable, Comparable<put_result> {
-		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct(
-				"put_result");
+	public static class put_result implements org.apache.thrift.TBase<put_result, put_result._Fields>, java.io.Serializable, Cloneable, Comparable<put_result> {
+		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("put_result");
 
-		private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField(
-				"success", org.apache.thrift.protocol.TType.I32, (short) 0);
+		private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short) 0);
 
 		private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
 		static {
-			schemes.put(StandardScheme.class,
-					new put_resultStandardSchemeFactory());
+			schemes.put(StandardScheme.class, new put_resultStandardSchemeFactory());
 			schemes.put(TupleScheme.class, new put_resultTupleSchemeFactory());
 		}
 
@@ -933,8 +801,7 @@ public class NamingService {
 			public static _Fields findByThriftIdOrThrow(int fieldId) {
 				_Fields fields = findByThriftId(fieldId);
 				if (fields == null)
-					throw new IllegalArgumentException("Field " + fieldId
-							+ " doesn't exist!");
+					throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
 				return fields;
 			}
 
@@ -968,18 +835,10 @@ public class NamingService {
 		private byte __isset_bitfield = 0;
 		public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 		static {
-			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(
-					_Fields.class);
-			tmpMap.put(
-					_Fields.SUCCESS,
-					new org.apache.thrift.meta_data.FieldMetaData(
-							"success",
-							org.apache.thrift.TFieldRequirementType.DEFAULT,
-							new org.apache.thrift.meta_data.FieldValueMetaData(
-									org.apache.thrift.protocol.TType.I32, "int")));
+			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+			tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32, "int")));
 			metaDataMap = Collections.unmodifiableMap(tmpMap);
-			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(
-					put_result.class, metaDataMap);
+			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(put_result.class, metaDataMap);
 		}
 
 		public put_result() {
@@ -1020,8 +879,7 @@ public class NamingService {
 		}
 
 		public void unsetSuccess() {
-			__isset_bitfield = EncodingUtils.clearBit(__isset_bitfield,
-					__SUCCESS_ISSET_ID);
+			__isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
 		}
 
 		/**
@@ -1033,8 +891,7 @@ public class NamingService {
 		}
 
 		public void setSuccessIsSet(boolean value) {
-			__isset_bitfield = EncodingUtils.setBit(__isset_bitfield,
-					__SUCCESS_ISSET_ID, value);
+			__isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
 		}
 
 		public void setFieldValue(_Fields field, Object value) {
@@ -1108,20 +965,17 @@ public class NamingService {
 		@Override
 		public int compareTo(put_result other) {
 			if (!getClass().equals(other.getClass())) {
-				return getClass().getName().compareTo(
-						other.getClass().getName());
+				return getClass().getName().compareTo(other.getClass().getName());
 			}
 
 			int lastComparison = 0;
 
-			lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(
-					other.isSetSuccess());
+			lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
 			if (lastComparison != 0) {
 				return lastComparison;
 			}
 			if (isSetSuccess()) {
-				lastComparison = org.apache.thrift.TBaseHelper.compareTo(
-						this.success, other.success);
+				lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
 				if (lastComparison != 0) {
 					return lastComparison;
 				}
@@ -1133,13 +987,11 @@ public class NamingService {
 			return _Fields.findByThriftId(fieldId);
 		}
 
-		public void read(org.apache.thrift.protocol.TProtocol iprot)
-				throws org.apache.thrift.TException {
+		public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
 			schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
 		}
 
-		public void write(org.apache.thrift.protocol.TProtocol oprot)
-				throws org.apache.thrift.TException {
+		public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
 			schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
 		}
 
@@ -1160,42 +1012,35 @@ public class NamingService {
 			// check for sub-struct validity
 		}
 
-		private void writeObject(java.io.ObjectOutputStream out)
-				throws java.io.IOException {
+		private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
 			try {
-				write(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(out)));
+				write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private void readObject(java.io.ObjectInputStream in)
-				throws java.io.IOException, ClassNotFoundException {
+		private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
 			try {
 				// it doesn't seem like you should have to do this, but java
 				// serialization is wacky, and doesn't call the default
 				// constructor.
 				__isset_bitfield = 0;
-				read(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(in)));
+				read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private static class put_resultStandardSchemeFactory implements
-				SchemeFactory {
+		private static class put_resultStandardSchemeFactory implements SchemeFactory {
 			public put_resultStandardScheme getScheme() {
 				return new put_resultStandardScheme();
 			}
 		}
 
-		private static class put_resultStandardScheme extends
-				StandardScheme<put_result> {
+		private static class put_resultStandardScheme extends StandardScheme<put_result> {
 
-			public void read(org.apache.thrift.protocol.TProtocol iprot,
-					put_result struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol iprot, put_result struct) throws org.apache.thrift.TException {
 				org.apache.thrift.protocol.TField schemeField;
 				iprot.readStructBegin();
 				while (true) {
@@ -1209,13 +1054,11 @@ public class NamingService {
 							struct.success = iprot.readI32();
 							struct.setSuccessIsSet(true);
 						} else {
-							org.apache.thrift.protocol.TProtocolUtil.skip(
-									iprot, schemeField.type);
+							org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 						}
 						break;
 					default:
-						org.apache.thrift.protocol.TProtocolUtil.skip(iprot,
-								schemeField.type);
+						org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 					}
 					iprot.readFieldEnd();
 				}
@@ -1226,8 +1069,7 @@ public class NamingService {
 				struct.validate();
 			}
 
-			public void write(org.apache.thrift.protocol.TProtocol oprot,
-					put_result struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol oprot, put_result struct) throws org.apache.thrift.TException {
 				struct.validate();
 
 				oprot.writeStructBegin(STRUCT_DESC);
@@ -1242,19 +1084,16 @@ public class NamingService {
 
 		}
 
-		private static class put_resultTupleSchemeFactory implements
-				SchemeFactory {
+		private static class put_resultTupleSchemeFactory implements SchemeFactory {
 			public put_resultTupleScheme getScheme() {
 				return new put_resultTupleScheme();
 			}
 		}
 
-		private static class put_resultTupleScheme extends
-				TupleScheme<put_result> {
+		private static class put_resultTupleScheme extends TupleScheme<put_result> {
 
 			@Override
-			public void write(org.apache.thrift.protocol.TProtocol prot,
-					put_result struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol prot, put_result struct) throws org.apache.thrift.TException {
 				TTupleProtocol oprot = (TTupleProtocol) prot;
 				BitSet optionals = new BitSet();
 				if (struct.isSetSuccess()) {
@@ -1267,8 +1106,7 @@ public class NamingService {
 			}
 
 			@Override
-			public void read(org.apache.thrift.protocol.TProtocol prot,
-					put_result struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol prot, put_result struct) throws org.apache.thrift.TException {
 				TTupleProtocol iprot = (TTupleProtocol) prot;
 				BitSet incoming = iprot.readBitSet(1);
 				if (incoming.get(0)) {
@@ -1280,19 +1118,14 @@ public class NamingService {
 
 	}
 
-	public static class get_args implements
-			org.apache.thrift.TBase<get_args, get_args._Fields>,
-			java.io.Serializable, Cloneable, Comparable<get_args> {
-		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct(
-				"get_args");
+	public static class get_args implements org.apache.thrift.TBase<get_args, get_args._Fields>, java.io.Serializable, Cloneable, Comparable<get_args> {
+		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_args");
 
-		private static final org.apache.thrift.protocol.TField FILE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField(
-				"fileName", org.apache.thrift.protocol.TType.STRING, (short) 1);
+		private static final org.apache.thrift.protocol.TField FILE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("fileName", org.apache.thrift.protocol.TType.STRING, (short) 1);
 
 		private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
 		static {
-			schemes.put(StandardScheme.class,
-					new get_argsStandardSchemeFactory());
+			schemes.put(StandardScheme.class, new get_argsStandardSchemeFactory());
 			schemes.put(TupleScheme.class, new get_argsTupleSchemeFactory());
 		}
 
@@ -1333,8 +1166,7 @@ public class NamingService {
 			public static _Fields findByThriftIdOrThrow(int fieldId) {
 				_Fields fields = findByThriftId(fieldId);
 				if (fields == null)
-					throw new IllegalArgumentException("Field " + fieldId
-							+ " doesn't exist!");
+					throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
 				return fields;
 			}
 
@@ -1366,16 +1198,10 @@ public class NamingService {
 		// isset id assignments
 		public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 		static {
-			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(
-					_Fields.class);
-			tmpMap.put(_Fields.FILE_NAME,
-					new org.apache.thrift.meta_data.FieldMetaData("fileName",
-							org.apache.thrift.TFieldRequirementType.DEFAULT,
-							new org.apache.thrift.meta_data.FieldValueMetaData(
-									org.apache.thrift.protocol.TType.STRING)));
+			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+			tmpMap.put(_Fields.FILE_NAME, new org.apache.thrift.meta_data.FieldMetaData("fileName", org.apache.thrift.TFieldRequirementType.DEFAULT, new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
 			metaDataMap = Collections.unmodifiableMap(tmpMap);
-			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(
-					get_args.class, metaDataMap);
+			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_args.class, metaDataMap);
 		}
 
 		public get_args() {
@@ -1502,20 +1328,17 @@ public class NamingService {
 		@Override
 		public int compareTo(get_args other) {
 			if (!getClass().equals(other.getClass())) {
-				return getClass().getName().compareTo(
-						other.getClass().getName());
+				return getClass().getName().compareTo(other.getClass().getName());
 			}
 
 			int lastComparison = 0;
 
-			lastComparison = Boolean.valueOf(isSetFileName()).compareTo(
-					other.isSetFileName());
+			lastComparison = Boolean.valueOf(isSetFileName()).compareTo(other.isSetFileName());
 			if (lastComparison != 0) {
 				return lastComparison;
 			}
 			if (isSetFileName()) {
-				lastComparison = org.apache.thrift.TBaseHelper.compareTo(
-						this.fileName, other.fileName);
+				lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fileName, other.fileName);
 				if (lastComparison != 0) {
 					return lastComparison;
 				}
@@ -1527,13 +1350,11 @@ public class NamingService {
 			return _Fields.findByThriftId(fieldId);
 		}
 
-		public void read(org.apache.thrift.protocol.TProtocol iprot)
-				throws org.apache.thrift.TException {
+		public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
 			schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
 		}
 
-		public void write(org.apache.thrift.protocol.TProtocol oprot)
-				throws org.apache.thrift.TException {
+		public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
 			schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
 		}
 
@@ -1558,38 +1379,31 @@ public class NamingService {
 			// check for sub-struct validity
 		}
 
-		private void writeObject(java.io.ObjectOutputStream out)
-				throws java.io.IOException {
+		private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
 			try {
-				write(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(out)));
+				write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private void readObject(java.io.ObjectInputStream in)
-				throws java.io.IOException, ClassNotFoundException {
+		private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
 			try {
-				read(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(in)));
+				read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private static class get_argsStandardSchemeFactory implements
-				SchemeFactory {
+		private static class get_argsStandardSchemeFactory implements SchemeFactory {
 			public get_argsStandardScheme getScheme() {
 				return new get_argsStandardScheme();
 			}
 		}
 
-		private static class get_argsStandardScheme extends
-				StandardScheme<get_args> {
+		private static class get_argsStandardScheme extends StandardScheme<get_args> {
 
-			public void read(org.apache.thrift.protocol.TProtocol iprot,
-					get_args struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol iprot, get_args struct) throws org.apache.thrift.TException {
 				org.apache.thrift.protocol.TField schemeField;
 				iprot.readStructBegin();
 				while (true) {
@@ -1603,13 +1417,11 @@ public class NamingService {
 							struct.fileName = iprot.readString();
 							struct.setFileNameIsSet(true);
 						} else {
-							org.apache.thrift.protocol.TProtocolUtil.skip(
-									iprot, schemeField.type);
+							org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 						}
 						break;
 					default:
-						org.apache.thrift.protocol.TProtocolUtil.skip(iprot,
-								schemeField.type);
+						org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 					}
 					iprot.readFieldEnd();
 				}
@@ -1620,8 +1432,7 @@ public class NamingService {
 				struct.validate();
 			}
 
-			public void write(org.apache.thrift.protocol.TProtocol oprot,
-					get_args struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol oprot, get_args struct) throws org.apache.thrift.TException {
 				struct.validate();
 
 				oprot.writeStructBegin(STRUCT_DESC);
@@ -1636,8 +1447,7 @@ public class NamingService {
 
 		}
 
-		private static class get_argsTupleSchemeFactory implements
-				SchemeFactory {
+		private static class get_argsTupleSchemeFactory implements SchemeFactory {
 			public get_argsTupleScheme getScheme() {
 				return new get_argsTupleScheme();
 			}
@@ -1646,8 +1456,7 @@ public class NamingService {
 		private static class get_argsTupleScheme extends TupleScheme<get_args> {
 
 			@Override
-			public void write(org.apache.thrift.protocol.TProtocol prot,
-					get_args struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol prot, get_args struct) throws org.apache.thrift.TException {
 				TTupleProtocol oprot = (TTupleProtocol) prot;
 				BitSet optionals = new BitSet();
 				if (struct.isSetFileName()) {
@@ -1660,8 +1469,7 @@ public class NamingService {
 			}
 
 			@Override
-			public void read(org.apache.thrift.protocol.TProtocol prot,
-					get_args struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol prot, get_args struct) throws org.apache.thrift.TException {
 				TTupleProtocol iprot = (TTupleProtocol) prot;
 				BitSet incoming = iprot.readBitSet(1);
 				if (incoming.get(0)) {
@@ -1673,19 +1481,14 @@ public class NamingService {
 
 	}
 
-	public static class get_result implements
-			org.apache.thrift.TBase<get_result, get_result._Fields>,
-			java.io.Serializable, Cloneable, Comparable<get_result> {
-		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct(
-				"get_result");
+	public static class get_result implements org.apache.thrift.TBase<get_result, get_result._Fields>, java.io.Serializable, Cloneable, Comparable<get_result> {
+		private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_result");
 
-		private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField(
-				"success", org.apache.thrift.protocol.TType.I32, (short) 0);
+		private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short) 0);
 
 		private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
 		static {
-			schemes.put(StandardScheme.class,
-					new get_resultStandardSchemeFactory());
+			schemes.put(StandardScheme.class, new get_resultStandardSchemeFactory());
 			schemes.put(TupleScheme.class, new get_resultTupleSchemeFactory());
 		}
 
@@ -1726,8 +1529,7 @@ public class NamingService {
 			public static _Fields findByThriftIdOrThrow(int fieldId) {
 				_Fields fields = findByThriftId(fieldId);
 				if (fields == null)
-					throw new IllegalArgumentException("Field " + fieldId
-							+ " doesn't exist!");
+					throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
 				return fields;
 			}
 
@@ -1761,18 +1563,10 @@ public class NamingService {
 		private byte __isset_bitfield = 0;
 		public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 		static {
-			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(
-					_Fields.class);
-			tmpMap.put(
-					_Fields.SUCCESS,
-					new org.apache.thrift.meta_data.FieldMetaData(
-							"success",
-							org.apache.thrift.TFieldRequirementType.DEFAULT,
-							new org.apache.thrift.meta_data.FieldValueMetaData(
-									org.apache.thrift.protocol.TType.I32, "int")));
+			Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+			tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32, "int")));
 			metaDataMap = Collections.unmodifiableMap(tmpMap);
-			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(
-					get_result.class, metaDataMap);
+			org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_result.class, metaDataMap);
 		}
 
 		public get_result() {
@@ -1813,8 +1607,7 @@ public class NamingService {
 		}
 
 		public void unsetSuccess() {
-			__isset_bitfield = EncodingUtils.clearBit(__isset_bitfield,
-					__SUCCESS_ISSET_ID);
+			__isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
 		}
 
 		/**
@@ -1826,8 +1619,7 @@ public class NamingService {
 		}
 
 		public void setSuccessIsSet(boolean value) {
-			__isset_bitfield = EncodingUtils.setBit(__isset_bitfield,
-					__SUCCESS_ISSET_ID, value);
+			__isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
 		}
 
 		public void setFieldValue(_Fields field, Object value) {
@@ -1901,20 +1693,17 @@ public class NamingService {
 		@Override
 		public int compareTo(get_result other) {
 			if (!getClass().equals(other.getClass())) {
-				return getClass().getName().compareTo(
-						other.getClass().getName());
+				return getClass().getName().compareTo(other.getClass().getName());
 			}
 
 			int lastComparison = 0;
 
-			lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(
-					other.isSetSuccess());
+			lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
 			if (lastComparison != 0) {
 				return lastComparison;
 			}
 			if (isSetSuccess()) {
-				lastComparison = org.apache.thrift.TBaseHelper.compareTo(
-						this.success, other.success);
+				lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
 				if (lastComparison != 0) {
 					return lastComparison;
 				}
@@ -1926,13 +1715,11 @@ public class NamingService {
 			return _Fields.findByThriftId(fieldId);
 		}
 
-		public void read(org.apache.thrift.protocol.TProtocol iprot)
-				throws org.apache.thrift.TException {
+		public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
 			schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
 		}
 
-		public void write(org.apache.thrift.protocol.TProtocol oprot)
-				throws org.apache.thrift.TException {
+		public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
 			schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
 		}
 
@@ -1953,42 +1740,35 @@ public class NamingService {
 			// check for sub-struct validity
 		}
 
-		private void writeObject(java.io.ObjectOutputStream out)
-				throws java.io.IOException {
+		private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
 			try {
-				write(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(out)));
+				write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private void readObject(java.io.ObjectInputStream in)
-				throws java.io.IOException, ClassNotFoundException {
+		private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
 			try {
 				// it doesn't seem like you should have to do this, but java
 				// serialization is wacky, and doesn't call the default
 				// constructor.
 				__isset_bitfield = 0;
-				read(new org.apache.thrift.protocol.TCompactProtocol(
-						new org.apache.thrift.transport.TIOStreamTransport(in)));
+				read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
 			} catch (org.apache.thrift.TException te) {
 				throw new java.io.IOException(te);
 			}
 		}
 
-		private static class get_resultStandardSchemeFactory implements
-				SchemeFactory {
+		private static class get_resultStandardSchemeFactory implements SchemeFactory {
 			public get_resultStandardScheme getScheme() {
 				return new get_resultStandardScheme();
 			}
 		}
 
-		private static class get_resultStandardScheme extends
-				StandardScheme<get_result> {
+		private static class get_resultStandardScheme extends StandardScheme<get_result> {
 
-			public void read(org.apache.thrift.protocol.TProtocol iprot,
-					get_result struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol iprot, get_result struct) throws org.apache.thrift.TException {
 				org.apache.thrift.protocol.TField schemeField;
 				iprot.readStructBegin();
 				while (true) {
@@ -2002,13 +1782,11 @@ public class NamingService {
 							struct.success = iprot.readI32();
 							struct.setSuccessIsSet(true);
 						} else {
-							org.apache.thrift.protocol.TProtocolUtil.skip(
-									iprot, schemeField.type);
+							org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 						}
 						break;
 					default:
-						org.apache.thrift.protocol.TProtocolUtil.skip(iprot,
-								schemeField.type);
+						org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
 					}
 					iprot.readFieldEnd();
 				}
@@ -2019,8 +1797,7 @@ public class NamingService {
 				struct.validate();
 			}
 
-			public void write(org.apache.thrift.protocol.TProtocol oprot,
-					get_result struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol oprot, get_result struct) throws org.apache.thrift.TException {
 				struct.validate();
 
 				oprot.writeStructBegin(STRUCT_DESC);
@@ -2035,19 +1812,16 @@ public class NamingService {
 
 		}
 
-		private static class get_resultTupleSchemeFactory implements
-				SchemeFactory {
+		private static class get_resultTupleSchemeFactory implements SchemeFactory {
 			public get_resultTupleScheme getScheme() {
 				return new get_resultTupleScheme();
 			}
 		}
 
-		private static class get_resultTupleScheme extends
-				TupleScheme<get_result> {
+		private static class get_resultTupleScheme extends TupleScheme<get_result> {
 
 			@Override
-			public void write(org.apache.thrift.protocol.TProtocol prot,
-					get_result struct) throws org.apache.thrift.TException {
+			public void write(org.apache.thrift.protocol.TProtocol prot, get_result struct) throws org.apache.thrift.TException {
 				TTupleProtocol oprot = (TTupleProtocol) prot;
 				BitSet optionals = new BitSet();
 				if (struct.isSetSuccess()) {
@@ -2060,8 +1834,7 @@ public class NamingService {
 			}
 
 			@Override
-			public void read(org.apache.thrift.protocol.TProtocol prot,
-					get_result struct) throws org.apache.thrift.TException {
+			public void read(org.apache.thrift.protocol.TProtocol prot, get_result struct) throws org.apache.thrift.TException {
 				TTupleProtocol iprot = (TTupleProtocol) prot;
 				BitSet incoming = iprot.readBitSet(1);
 				if (incoming.get(0)) {

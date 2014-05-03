@@ -1,4 +1,4 @@
-package rso.dfs.storageServer;
+package rso.dfs.dummy.server;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 
-import rso.dfs.generated.StorageService;
+import rso.dfs.dummy.generated.StorageService;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>

@@ -1,4 +1,4 @@
-package rso.dfs.storageServer;
+package rso.dfs.dummy.server;
 
 import java.util.ArrayList;
 

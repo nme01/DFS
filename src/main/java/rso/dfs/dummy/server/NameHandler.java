@@ -1,9 +1,10 @@
-package rso.dfs.nameServer;
+package rso.dfs.dummy.server;
 
 import java.util.ArrayList;
 
 import org.apache.thrift.TException;
 
+import rso.dfs.dummy.generated.NamingService;
 import rso.dfs.generated.*;
 
 /**
