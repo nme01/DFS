@@ -1,6 +1,5 @@
 package rso.dfs.model;
 
-import java.net.Inet4Address;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
@@ -8,7 +7,8 @@ import java.net.Inet4Address;
 public class FilesOnServers {
 
 	private long fileId;
-	private Inet4Address serverIp;
+	
+	private String serverIp;
 
 	public long getFileId() {
 		return fileId;
@@ -18,11 +18,11 @@ public class FilesOnServers {
 		this.fileId = fileId;
 	}
 
-	public Inet4Address getServerIp() {
+	public String getServerIp() {
 		return serverIp;
 	}
 
-	public void setServerIp(Inet4Address serverIp) {
+	public void setServerIp(String serverIp) {
 		this.serverIp = serverIp;
 	}
 

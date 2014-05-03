@@ -1,22 +1,25 @@
 package rso.dfs.model;
 
-import java.net.Inet4Address;
-import java.security.Timestamp;
+import org.joda.time.DateTime;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class Server {
 
-	private Inet4Address ip;
+	private String ip;
+	
 	private ServerRole role;
-	private Timestamp lastConnection;
+	
+	private long memory;
+	
+	private DateTime lastConnection;
 
-	public Inet4Address getIp() {
+	public String getIp() {
 		return ip;
 	}
 
-	public void setIp(Inet4Address ip) {
+	public void setIp(String ip) {
 		this.ip = ip;
 	}
 
@@ -28,11 +31,19 @@ public class Server {
 		this.role = role;
 	}
 
-	public Timestamp getLastConnection() {
+	public long getMemory() {
+		return memory;
+	}
+
+	public void setMemory(long memory) {
+		this.memory = memory;
+	}
+
+	public DateTime getLastConnection() {
 		return lastConnection;
 	}
 
-	public void setLastConnection(Timestamp lastConnection) {
+	public void setLastConnection(DateTime lastConnection) {
 		this.lastConnection = lastConnection;
 	}
 

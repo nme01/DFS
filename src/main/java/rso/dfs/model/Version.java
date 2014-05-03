@@ -5,13 +5,13 @@ package rso.dfs.model;
  * */
 public class Version {
 
-	private Long log;
+	private long log;
 
-	public Long getLog() {
+	public long getLog() {
 		return log;
 	}
 
-	public void setLog(Long log) {
+	public void setLog(long log) {
 		this.log = log;
 	}
 

@@ -1,14 +1,16 @@
 package rso.dfs.model;
 
-
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class File {
 
 	private long id;
+
 	private String name;
+
 	private long size;
+
 	private FileStatus status;
 
 	public long getId() {
