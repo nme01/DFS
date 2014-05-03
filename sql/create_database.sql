@@ -1,38 +1,34 @@
-CREATE TABLE Files (
-	id BIGINT NOT NULL,
-	name VARCHAR NOT NULL,
-	size BIGINT,
-	status CHAR(1),
-	PRIMARY KEY (id)
+create table files (
+	id bigserial not null,
+	name text not null,
+	size bigint,
+	status char(1),
+	primary key (id)
 );
-CREATE INDEX pk_files ON Files (id);
-CREATE UNIQUE INDEX uq_files ON Files (name);
+create index pk_files on files (id);
+create unique index uq_files on files (name);
 
-CREATE TABLE Servers (
-	ip INET NOT NULL,
-	role CHAR(1),
-	memory BIGINT NOT NULL,
-	last_connection TIMESTAMP NOT NULL,
-	PRIMARY KEY (ip)
+create table servers (
+	ip text not null,
+	role char(1),
+	memory bigint not null,
+	last_connection timestamp not null,
+	primary key (ip)
 );
-CREATE INDEX pk_servers ON Servers (ip);
+create index pk_servers on servers (ip);
 
-CREATE TABLE Files_on_servers (
-	id BIGINT NOT NULL,
-	ip INET NOT NULL,
-	priority INT NOT NULL,
-	PRIMARY KEY (id, ip),
-	FOREIGN KEY (ip) REFERENCES Servers(ip),
-	FOREIGN KEY (id) REFERENCES Files(id)
-);
-
-CREATE INDEX pk_filesonservers ON Files_on_servers (id,ip);
-CREATE INDEX fk_filesonservers ON Files_on_servers (ip);
-
-CREATE TABLE Version (
-	log BIGINT
+create table files_on_servers (
+	file_id bigint not null,
+	server_ip text not null,
+	priority int not null,
+	primary key (id, ip),
+	foreign key (ip) references servers(ip),
+	foreign key (id) references files(id)
 );
 
-CREATE SEQUENCE files_seq START 1;
-CREATE SEQUENCE log_seq START 1;
+create index pk_filesonservers on files_on_servers (id,ip);
+create index fk_filesonservers on files_on_servers (ip);
 
+create table version (
+	log bigserial not null
+);

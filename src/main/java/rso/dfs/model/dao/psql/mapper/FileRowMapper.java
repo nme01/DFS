@@ -6,15 +6,21 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
 import rso.dfs.model.File;
+import rso.dfs.model.FileStatus;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class FileRowMapper implements ParameterizedRowMapper<File> {
-	
+
 	@Override
-	public File mapRow(ResultSet rs, int rowNum) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public File mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+		File file = new File();
+		file.setId(resultSet.getLong("id"));
+		file.setName(resultSet.getString("name"));
+		file.setSize(resultSet.getLong("size"));
+		file.setStatus(FileStatus.getFileStatus(resultSet.getString("status")));
+
+		return file;
 	}
 }

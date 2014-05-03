@@ -52,13 +52,13 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public int getFileId(String fileName) {
+	public Integer getFileId(String fileName) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int addNewFile(String name, long size) {
+	public int saveNewFile(String name, long size) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -76,13 +76,13 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public int addNewServer(InetAddress ip, int memory, ServerRole role) {
+	public int saveNewServer(InetAddress ip, int memory, ServerRole role) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public int addFileServerLink(InetAddress ip, int id) {
+	public int saveFileServerLink(InetAddress ip, int id) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

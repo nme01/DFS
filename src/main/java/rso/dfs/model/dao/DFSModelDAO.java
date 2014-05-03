@@ -14,6 +14,10 @@ import rso.dfs.model.ServerRole;
  * */
 public interface DFSModelDAO {
 
+	
+	/**
+	 * 
+	 * */
 	public void testDatabaseConnection();
 
 	/**
@@ -43,14 +47,14 @@ public interface DFSModelDAO {
 	 * @param fileName
 	 * @return
 	 */
-	public int getFileId(String fileName);
+	public Integer getFileId(String fileName);
 
 	/**
 	 * @param name
 	 * @param size
 	 * @return
 	 */
-	public int addNewFile(String name, long size);
+	public int saveNewFile(String name, long size);
 
 	/**
 	 * @param fileId
@@ -71,9 +75,9 @@ public interface DFSModelDAO {
 	 * @param role
 	 * @return
 	 */
-	public int addNewServer(InetAddress ip, int memory, ServerRole role);
+	public int saveNewServer(InetAddress ip, int memory, ServerRole role);
 
-	public int addFileServerLink(InetAddress ip, int id);
+	public int saveFileServerLink(InetAddress ip, int id);
 
 	/**
 	 * @param ip
