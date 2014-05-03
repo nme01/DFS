@@ -5,18 +5,18 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
-import rso.dfs.model.FilesOnServer;
+import rso.dfs.model.FileOnServer;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class FilesOnServersRowMapper implements ParameterizedRowMapper<FilesOnServer> {
+public class FilesOnServersRowMapper implements ParameterizedRowMapper<FileOnServer> {
 
 	@Override
-	public FilesOnServer mapRow(ResultSet rs, int rowNum) throws SQLException {
-		FilesOnServer filesOnServer = new FilesOnServer();
-		filesOnServer.setFileId(rs.getLong("file_id"));
-		filesOnServer.setServerIp(rs.getString("server_ip"));
-		return filesOnServer;
+	public FileOnServer mapRow(ResultSet rs, int rowNum) throws SQLException {
+		FileOnServer fileOnServer = new FileOnServer();
+		fileOnServer.setFileId(rs.getLong("file_id"));
+		fileOnServer.setServerIp(rs.getString("server_ip"));
+		return fileOnServer;
 	}
 }

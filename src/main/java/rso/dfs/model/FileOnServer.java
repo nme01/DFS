@@ -4,7 +4,7 @@ package rso.dfs.model;
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class FilesOnServer {
+public class FileOnServer {
 
 	private long fileId;
 	
