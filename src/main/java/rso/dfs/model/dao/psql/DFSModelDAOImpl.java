@@ -73,7 +73,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public List<Server> fetchServersByRole(ServerRole role) {
 		final String query = "select ip, role, memory, last_connection from servers where role=?";
-		return getJdbcTemplate().query(query, new Object[] { role.getRoleChar() }, new ServerRowMapper());
+		return getJdbcTemplate().query(query, new Object[] { role.getCode() }, new ServerRowMapper());
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 				PreparedStatement ps = connection.prepareStatement(query, new String[] { "id" });
 				ps.setString(1, file.getName());
 				ps.setLong(2, file.getSize());
-				ps.setString(3, file.getStatus().getStatusChar());
+				ps.setString(3, file.getStatus().getCode());
 
 				return ps;
 			}
@@ -114,7 +114,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public void saveServer(Server server) {
 		final String query = "insert into servers (ip, role, memory, last_connection) values(?, ?,?,?)";
-		getJdbcTemplate().update(query, new Object[] { server.getIp(), server.getRole().getRoleChar(), server.getLastConnection() });
+		getJdbcTemplate().update(query, new Object[] { server.getIp(), server.getRole().getCode(), server.getLastConnection() });
 
 	}
 
@@ -128,7 +128,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public int updateServer(Server server) {
 		final String query = "update servers set role=?, memory=?, last_connection where ip=?";
-		return getJdbcTemplate().update(query, new Object[] { server.getRole().getRoleChar(), server.getMemory(), server.getLastConnection(), server.getIp() });
+		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), server.getLastConnection(), server.getIp() });
 	}
 
 }

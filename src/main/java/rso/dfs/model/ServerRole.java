@@ -12,27 +12,26 @@ public enum ServerRole {
 
 	MASTER("M"), SHADOW("H"), SLAVE("L");
 
-	private String role;
+	private String code;
 
 	private ServerRole(String role) {
-		this.role = role;
+		this.code = role;
 	}
 
 	/**
-	 * @return DB role sign
+	 * @return DB role code
 	 */
-	public String getRoleChar() {
-		return role;
+	public String getCode() {
+		return code;
 	}
 
 	/**
-	 * @param r
-	 *            + DB role sign
+	 * @param code
 	 * @return corresponding ServerRole
 	 */
-	static public ServerRole getServerRole(String role) {
+	static public ServerRole getServerRole(String code) {
 		for (ServerRole sr : ServerRole.values())
-			if (role.equals(sr))
+			if (code.equals(sr))
 				return sr;
 		return null;
 	}

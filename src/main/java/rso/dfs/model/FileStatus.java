@@ -13,17 +13,17 @@ public enum FileStatus {
 
 	UPLOAD("U"), TO_DELETE("D"), HELD("H");
 
-	private final String status;
+	private final String code;
 
-	private FileStatus(final String status) {
-		this.status = status;
+	private FileStatus(final String code) {
+		this.code = code;
 	}
 
 	/**
 	 * @return DB status sign
 	 */
-	public String getStatusChar() {
-		return status;
+	public String getCode() {
+		return code;
 	};
 
 	/**
@@ -31,9 +31,9 @@ public enum FileStatus {
 	 *            - DB status sign
 	 * @return corresponding FileStatus
 	 */
-	static public FileStatus getFileStatus(String role) {
+	static public FileStatus getFileStatus(String code) {
 		for (FileStatus fs : FileStatus.values())
-			if (role.equals(fs))
+			if (code.equals(fs))
 				return fs;
 		return null;
 	};
