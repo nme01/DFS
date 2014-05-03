@@ -19,6 +19,6 @@ public class App {
 
 		DFSDataSource dataSource = new DFSDataSource();
 		DFSModelDAO modelDAO = new DFSModelDAOImpl(dataSource);
-		modelDAO.testDatabaseConnection();
+
 	}
 }
