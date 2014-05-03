@@ -5,6 +5,8 @@ create table files (
 	status char(1),
 	primary key (id)
 );
+alter table files add constraint files_status_constraint check (status = 'U' or status = 'D' or status = 'H');
+
 create index pk_files on files (id);
 create unique index uq_files on files (name);
 
@@ -15,6 +17,8 @@ create table servers (
 	last_connection timestamp not null,
 	primary key (ip)
 );
+alter table servers add constraint servers_role_constraint check (role = 'M' or role = 'H' or  role='L');
+
 create index pk_servers on servers (ip);
 
 create table files_on_servers (
