@@ -4,8 +4,10 @@ package rso.dfs;
  * @author Mateusz Statkiewicz
  * 
  * Enum describing server roles, with mapping to DB signs
+ * 
+ * @deprecated @see rso.dfs.model package
  * */
-
+@Deprecated
 public enum ServerRole {
 	
 	Master('m'),
