@@ -1,11 +1,11 @@
 package rso.dfs.model.dao;
 
-import java.net.InetAddress;
 import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import rso.dfs.model.FileStatus;
+import rso.dfs.model.File;
+import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 
 /**
@@ -14,76 +14,33 @@ import rso.dfs.model.ServerRole;
  * */
 public interface DFSModelDAO {
 
-	
 	/**
 	 * 
 	 * */
 	public void testDatabaseConnection();
 
-	/**
-	 * to moze nawet zamiast tej funkcji ponizej
-	 * 
-	 * @param r
-	 * @return
-	 */
-	public Collection<Pair<InetAddress, Long>> getServersByRoleMemory(ServerRole r);
+	public int deleteFile(File file);
 
-	public FileStatus getFileStatus(int FileId);
+	public int deleteServer(Server server);
 
-	/**
-	 * @param r
-	 *            - server role
-	 * @return collection of addresses with ip numbers of servers
-	 */
-	public Collection<InetAddress> getServersByRole(ServerRole r);
+	public int deleteFileOnServer(FileOnServer fileOnServer);
 
-	/**
-	 * @param fileId
-	 * @return
-	 */
-	public Collection<InetAddress> getServersByFile(int fileId);
+	public File fetchFileById(int FileId);
 
-	/**
-	 * @param fileName
-	 * @return
-	 */
-	public Integer getFileId(String fileName);
+	public File fetchFileByFileName(String fileName);
 
-	/**
-	 * @param name
-	 * @param size
-	 * @return
-	 */
-	public int saveNewFile(String name, long size);
+	public List<Server> fetchServersByRole(ServerRole role);
 
-	/**
-	 * @param fileId
-	 * @return
-	 */
-	public int deleteFile(int fileId);
+	public List<Server> fetchServersByFileId(long fileId);
 
-	/**
-	 * @param fileId
-	 * @param newStatus
-	 * @return
-	 */
-	public int updateFileStatus(int fileId, FileStatus newStatus);
+	public long saveFile(File file);
 
-	/**
-	 * @param ip
-	 * @param memory
-	 * @param role
-	 * @return
-	 */
-	public int saveNewServer(InetAddress ip, int memory, ServerRole role);
+	public void saveFileOnServer(FileOnServer fileOnServer);
 
-	public int saveFileServerLink(InetAddress ip, int id);
+	public void saveServer(Server server);
 
-	/**
-	 * @param ip
-	 * @param id
-	 * @return
-	 */
-	public int deleteFileServerLink(InetAddress ip, int id);
+	public int updateFile(File file);
+
+	public int updateServer(Server server);
 
 }
