@@ -21,13 +21,13 @@ create table files_on_servers (
 	file_id bigint not null,
 	server_ip text not null,
 	priority int not null,
-	primary key (id, ip),
-	foreign key (ip) references servers(ip),
-	foreign key (id) references files(id)
+	primary key (file_id, server_ip),
+	foreign key (server_ip) references servers(ip),
+	foreign key (file_id) references files(id)
 );
 
-create index pk_filesonservers on files_on_servers (id,ip);
-create index fk_filesonservers on files_on_servers (ip);
+create index pk_filesonservers on files_on_servers (file_id, server_ip);
+create index fk_filesonservers on files_on_servers (server_ip);
 
 create table version (
 	log bigserial not null
