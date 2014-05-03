@@ -1,10 +1,3 @@
-DROP DATABASE dfs_db;
-DROP USER dfs_user;
-
-CREATE USER dfs_user WITH PASSWORD 'dfs_pass';
-CREATE DATABASE dfs_db OWNER dfs_user;
-SET ROLE dfs_user;
-
 CREATE TABLE Files (
 	id BIGINT NOT NULL,
 	name VARCHAR NOT NULL,
