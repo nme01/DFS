@@ -20,15 +20,14 @@ public enum FileStatus {
 	}
 
 	/**
-	 * @return DB status sign
+	 * @return DB status code
 	 */
 	public String getCode() {
 		return code;
 	};
 
 	/**
-	 * @param s
-	 *            - DB status sign
+	 * @param code
 	 * @return corresponding FileStatus
 	 */
 	static public FileStatus getFileStatus(String code) {
