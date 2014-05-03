@@ -1,4 +1,4 @@
-package rso.dfs.storageServer;
+package rso.dfs.dummy.server;
 
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
@@ -6,13 +6,14 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import rso.dfs.generated.StorageService;
+import rso.dfs.dummy.generated.StorageService;
 
 /**
- * @author Adam Papros <adam.papros@gmail.com>
- * 
+ * @author Adam Papros <adam.papros@gmail.com> 
+ * TODO:DELETE THIS SHIT
+ * @deprecated
  * */
-
+@Deprecated
 public class StorageServer {
 
 	static StorageHandler handler;

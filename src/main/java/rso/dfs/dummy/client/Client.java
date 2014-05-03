@@ -1,4 +1,4 @@
-package rso.dfs.client;
+package rso.dfs.dummy.client;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +13,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-import rso.dfs.generated.NamingService;
-import rso.dfs.generated.StorageService;
+import rso.dfs.dummy.generated.NamingService;
+import rso.dfs.dummy.generated.StorageService;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
