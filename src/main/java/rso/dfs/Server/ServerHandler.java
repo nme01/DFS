@@ -1,7 +1,11 @@
 package rso.dfs.Server;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -160,24 +164,56 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public boolean removeFile(String filepath) throws TException {
-		int fileId = dbManager.getFileId(filepath);
+		int fileId = dbManager.getFileId(filepath); // TODO: not long?
 		dbManager.deleteFile(fileId);
 		ArrayList<InetAddress> servers = (ArrayList<InetAddress>) dbManager.getServersByFile(fileId);
 		// TODO: removeFileSlave on every slave
 		return false;
 	}
 
+	/**
+	 * Invoked on a slave by the master. Orders the slave to secure a transfer handler for a file from a certain client.
+	 * 
+	 * @param fileId
+	 * @return FilePartDescription
+	 */
 	@Override
 	public FilePartDescription sendFileToSlaveRequest(long fileId)
 			throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		File file = new File("/tmp/" + Long.toString(fileId));
+		try {
+			file.createNewFile();
+		} catch (IOException ioe) {
+			return null;
+		}
+		return new FilePartDescription((int)fileId, (long)0);
 	}
 
+	/**
+	 * Invoked on a slave by a client. Saves a part of a file onto storage.
+	 * @param filePart
+	 * @return FilePartDescription
+	 */
 	@Override
 	public FilePartDescription sendFilePartToSlave(FilePart filePart)
 			throws TException {
-		// TODO Auto-generated method stub
+		try {
+			//TODO: check if the filePart is from the expected client
+			final FileOutputStream fis = new FileOutputStream( "/tmp/" + Integer.toString(filePart.fileId), true );
+			FileChannel fc = fis.getChannel();
+			ByteBuffer[] bba = {filePart.bufferForData()};
+			
+			if (fc.write(bba, (int)(filePart.getOffset()), filePart.bufferForData().capacity()) != filePart.bufferForData().capacity() ) {
+				//TODO: find a way to properly handle exceptions
+			}
+			
+			return new FilePartDescription(filePart.fileId, filePart.offset);
+			
+		} catch(Exception e){
+			//??? stop whining
+		}
+		
 		return null;
 	}
 
