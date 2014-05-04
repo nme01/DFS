@@ -8,13 +8,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 
 import rso.dfs.ServerRole;
 import rso.dfs.dbManager.DbManager;
+import rso.dfs.dummy.generated.NamingService;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -23,16 +29,27 @@ import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.SystemStatus;
+import rso.dfs.model.*;
+import rso.dfs.model.dao.DFSModelDAO;
+import rso.dfs.model.dao.psql.DFSModelDAOImpl;
+import rso.dfs.model.dao.psql.DFSDataSource;
+
 public class ServerHandler implements Service.Iface {
 
 	private DbManager dbManager;
+	private CoreStatus coreStatus;
+	private DFSModelDAO modelDAO;
 	
 	public ServerHandler(){
 		dbManager =  new DbManager();
+		modelDAO = new DFSModelDAOImpl(new DFSDataSource());
+		
 	}
 	
 	public ServerHandler(DbManager dbm){
 		this.dbManager = dbm;
+		modelDAO = new DFSModelDAOImpl(new DFSDataSource());
+		
 	}
 
 	@Override
@@ -43,13 +60,43 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		modelDAO = new DFSModelDAOImpl(new DFSDataSource());
+		Server server = new Server();
+		//server.setIp();			//skad mam to wziac? do strukturki trzeba dodac? to samo nizej
+		//server.setMemory(memory);
+		//server.setRole();
+		//modelDAO.saveServer(server);
+		
+		List<Integer> ids= req.getFileIds();
+		for (int fileId : ids)
+		{
+			if (modelDAO.fetchFileById((long) fileId) != null)
+				{
+				FileOnServer fileOnServer = new FileOnServer();
+				fileOnServer.setFileId(fileId);
+				fileOnServer.setServerIp(server.getIp());
+				//fileOnServer.setPriority(0);
+				modelDAO.saveFileOnServer(fileOnServer);
+				ids.remove(fileId);
+				};
+		}
+		TTransport transport;
+
+		transport = new TSocket("localhost",9900); //skad wziac ipka i port?
+		transport.open();
+
+		TProtocol protocol = new TBinaryProtocol(transport);
+		Service.Client client = new Service.Client(protocol);
+		for (int fileId : ids)
+		{
+			client.removeFileSlave(fileId);
+		}
+		return coreStatus;
 	}
 
 	@Override
 	public void updateCoreStatus(CoreStatus status) throws TException {
-		// TODO Auto-generated method stub
+		coreStatus = status;
 		
 	}
 
