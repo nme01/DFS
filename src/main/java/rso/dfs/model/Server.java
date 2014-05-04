@@ -8,11 +8,11 @@ import org.joda.time.DateTime;
 public class Server {
 
 	private String ip;
-	
+
 	private ServerRole role;
-	
+
 	private long memory;
-	
+
 	private DateTime lastConnection;
 
 	public String getIp() {
@@ -47,4 +47,9 @@ public class Server {
 		this.lastConnection = lastConnection;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		Server s = (Server) obj;
+		return this.ip.equals(s.getIp());
+	}
 }

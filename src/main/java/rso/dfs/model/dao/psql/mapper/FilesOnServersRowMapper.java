@@ -17,6 +17,7 @@ public class FilesOnServersRowMapper implements ParameterizedRowMapper<FileOnSer
 		FileOnServer fileOnServer = new FileOnServer();
 		fileOnServer.setFileId(rs.getLong("file_id"));
 		fileOnServer.setServerIp(rs.getString("server_ip"));
+		fileOnServer.setPriority(rs.getLong("priority"));
 		return fileOnServer;
 	}
 }

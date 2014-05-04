@@ -5,9 +5,9 @@ import rso.dfs.model.dao.DFSModelDAO;
 public abstract class IntegrationTestBase {
 
 	// TODO : change this to test data source
-	DFSDataSource dataSource;
+	private DFSDataSource dataSource;
 
-	DFSModelDAO modelDAO;
+	protected DFSModelDAO modelDAO;
 
 	public IntegrationTestBase() {
 		super();
@@ -18,4 +18,5 @@ public abstract class IntegrationTestBase {
 		modelDAO = new DFSModelDAOImpl(dataSource);
 
 	}
+	
 }

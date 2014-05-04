@@ -5,11 +5,11 @@ package rso.dfs.model;
  * */
 public class File {
 
-	private long id;
+	private Long id;
 
 	private String name;
 
-	private long size;
+	private Long size;
 
 	private FileStatus status;
 

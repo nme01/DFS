@@ -3,6 +3,8 @@ package rso.dfs.model.dao.psql;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -57,7 +59,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public File fetchFileById(int fileId) {
+	public File fetchFileById(Long fileId) {
 		final String query = "select id, name, size, status from files where id=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { fileId }, new FileRowMapper());
 
@@ -68,6 +70,12 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		final String query = "select id, name, size, status from files where name=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { fileName }, new FileRowMapper());
 
+	}
+
+	@Override
+	public Server fetchServerByIp(String ip) {
+		final String query = "select ip, role, memory, last_connection from servers where ip=?";
+		return getJdbcTemplate().queryForObject(query, new Object[] { ip }, new ServerRowMapper());
 	}
 
 	@Override
@@ -85,7 +93,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public long saveFile(final File file) {
+	public Long saveFile(final File file) {
 		final String query = "insert into files (name, size, status) values(?, ?, ?)";
 
 		KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -106,15 +114,15 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public void saveFileOnServer(FileOnServer fileOnServer) {
-		final String query = "insert into files_on_servers (file_id, sever_ip) values(?, ?)";
-		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerIp() });
+		final String query = "insert into files_on_servers (file_id, server_ip, priority) values(?, ?, ?)";
+		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerIp(), fileOnServer.getPriority() });
 
 	}
 
 	@Override
 	public void saveServer(Server server) {
-		final String query = "insert into servers (ip, role, memory, last_connection) values(?, ?,?,?)";
-		getJdbcTemplate().update(query, new Object[] { server.getIp(), server.getRole().getCode(), server.getLastConnection() });
+		final String query = "insert into servers (ip, role, memory, last_connection) values(?,?,?,?)";
+		getJdbcTemplate().update(query, new Object[] { server.getIp(), server.getRole().getCode(), server.getMemory(), new Timestamp(server.getLastConnection().getMillis()) });
 
 	}
 

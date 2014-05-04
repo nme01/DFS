@@ -1,6 +1,5 @@
 package rso.dfs.model.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import rso.dfs.model.File;
@@ -25,15 +24,17 @@ public interface DFSModelDAO {
 
 	public int deleteFileOnServer(FileOnServer fileOnServer);
 
-	public File fetchFileById(int FileId);
+	public File fetchFileById(Long fileId);
 
 	public File fetchFileByFileName(String fileName);
 
+	public Server fetchServerByIp(String ip);
+	
 	public List<Server> fetchServersByRole(ServerRole role);
-
+	
 	public List<Server> fetchServersByFileId(long fileId);
 
-	public long saveFile(File file);
+	public Long saveFile(File file);
 
 	public void saveFileOnServer(FileOnServer fileOnServer);
 
