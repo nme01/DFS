@@ -1,0 +1,139 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>rso</groupId>
+	<artifactId>dfs-thrift</artifactId>
+	<packaging>jar</packaging>
+	<version>0.1</version>
+	<name>RSO - Apache Thrift Generated Files</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<lombok-version>0.12.0</lombok-version>
+		<junit-version>4.11</junit-version>
+		<spring-version>3.2.4.RELEASE</spring-version>
+		<slf4j-version>1.7.5</slf4j-version>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<package.output.dir>dist</package.output.dir>
+		
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.thrift</groupId>
+			<artifactId>libthrift</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<pde>false</pde>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+
+					<outputDirectory>${package.output.dir}/lib</outputDirectory>
+					<includes>
+						<include>rso/**/*</include>
+					</includes>
+
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${package.output.dir}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<includeScope>runtime</includeScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${package.output.dir}</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+
+					<!-- maven-dependency-plugin (goals “copy-dependencies”, “unpack”) is 
+						not supported by m2e -->
+					<!-- This is a problem of M2E for Eclipse M2E plugin execution not covered. -->
+
+					<!-- To solve this problem, all you got to do is to map the lifecycle 
+						it doesn't recognize and instruct M2E to execute it. -->
+
+					<!-- You should add this after your plugins, inside the build. This 
+						will remove the error and make M2E recognize the goal copy-depencies of maven-dependency-plugin 
+						and make the POM work as expected, copying dependencies to folder every time 
+						Eclipse build it. If you just want to ignore the error, then you change <execute 
+						/> for <ignore />. No need for enclosing your maven-dependency-plugin into 
+						pluginManagement, as suggested before. -->
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[2.0,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
