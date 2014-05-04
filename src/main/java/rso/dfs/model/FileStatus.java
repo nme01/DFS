@@ -32,7 +32,7 @@ public enum FileStatus {
 	 */
 	static public FileStatus getFileStatus(String code) {
 		for (FileStatus fs : FileStatus.values())
-			if (code.equals(fs))
+			if (code.equals(fs.getCode()))
 				return fs;
 		return null;
 	};

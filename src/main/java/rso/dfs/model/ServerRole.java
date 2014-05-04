@@ -31,7 +31,7 @@ public enum ServerRole {
 	 */
 	static public ServerRole getServerRole(String code) {
 		for (ServerRole sr : ServerRole.values())
-			if (code.equals(sr))
+			if (code.equals(sr.getCode()))
 				return sr;
 		return null;
 	}
