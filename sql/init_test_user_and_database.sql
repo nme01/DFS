@@ -1,3 +1,3 @@
 
-CREATE USER test_rso_dfs WITH PASSWORD 'test_rso_dfs11';
-CREATE DATABASE test_rso_dfs OWNER test_rso_dfs;
+CREATE USER test_rsodfs WITH PASSWORD 'test_rsodfs11';
+CREATE DATABASE test_rsodfs OWNER test_rsodfs;

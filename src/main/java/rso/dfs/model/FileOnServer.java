@@ -7,7 +7,7 @@ public class FileOnServer {
 
 	private long fileId;
 
-	private String serverIp;
+	private Long serverId;
 
 	private Long priority;
 
@@ -19,12 +19,12 @@ public class FileOnServer {
 		this.fileId = fileId;
 	}
 
-	public String getServerIp() {
-		return serverIp;
+	public Long getServerId() {
+		return serverId;
 	}
 
-	public void setServerIp(String serverIp) {
-		this.serverIp = serverIp;
+	public void setServerId(Long serverId) {
+		this.serverId = serverId;
 	}
 
 	public Long getPriority() {

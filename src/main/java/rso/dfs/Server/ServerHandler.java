@@ -9,7 +9,6 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.thrift.TException;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import rso.dfs.ServerRole;
 import rso.dfs.dbManager.DbManager;
-import rso.dfs.dummy.generated.NamingService;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -31,30 +29,49 @@ import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.SystemStatus;
-import rso.dfs.model.*;
+import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Server;
 import rso.dfs.model.dao.DFSModelDAO;
-import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSDataSource;
+import rso.dfs.model.dao.psql.DFSModelDAOImpl;
+import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.server.handler.StorageHandler;
 
+
+/**
+ * @author Adam Papros <adam.papros@gmail.com>
+ * @author Mateusz Statkiewicz
+ * */
 public class ServerHandler implements Service.Iface {
 
-
 	final static Logger log = LoggerFactory.getLogger(ServerHandler.class);
+
+	/**
+	 * This server.
+	 * TODO : provide better naming... :(
+	 * */
+	private Server me;
+	
+	/**
+	 * Provides storage operations.
+	 * */
+	private StorageHandler storageHandler;
 
 	private DbManager dbManager;
 	private CoreStatus coreStatus;
 	private DFSModelDAO modelDAO;
-	
-	public ServerHandler(){
-		dbManager =  new DbManager();
-		modelDAO = new DFSModelDAOImpl(new DFSDataSource());
-		
+
+	public ServerHandler(Server me) {
+		this(new DbManager(), me, new DFSModelDAOImpl(new DFSDataSource()));
+
 	}
-	
-	public ServerHandler(DbManager dbm){
+
+	public ServerHandler(DbManager dbm, Server me, DFSModelDAO modelDAO) {
+		this.me = me;
 		this.dbManager = dbm;
-		modelDAO = new DFSModelDAOImpl(new DFSDataSource());
-		
+		modelDAO = modelDAO;
+		storageHandler = new FileStorageHandler();
+
 	}
 
 	@Override
@@ -79,7 +96,7 @@ public class ServerHandler implements Service.Iface {
 				{
 				FileOnServer fileOnServer = new FileOnServer();
 				fileOnServer.setFileId(fileId);
-				fileOnServer.setServerIp(server.getIp());
+				fileOnServer.setServerId(server.getId());
 				//fileOnServer.setPriority(0);
 				modelDAO.saveFileOnServer(fileOnServer);
 				ids.remove(fileId);
@@ -269,11 +286,28 @@ public class ServerHandler implements Service.Iface {
 		return null;
 	}
 
+	/**
+	 * Dummy version sending whole file
+	 * 
+	 * @return null - when whole file was sent (filePartDescription.getOffset is
+	 *         equal to file size.
+	 * */
 	@Override
-	public FilePart getFileFromSlave(FilePartDescription filePartDescription)
-			throws TException {
-		// TODO Auto-generated method stub
-		return null;
+	public FilePart getFileFromSlave(FilePartDescription filePartDescription) throws TException {
+		if (me.getRole() == rso.dfs.model.ServerRole.MASTER) {
+			return null;
+		}
+
+		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId());
+		if (filePartDescription.getOffset() == dataToSend.length) {
+			return null;
+		}
+
+		// assembly filePart
+		FilePart filePart = new FilePart();
+		filePart.setFileId(filePartDescription.getFileId());
+		filePart.setData(dataToSend);
+		return filePart;
 	}
 
 }

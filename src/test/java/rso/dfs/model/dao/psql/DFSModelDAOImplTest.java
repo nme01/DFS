@@ -87,7 +87,7 @@ public class DFSModelDAOImplTest extends IntegrationTestBase {
 
 		FileOnServer fileOnServer = new FileOnServer();
 		fileOnServer.setFileId(fileId);
-		fileOnServer.setServerIp(server.getIp());
+		fileOnServer.setServerId(server.getId());
 		fileOnServer.setPriority(123l);
 
 		modelDAO.saveFileOnServer(fileOnServer);

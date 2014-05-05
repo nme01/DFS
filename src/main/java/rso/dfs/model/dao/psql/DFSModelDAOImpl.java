@@ -46,15 +46,15 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public int deleteServer(Server server) {
-		final String query = "delete from servers where ip = ?";
-		return getJdbcTemplate().update(query, new Object[] { server.getIp() });
+		final String query = "delete from servers where id = ?";
+		return getJdbcTemplate().update(query, new Object[] { server.getId() });
 
 	}
 
 	@Override
 	public int deleteFileOnServer(FileOnServer fileOnServer) {
-		final String query = "delete from files_on_servers where file_id = ? and server_ip = ?";
-		return getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerIp() });
+		final String query = "delete from files_on_servers where file_id = ? and server_id = ?";
+		return getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId() });
 
 	}
 
@@ -115,7 +115,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public void saveFileOnServer(FileOnServer fileOnServer) {
 		final String query = "insert into files_on_servers (file_id, server_ip, priority) values(?, ?, ?)";
-		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerIp(), fileOnServer.getPriority() });
+		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId(), fileOnServer.getPriority() });
 
 	}
 

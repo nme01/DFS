@@ -11,11 +11,12 @@ create index pk_files on files (id);
 create unique index uq_files on files (name);
 
 create table servers (
+	id bigserial not null,
 	ip text not null,
 	role char(1),
 	memory bigint not null,
 	last_connection timestamp not null,
-	primary key (ip)
+	primary key (id)
 );
 alter table servers add constraint servers_role_constraint check (role = 'M' or role = 'H' or  role='L');
 
@@ -23,15 +24,15 @@ create index pk_servers on servers (ip);
 
 create table files_on_servers (
 	file_id bigint not null,
-	server_ip text not null,
+	server_id bigint not null,
 	priority int not null,
-	primary key (file_id, server_ip),
-	foreign key (server_ip) references servers(ip),
+	primary key (file_id, server_id),
+	foreign key (server_id) references servers(id),
 	foreign key (file_id) references files(id)
 );
 
-create index pk_filesonservers on files_on_servers (file_id, server_ip);
-create index fk_filesonservers on files_on_servers (server_ip);
+create index pk_filesonservers on files_on_servers (file_id, server_id);
+create index fk_filesonservers on files_on_servers (server_id);
 
 create table version (
 	log bigserial not null
