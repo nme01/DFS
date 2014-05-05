@@ -16,7 +16,7 @@ public class FilesOnServersRowMapper implements ParameterizedRowMapper<FileOnSer
 	public FileOnServer mapRow(ResultSet rs, int rowNum) throws SQLException {
 		FileOnServer fileOnServer = new FileOnServer();
 		fileOnServer.setFileId(rs.getLong("file_id"));
-		fileOnServer.setServerIp(rs.getString("server_ip"));
+		fileOnServer.setServerId(rs.getLong("server_id"));
 		fileOnServer.setPriority(rs.getLong("priority"));
 		return fileOnServer;
 	}

@@ -7,6 +7,8 @@ import org.joda.time.DateTime;
  * */
 public class Server {
 
+	private Long id;
+	
 	private String ip;
 
 	private ServerRole role;
@@ -14,6 +16,14 @@ public class Server {
 	private long memory;
 
 	private DateTime lastConnection;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getIp() {
 		return ip;
@@ -52,4 +62,10 @@ public class Server {
 		Server s = (Server) obj;
 		return this.ip.equals(s.getIp());
 	}
+
+	@Override
+	public String toString() {
+		return "Server [ip=" + ip + ", role=" + role + ", memory=" + memory + ", lastConnection=" + lastConnection + "]";
+	}
+
 }

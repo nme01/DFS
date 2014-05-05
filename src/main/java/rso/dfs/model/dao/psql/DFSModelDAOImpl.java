@@ -46,15 +46,15 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public int deleteServer(Server server) {
-		final String query = "delete from servers where ip = ?";
-		return getJdbcTemplate().update(query, new Object[] { server.getIp() });
+		final String query = "delete from servers where id = ?";
+		return getJdbcTemplate().update(query, new Object[] { server.getId() });
 
 	}
 
 	@Override
 	public int deleteFileOnServer(FileOnServer fileOnServer) {
-		final String query = "delete from files_on_servers where file_id = ? and server_ip = ?";
-		return getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerIp() });
+		final String query = "delete from files_on_servers where file_id = ? and server_id = ?";
+		return getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId() });
 
 	}
 
@@ -74,20 +74,20 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public Server fetchServerByIp(String ip) {
-		final String query = "select ip, role, memory, last_connection from servers where ip=?";
+		final String query = "select id, ip, role, memory, last_connection from servers where ip=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { ip }, new ServerRowMapper());
 	}
 
 	@Override
 	public List<Server> fetchServersByRole(ServerRole role) {
-		final String query = "select ip, role, memory, last_connection from servers where role=?";
+		final String query = "select id, ip, role, memory, last_connection from servers where role=?";
 		return getJdbcTemplate().query(query, new Object[] { role.getCode() }, new ServerRowMapper());
 	}
 
 	@Override
 	public List<Server> fetchServersByFileId(long fileId) {
 		// TODO implement JOIN
-		final String query = "select ip, role, memory, last_connection from servers , files_on_servers where files_on_servers.server_ip= servers.ip and files_on_servers.file_id = ?";
+		final String query = "select id, ip, role, memory, last_connection from servers , files_on_servers where files_on_servers.server_id= servers.id and files_on_servers.file_id = ?";
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
 	}
@@ -114,16 +114,30 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public void saveFileOnServer(FileOnServer fileOnServer) {
-		final String query = "insert into files_on_servers (file_id, server_ip, priority) values(?, ?, ?)";
-		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerIp(), fileOnServer.getPriority() });
+		final String query = "insert into files_on_servers (file_id, server_id, priority) values(?, ?, ?)";
+		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId(), fileOnServer.getPriority() });
 
 	}
 
 	@Override
-	public void saveServer(Server server) {
+	public Long saveServer(final Server server) {
 		final String query = "insert into servers (ip, role, memory, last_connection) values(?,?,?,?)";
-		getJdbcTemplate().update(query, new Object[] { server.getIp(), server.getRole().getCode(), server.getMemory(), new Timestamp(server.getLastConnection().getMillis()) });
 
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		getJdbcTemplate().update(new PreparedStatementCreator() {
+
+			@Override
+			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				PreparedStatement ps = connection.prepareStatement(query, new String[] { "id" });
+				ps.setString(1, server.getIp());
+				ps.setString(2, server.getRole().getCode());
+				ps.setLong(3, server.getMemory());
+				ps.setTimestamp(4, new Timestamp(server.getLastConnection().getMillis()));
+
+				return ps;
+			}
+		}, keyHolder);
+		return keyHolder.getKey().longValue();
 	}
 
 	@Override

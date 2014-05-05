@@ -12,9 +12,9 @@ public abstract class IntegrationTestBase {
 	public IntegrationTestBase() {
 		super();
 		dataSource = new DFSDataSource();
-		dataSource.setPassword("test_rso_dfs11");
-		dataSource.setUrl("jdbc:postgresql://localhost:5432/test_rso_dfs");
-		dataSource.setUsername("test_rso_dfs");
+		dataSource.setPassword("test_rsodfs11");
+		dataSource.setUrl("jdbc:postgresql://localhost:5432/test_rsodfs");
+		dataSource.setUsername("test_rsodfs");
 		modelDAO = new DFSModelDAOImpl(dataSource);
 
 	}
