@@ -1,4 +1,4 @@
-package rso.dfs.server;
+package rso.dfs.Server;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;

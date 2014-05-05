@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.model.ServerRole;
+import rso.dfs.Server.handler.FileStorageHandler;
+import rso.dfs.Server.handler.StorageHandler;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -62,6 +64,8 @@ public class ServerHandler implements Service.Iface {
 
 	private CoreStatus coreStatus;
 	private DFSModelDAO modelDAO;
+	
+	private StorageHandler storageHandler;
 
 	public ServerHandler(Server me) {
 		this(me, new DFSModelDAOImpl(new DFSDataSource()));
@@ -72,7 +76,7 @@ public class ServerHandler implements Service.Iface {
 		this.me = me;
 		this.modelDAO = modelDAO;
 		repository = new DFSRepositoryImpl();
-
+		this.storageHandler = new FileStorageHandler();
 	}
 
 	@Override
@@ -155,8 +159,7 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void removeFileSlave(int fileID) throws TException {
-		File file = new File("/tmp/"+fileID);
-		file.delete();
+		storageHandler.deleteFile(fileID);
 	}
 
 	/**
