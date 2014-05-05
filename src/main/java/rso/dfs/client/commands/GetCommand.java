@@ -1,9 +1,17 @@
 package rso.dfs.client.commands;
 
+import java.io.File;
+
+import rso.dfs.client.handlers.GetHandler;
+
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class GetCommand extends SimpleClientAction {
+public class GetCommand extends ClientActionBase {
+
+	public GetCommand() {
+	}
+
 	@Override
 	public String getCommandName() {
 		return "get";
@@ -15,9 +23,25 @@ public class GetCommand extends SimpleClientAction {
 	}
 
 	@Override
-	public void performCommand() {
-		// TODO Auto-generated method stub
+	public void performCommand(String line) throws Exception {
+		String filePath = assemblyFileName(line);
 
+		GetHandler handler = new GetHandler(masterIpAddress);
+		try {
+			handler.performGet(filePath);
+		} catch (Exception e) {
+			
+		}
+	
+	}
+
+	private String assemblyFileName(final String line) {
+		String[] tokens = line.split(" ");
+		if (tokens.length != 2) {
+			// raise error
+		}
+		File file = new File(tokens[1]);
+		return file.getAbsolutePath();
 	}
 
 }

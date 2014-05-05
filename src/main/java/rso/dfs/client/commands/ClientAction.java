@@ -9,8 +9,8 @@ public interface ClientAction {
 
 	public String getHelp();
 
-	public void performCommand();
-	
+	public void performCommand(String line) throws Exception;
+
 	public boolean correspondsToString(String s);
-		
+
 }

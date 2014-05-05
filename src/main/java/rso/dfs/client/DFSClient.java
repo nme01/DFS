@@ -71,7 +71,12 @@ public class DFSClient {
 			boolean commandPerformed = false;
 			for (ClientAction clientAction : clientActionList) {
 				if (clientAction.correspondsToString(line)) {
-					clientAction.performCommand();
+					try {
+						clientAction.performCommand(line);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					commandPerformed = true;
 				}
 			}

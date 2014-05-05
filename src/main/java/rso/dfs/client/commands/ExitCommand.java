@@ -3,7 +3,7 @@ package rso.dfs.client.commands;
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class ExitCommand extends SimpleClientAction {
+public class ExitCommand extends ClientActionBase {
 
 	@Override
 	public String getCommandName() {
@@ -16,7 +16,7 @@ public class ExitCommand extends SimpleClientAction {
 	}
 
 	@Override
-	public void performCommand() {
+	public void performCommand(String line) {
 		System.out.println("Bye");
 		System.exit(0);
 

@@ -3,7 +3,9 @@ package rso.dfs.client.commands;
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public abstract class SimpleClientAction implements ClientAction {
+public abstract class ClientActionBase implements ClientAction {
+
+	protected String masterIpAddress;
 
 	@Override
 	public boolean correspondsToString(String s) {
