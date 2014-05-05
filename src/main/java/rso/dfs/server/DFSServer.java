@@ -47,7 +47,7 @@ public class DFSServer {
 			log.debug("Starting Naming server...");
 			server.serve();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.toString());
 		}
 	}
 }

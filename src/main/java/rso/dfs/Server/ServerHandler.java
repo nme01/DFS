@@ -17,6 +17,8 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rso.dfs.ServerRole;
 import rso.dfs.dbManager.DbManager;
@@ -35,6 +37,9 @@ import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSDataSource;
 
 public class ServerHandler implements Service.Iface {
+
+
+	final static Logger log = LoggerFactory.getLogger(ServerHandler.class);
 
 	private DbManager dbManager;
 	private CoreStatus coreStatus;
