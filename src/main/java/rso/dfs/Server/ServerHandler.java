@@ -1,4 +1,4 @@
-package rso.dfs.server;
+package rso.dfs.Server;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,11 +17,11 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rso.dfs.ServerRole;
-import rso.dfs.dbManager.DbManager;
+import rso.dfs.model.ServerRole;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -29,16 +29,16 @@ import rso.dfs.generated.GetFileParams;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
+import rso.dfs.generated.Service.Client;
 import rso.dfs.generated.SystemStatus;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.FileStatus;
 import rso.dfs.model.Server;
 import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSDataSource;
 import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
-import rso.dfs.server.handler.FileStorageHandler;
-import rso.dfs.server.handler.StorageHandler;
 import rso.dfs.utils.IpConverter;
 
 /**
@@ -57,24 +57,20 @@ public class ServerHandler implements Service.Iface {
 	/**
 	 * Provides storage operations.
 	 * */
-	private StorageHandler storageHandler;
 
 	private DFSRepository repository;
 
-	private DbManager dbManager;
 	private CoreStatus coreStatus;
 	private DFSModelDAO modelDAO;
 
 	public ServerHandler(Server me) {
-		this(new DbManager(), me, new DFSModelDAOImpl(new DFSDataSource()));
+		this(me, new DFSModelDAOImpl(new DFSDataSource()));
 
 	}
 
-	public ServerHandler(DbManager dbm, Server me, DFSModelDAO modelDAO) {
+	public ServerHandler(Server me, DFSModelDAO modelDAO) {
 		this.me = me;
-		this.dbManager = dbm;
-		modelDAO = modelDAO;
-		storageHandler = new FileStorageHandler();
+		this.modelDAO = modelDAO;
 		repository = new DFSRepositoryImpl();
 
 	}
@@ -159,8 +155,8 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void removeFileSlave(int fileID) throws TException {
-		// TODO Auto-generated method stub
-
+		File file = new File("/tmp/"+fileID);
+		file.delete();
 	}
 
 	/**
@@ -181,7 +177,8 @@ public class ServerHandler implements Service.Iface {
 		getFileParams.setFileId((int) file.getId());
 
 		try {
-			getFileParams.setSlaveIp(IpConverter.getIntegerIpformString(slave.getIp()));
+			getFileParams.setSlaveIp(IpConverter.getIntegerIpformString(slave
+					.getIp()));
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -206,31 +203,42 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public PutFileParams putFile(String filepath, long size) throws TException {
-		ArrayList<Pair<InetAddress, Long>> slaves = (ArrayList<Pair<InetAddress, Long>>) dbManager.getServersByRoleMemory(ServerRole.Slave);
+		List<Server> slaves = modelDAO.fetchServersByRole(ServerRole.SLAVE);
 		Collections.shuffle(slaves);
-		int slaveAddress = 0;
-		for (Pair<InetAddress, Long> server : slaves) {
-			// TODO check if there is space on slave
-			if (server.getRight() > size) {
-				slaveAddress = ByteBuffer.wrap(server.getLeft().getAddress()).getInt();
-				break;
+		String slaveAddress = null;
+		for (Server server : slaves) {
+			long filesMemory = 0;
+			for (rso.dfs.model.File file : modelDAO.fetchFilesOnServer(server)) {
+				filesMemory += file.getSize();
 			}
+			if (server.getMemory() - filesMemory <= size)
+				continue;
+
+			slaveAddress = server.getIp();
+			break;
 		}
+
 		PutFileParams putFileParams = new PutFileParams();
-		if (slaveAddress == 0) {
+		if (slaveAddress == null) {
 			putFileParams.setCanPut(false);
-			return putFileParams;
+		} else {
+			rso.dfs.model.File file = new rso.dfs.model.File();
+			file.setName(filepath);
+			file.setSize(size);
+			file.setStatus(FileStatus.UPLOAD);
+			Long fileid = modelDAO.saveFile(file);
+
+			putFileParams.setCanPut(true);
+			putFileParams.setSlaveIp(IpConverter
+					.getIntegerIpformString(slaveAddress));
+			putFileParams.setFileId(fileid);
 		}
-		int newFileId = dbManager.addNewFile(filepath, size);
-		// TODO put fileId, change PutFileParams class
-		putFileParams.setCanPut(true);
-		putFileParams.setSlaveIp(slaveAddress);
-		// TODO receiveFile to slave1 and getFile to slave2?
 		return putFileParams;
 	}
 
 	@Override
-	public PutFileParams putFileFailure(String filepath, long size) throws TException {
+	public PutFileParams putFileFailure(String filepath, long size)
+			throws TException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -243,11 +251,39 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public boolean removeFile(String filepath) throws TException {
-		int fileId = dbManager.getFileId(filepath); // TODO: not long?
-		dbManager.deleteFile(fileId);
-		ArrayList<InetAddress> servers = (ArrayList<InetAddress>) dbManager.getServersByFile(fileId);
-		// TODO: removeFileSlave on every slave
-		return false;
+		final rso.dfs.model.File file = modelDAO.fetchFileByFileName(filepath);
+		file.setStatus(FileStatus.TO_DELETE);
+		modelDAO.updateFile(file);
+		
+		Thread thread = new Thread(new Runnable() {
+			public void run() {
+				List<Server> servers = modelDAO.fetchServersByFileId(file
+						.getId());
+				for (Server server : servers) {
+					Service.Client client = new Client(
+							getTprotocol(server.getIp()));
+					try {
+						client.removeFileSlave((int) file.getId());
+					} catch (TException e1) {
+						e1.printStackTrace();
+					}
+					FileOnServer fos = new FileOnServer();
+					fos.setFileId(file.getId());
+					try {
+						fos.setServerId((long) IpConverter
+								.getIntegerIpformString(server.getIp()));
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
+					}
+					
+					modelDAO.deleteFileOnServer(fos);
+				}
+
+				modelDAO.deleteFile(file);
+			}
+		});
+		thread.start();
+		return true;
 	}
 
 	/**
@@ -258,7 +294,8 @@ public class ServerHandler implements Service.Iface {
 	 * @return FilePartDescription
 	 */
 	@Override
-	public FilePartDescription sendFileToSlaveRequest(long fileId) throws TException {
+	public FilePartDescription sendFileToSlaveRequest(long fileId)
+			throws TException {
 
 		File file = new File("/tmp/" + Long.toString(fileId));
 		try {
@@ -276,14 +313,18 @@ public class ServerHandler implements Service.Iface {
 	 * @return FilePartDescription
 	 */
 	@Override
-	public FilePartDescription sendFilePartToSlave(FilePart filePart) throws TException {
+	public FilePartDescription sendFilePartToSlave(FilePart filePart)
+			throws TException {
 		try {
 			// TODO: check if the filePart is from the expected client
-			final FileOutputStream fis = new FileOutputStream("/tmp/" + Integer.toString(filePart.fileId), true);
+			final FileOutputStream fis = new FileOutputStream("/tmp/"
+					+ Integer.toString(filePart.fileId), true);
 			FileChannel fc = fis.getChannel();
 			ByteBuffer[] bba = { filePart.bufferForData() };
 
-			if (fc.write(bba, (int) (filePart.getOffset()), filePart.bufferForData().capacity()) != filePart.bufferForData().capacity()) {
+			if (fc.write(bba, (int) (filePart.getOffset()), filePart
+					.bufferForData().capacity()) != filePart.bufferForData()
+					.capacity()) {
 				// TODO: find a way to properly handle exceptions
 			}
 
@@ -303,13 +344,15 @@ public class ServerHandler implements Service.Iface {
 	 *         equal to file size.
 	 * */
 	@Override
-	public FilePart getFileFromSlave(FilePartDescription filePartDescription) throws TException {
-		
+	public FilePart getFileFromSlave(FilePartDescription filePartDescription)
+			throws TException {
+
 		if (me.getRole() == rso.dfs.model.ServerRole.MASTER) {
 			return null;
 		}
 
-		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId());
+		byte[] dataToSend = storageHandler.readFile(filePartDescription
+				.getFileId());
 		if (filePartDescription.getOffset() >= dataToSend.length) {
 			return null;
 		}
@@ -321,4 +364,15 @@ public class ServerHandler implements Service.Iface {
 		return filePart;
 	}
 
+	private TProtocol getTprotocol(String ip) {
+		TTransport transport;
+		transport = new TSocket(ip, 9090);
+		try {
+			transport.open();
+		} catch (TTransportException e) {
+			e.printStackTrace();
+		}
+		TProtocol protocol = new TBinaryProtocol(transport);
+		return protocol;
+	}
 }

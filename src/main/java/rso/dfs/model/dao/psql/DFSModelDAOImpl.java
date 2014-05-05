@@ -3,7 +3,6 @@ package rso.dfs.model.dao.psql;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -92,6 +91,13 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	}
 
+	@Override
+	public List<File> fetchFilesOnServer(Server server) {
+		final String query = "select id, name, size, status from files join files_on_servers on files_on_servers.file_id=file.id where files_on_servers.server_id=?";
+		return getJdbcTemplate().query(query, new Object[] { server.getId() }, new FileRowMapper());
+	}
+	
+		
 	@Override
 	public Long saveFile(final File file) {
 		final String query = "insert into files (name, size, status) values(?, ?, ?)";

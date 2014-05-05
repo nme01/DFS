@@ -32,6 +32,8 @@ public interface DFSModelDAO {
 	
 	public List<Server> fetchServersByRole(ServerRole role);
 	
+	public List<File> fetchFilesOnServer(Server server);
+	
 	public List<Server> fetchServersByFileId(long fileId);
 
 	public Long saveFile(File file);
