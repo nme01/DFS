@@ -5,7 +5,8 @@ package rso.dfs.client.commands;
  * */
 public abstract class ClientActionBase implements ClientAction {
 
-	protected String masterIpAddress;
+	// TODO : FIX THIS SHIT
+	protected String masterIpAddress = "localhost";
 
 	@Override
 	public boolean correspondsToString(String s) {

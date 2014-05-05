@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rso.dfs.model.File;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
@@ -18,6 +19,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
 
 	private DFSModelDAO modelDAO;
+	
 	private DFSDataSource dataSource;
 
 	public DFSRepositoryImpl() {
@@ -43,5 +45,25 @@ public class DFSRepositoryImpl implements DFSRepository {
 	public void saveMaster(Server server) {
 		log.debug("Saving master:" + server.toString());
 		modelDAO.saveServer(server);
+	}
+
+	@Override
+	public File getFileByFileName(String fileName) {
+		log.debug("Fetching file: fileName=" + fileName);
+		return modelDAO.fetchFileByFileName(fileName);
+	}
+
+	@Override
+	public Server getSlaveByFile(File file) {
+		log.debug("Fetching servers with file:" + file);
+
+		List<Server> servers = modelDAO.fetchServersByFileId(file.getId());
+
+		// TODO :choose server !
+		if (servers == null || servers.isEmpty()) {
+			// raise fatal error
+		}
+
+		return servers.get(0);
 	}
 }

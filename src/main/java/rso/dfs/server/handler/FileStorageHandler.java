@@ -1,5 +1,6 @@
 package rso.dfs.server.handler;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -39,7 +40,8 @@ public class FileStorageHandler implements StorageHandler {
 	}
 
 	private static String assemblyPath(long fileId) {
-		return prefix + FileSystems.getDefault().getSeparator() + fileId;
+		File file = new File(prefix + FileSystems.getDefault().getSeparator() + fileId);
+		return file.getAbsolutePath();
 	}
 
 }

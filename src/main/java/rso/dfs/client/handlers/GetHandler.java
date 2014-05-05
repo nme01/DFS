@@ -32,11 +32,13 @@ public class GetHandler extends HandlerBase {
 		GetFileParams getFileParams = null;
 
 		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSConstans.NAMING_SERVER_PORT_NUMBER)) {
-
+			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
 			getFileParams = serviceClient.getFile(filePath);
 
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		// assembly filePartDescription
@@ -46,7 +48,8 @@ public class GetHandler extends HandlerBase {
 
 		ArrayList<FilePart> fileParts = new ArrayList<>();
 
-		try (DFSTSocket dfstSocket = new DFSTSocket(IpConverter.getStringIpFromInteger(getFileParams.getSlaveIp()), DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+		try (DFSTSocket dfstSocket = new DFSTSocket("localhost", DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
 
@@ -60,13 +63,17 @@ public class GetHandler extends HandlerBase {
 					break;
 				}
 				offset += filePart.getData().length;
+				
 				fileParts.add(filePart);
 			}
 
+		}catch (Exception e){
+			e.printStackTrace();
 		}
 
 		byte[] fileBody = createFileBody(fileParts);
 
+		
 		saveFileBody(filePath, fileBody);
 
 	}
