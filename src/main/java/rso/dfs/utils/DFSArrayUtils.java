@@ -5,7 +5,7 @@ package rso.dfs.utils;
  * */
 public class DFSArrayUtils {
 
-	// change to generic
+	// TODO: change to generic
 	public static byte[] concat(byte[] a, byte[] b) {
 		byte[] result = new byte[a.length + b.length];
 
