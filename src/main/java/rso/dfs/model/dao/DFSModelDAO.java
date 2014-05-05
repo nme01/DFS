@@ -38,7 +38,7 @@ public interface DFSModelDAO {
 
 	public void saveFileOnServer(FileOnServer fileOnServer);
 
-	public void saveServer(Server server);
+	public Long saveServer(Server server);
 
 	public int updateFile(File file);
 

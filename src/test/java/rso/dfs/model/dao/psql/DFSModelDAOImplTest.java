@@ -58,10 +58,10 @@ public class DFSModelDAOImplTest extends IntegrationTestBase {
 
 		Server server = createTestServer();
 
-		modelDAO.saveServer(server);
+		Long serverId = modelDAO.saveServer(server);
 
 		Server fetchedServer = modelDAO.fetchServerByIp(server.getIp());
-
+		
 		Assert.assertEquals(server.getIp(), fetchedServer.getIp());
 		Assert.assertEquals(server.getMemory(), fetchedServer.getMemory());
 		Assert.assertEquals(server.getLastConnection(), fetchedServer.getLastConnection());
@@ -78,8 +78,10 @@ public class DFSModelDAOImplTest extends IntegrationTestBase {
 
 		Server server = createTestServer();
 
-		modelDAO.saveServer(server);
+		Long serverId = modelDAO.saveServer(server);
 
+		server.setId(serverId);
+		
 		File file = createTestFile();
 
 		Long fileId = modelDAO.saveFile(file);
