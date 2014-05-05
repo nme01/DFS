@@ -1,5 +1,6 @@
 package rso.dfs.model.dao;
 
+import rso.dfs.model.File;
 import rso.dfs.model.Server;
 
 /**
@@ -10,5 +11,9 @@ public interface DFSRepository {
 	public Server getMasterServer();
 
 	public void saveMaster(Server server);
+	
+	public File getFileByFileName(String fileName);
+
+	public Server getSlaveByFile(File file);
 	
 }

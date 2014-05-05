@@ -30,9 +30,9 @@ public class GetCommand extends ClientActionBase {
 		try {
 			handler.performGet(filePath);
 		} catch (Exception e) {
-			
+
 		}
-	
+
 	}
 
 	private String assemblyFileName(final String line) {
@@ -40,8 +40,7 @@ public class GetCommand extends ClientActionBase {
 		if (tokens.length != 2) {
 			// raise error
 		}
-		File file = new File(tokens[1]);
-		return file.getAbsolutePath();
+		return tokens[1];
 	}
 
 }
