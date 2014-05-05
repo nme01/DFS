@@ -1,4 +1,4 @@
-package rso.dfs.Server;
+package rso.dfs.server;
 
 import java.io.File;
 import java.io.FileOutputStream;

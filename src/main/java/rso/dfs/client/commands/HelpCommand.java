@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class HelpCommand extends SimpleClientAction {
+public class HelpCommand extends ClientActionBase {
 
 	private List<ClientAction> clientActionList;
 
@@ -24,7 +24,7 @@ public class HelpCommand extends SimpleClientAction {
 	}
 
 	@Override
-	public void performCommand() {
+	public void performCommand(String line) {
 		System.out.println(getHelpInformation());
 
 	}
