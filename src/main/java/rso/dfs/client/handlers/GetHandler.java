@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -23,15 +22,15 @@ import rso.dfs.utils.IpConverter;
  * */
 public class GetHandler extends HandlerBase {
 
-	public GetHandler(String masterIpAddress, int defaultPortNumber) {
-		super(masterIpAddress, defaultPortNumber);
+	public GetHandler(String masterIpAddress) {
+		super(masterIpAddress);
 	}
 
 	public void performGet(String filePath) throws Exception {
 
 		GetFileParams getFileParams = null;
 
-		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, defaultPortNumber)) {
+		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress)) {
 
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
@@ -46,7 +45,7 @@ public class GetHandler extends HandlerBase {
 
 		ArrayList<FilePart> fileParts = new ArrayList<>();
 
-		try (DFSTSocket dfstSocket = new DFSTSocket(IpConverter.getStringIpFromInteger(getFileParams.getSlaveIp()), defaultPortNumber)) {
+		try (DFSTSocket dfstSocket = new DFSTSocket(IpConverter.getStringIpFromInteger(getFileParams.getSlaveIp()))) {
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
 

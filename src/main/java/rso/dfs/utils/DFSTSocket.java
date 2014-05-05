@@ -2,18 +2,20 @@ package rso.dfs.utils;
 
 import org.apache.thrift.transport.TSocket;
 
+import rso.dfs.commons.DFSConstans;
+
 /**
  * @author Adam Papros <adam.papros@gmial.com>
  * */
 public class DFSTSocket extends TSocket implements AutoCloseable {
 
-	public DFSTSocket(String host, int port) {
-		super(host, port);
+	public DFSTSocket(String host) {
+		super(host, DFSConstans.SERVICE_PORT_NUMBER);
 
 	}
 
-	public DFSTSocket(String host, int port, int timeout) {
-		super(host, port, timeout);
+	public DFSTSocket(String host, int timeout) {
+		super(host, DFSConstans.SERVICE_PORT_NUMBER, timeout);
 	}
 
 	@Override

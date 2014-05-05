@@ -7,14 +7,9 @@ public abstract class HandlerBase {
 
 	protected String masterIpAddress;
 
-	protected final int defaultPortNumber;
-
-	protected final int defaultOffset = 1000;
-	
-	public HandlerBase(String masterIpAddress, int defaultPortNumber) {
+	public HandlerBase(String masterIpAddress) {
 		super();
 		this.masterIpAddress = masterIpAddress;
-		this.defaultPortNumber = defaultPortNumber;
 	}
 
 }

@@ -26,12 +26,13 @@ public class GetCommand extends ClientActionBase {
 	public void performCommand(String line) throws Exception {
 		String filePath = assemblyFileName(line);
 
-		GetHandler handler = new GetHandler(masterIpAddress, defaultPortNumber);
+		GetHandler handler = new GetHandler(masterIpAddress);
 		try {
 			handler.performGet(filePath);
 		} catch (Exception e) {
 			
 		}
+	
 	}
 
 	private String assemblyFileName(final String line) {

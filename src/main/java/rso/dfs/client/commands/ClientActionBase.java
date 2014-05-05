@@ -7,8 +7,6 @@ public abstract class ClientActionBase implements ClientAction {
 
 	protected String masterIpAddress;
 
-	protected int defaultPortNumber;
-
 	@Override
 	public boolean correspondsToString(String s) {
 		return s.contains(getCommandName());
