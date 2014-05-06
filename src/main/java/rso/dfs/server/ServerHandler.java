@@ -223,6 +223,7 @@ public class ServerHandler implements Service.Iface {
 		}
 
 		PutFileParams putFileParams = new PutFileParams();
+		putFileParams.setCanPut(true);
 		if (slaveAddress == null) {
 			putFileParams.setCanPut(false);
 		} else {
@@ -232,7 +233,7 @@ public class ServerHandler implements Service.Iface {
 				file.setSize(size);
 				file.setStatus(FileStatus.UPLOAD);
 				Long fileid = modelDAO.saveFile(file);
-				modelDAO.saveFileOnServer(new FileOnServer(fileid, slaveId));
+				modelDAO.saveFileOnServer(new FileOnServer(fileid, slaveId, 0));
 
 				putFileParams.setCanPut(true);
 				putFileParams.setSlaveIp(IpConverter

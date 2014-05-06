@@ -1,6 +1,8 @@
 package rso.dfs.client.handlers;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -34,7 +36,12 @@ public class PutHandler extends HandlerBase {
 		byte[] dataBuffer;
 		//long chunkSize = 0;
 		long offset = 0;
-
+		try {
+			File hm = new File(filePath);
+			if (!hm.canRead()) throw new IOException("File is unreachable!");
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
 		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSConstans.NAMING_SERVER_PORT_NUMBER)) {
 			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
