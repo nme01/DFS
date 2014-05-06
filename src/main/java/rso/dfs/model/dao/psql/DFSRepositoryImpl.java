@@ -55,7 +55,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 
 	@Override
 	public Server getSlaveByFile(File file) {
-		log.debug("Fetching servers with file:" + file);
+		log.debug("Fetching servers with file: " + file.getName());
 
 		List<Server> servers = modelDAO.fetchServersByFileId(file.getId());
 

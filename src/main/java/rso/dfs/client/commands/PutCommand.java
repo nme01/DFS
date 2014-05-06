@@ -22,7 +22,7 @@ public class PutCommand extends ClientActionBase {
 	@Override
 	public void performCommand(String line) {
 		// TODO Auto-generated method stub
-		String filePath = assemblyFileName(line);
+		String filePath = assembleFileName(line);
 		File thisFile = new File(filePath);
 		long fileSize = thisFile.length();
 		
@@ -34,7 +34,7 @@ public class PutCommand extends ClientActionBase {
 		}
 	}
 	
-	private String assemblyFileName(final String line) {
+	private String assembleFileName(final String line) {
 		String[] tokens = line.split(" ");
 		if (tokens.length != 2) {
 			// raise error
