@@ -16,6 +16,7 @@ import rso.dfs.client.commands.ExitCommand;
 import rso.dfs.client.commands.GetCommand;
 import rso.dfs.client.commands.HelpCommand;
 import rso.dfs.client.commands.PutCommand;
+import rso.dfs.client.commands.RemoveCommand;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
@@ -30,6 +31,7 @@ public class DFSClient {
 		clientActionList.add(new HelpCommand(clientActionList));
 		clientActionList.add(new GetCommand());
 		clientActionList.add(new PutCommand());
+		clientActionList.add(new RemoveCommand());
 		clientActionList.add(new ExitCommand());
 	}
 

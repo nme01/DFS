@@ -148,7 +148,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public int updateFile(File file) {
 		final String query = "update files set name=?, size=?, status=? where id=?";
-		return getJdbcTemplate().update(query, new Object[] { file.getName(), file.getSize(), file.getStatus(), file.getId() });
+		return getJdbcTemplate().update(query, new Object[] { file.getName(), file.getSize(), file.getStatus().getCode(), file.getId() });
 
 	}
 
