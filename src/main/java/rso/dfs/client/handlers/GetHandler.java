@@ -58,8 +58,7 @@ public class GetHandler extends HandlerBase {
 			while (true) {
 				filePartDescription.setOffset(offset);
 				filePart = serviceClient.getFileFromSlave(filePartDescription);
-				if (filePart == null) {
-					// wtf I am doing
+				if (filePart.getData().length == 0) {
 					break;
 				}
 				offset += filePart.getData().length;

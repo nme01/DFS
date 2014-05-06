@@ -1,4 +1,4 @@
-package rso.dfs.Server;
+package rso.dfs.server;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.model.ServerRole;
+import rso.dfs.dummy.server.StorageHandler;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -39,6 +40,7 @@ import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSDataSource;
 import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
+import rso.dfs.server.handler.FileStorageHandler;
 import rso.dfs.utils.IpConverter;
 
 /**
@@ -59,7 +61,7 @@ public class ServerHandler implements Service.Iface {
 	 * */
 
 	private DFSRepository repository;
-
+	private FileStorageHandler storageHandler;
 	private CoreStatus coreStatus;
 	private DFSModelDAO modelDAO;
 
@@ -71,6 +73,7 @@ public class ServerHandler implements Service.Iface {
 	public ServerHandler(Server me, DFSModelDAO modelDAO) {
 		this.me = me;
 		this.modelDAO = modelDAO;
+		this.storageHandler = new FileStorageHandler();
 		repository = new DFSRepositoryImpl();
 
 	}
@@ -105,7 +108,7 @@ public class ServerHandler implements Service.Iface {
 		}
 		TTransport transport;
 
-		transport = new TSocket("localhost", 9900); // skad wziac ipka i port?
+		transport = new TSocket("localhost", 9090); // skad wziac ipka i port?
 		transport.open();
 
 		TProtocol protocol = new TBinaryProtocol(transport);
@@ -180,7 +183,6 @@ public class ServerHandler implements Service.Iface {
 			getFileParams.setSlaveIp(IpConverter.getIntegerIpformString(slave
 					.getIp()));
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 
 		}
@@ -229,9 +231,13 @@ public class ServerHandler implements Service.Iface {
 			Long fileid = modelDAO.saveFile(file);
 
 			putFileParams.setCanPut(true);
-			putFileParams.setSlaveIp(IpConverter
-					.getIntegerIpformString(slaveAddress));
-			putFileParams.setFileId(fileid);
+			try {
+				putFileParams.setSlaveIp(IpConverter
+						.getIntegerIpformString(slaveAddress));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			//putFileParams.setFileId(fileid);
 		}
 		return putFileParams;
 	}
@@ -354,7 +360,10 @@ public class ServerHandler implements Service.Iface {
 		byte[] dataToSend = storageHandler.readFile(filePartDescription
 				.getFileId());
 		if (filePartDescription.getOffset() >= dataToSend.length) {
-			return null;
+			FilePart filePart = new FilePart();
+			filePart.setFileId(filePartDescription.getFileId());
+			filePart.setData(new byte[0]);
+			return filePart;
 		}
 
 		// assembly filePart
