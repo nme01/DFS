@@ -8,7 +8,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public class DFSDataSource extends DriverManagerDataSource {
 
 	public static final String driverClassName = "org.postgresql.Driver";
-	public static final String url = "jdbc:postgresql://localhost:5432/rsodfs";
+	public static final String url = "jdbc:postgresql://127.0.0.1:5432/rsodfs";
 	public static final String userName = "rsodfs";
 	public static final String password = "rsodfs11";
 

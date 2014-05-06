@@ -17,7 +17,7 @@ public class FileStorageHandler implements StorageHandler {
 
 	@Override
 	public byte[] readFile(long fileId) {
-		Path path = Paths.get(assemblyPath(fileId));
+		Path path = Paths.get(assemblePath(fileId));
 		byte[] bytes;
 		try {
 			bytes = Files.readAllBytes(path);
@@ -30,7 +30,7 @@ public class FileStorageHandler implements StorageHandler {
 
 	@Override
 	public void writeFile(long fileId, byte[] fileBody) {
-		Path path = Paths.get(assemblyPath(fileId));
+		Path path = Paths.get(assemblePath(fileId));
 		try {
 			Files.write(path, fileBody);
 		} catch (IOException e) {
@@ -39,9 +39,15 @@ public class FileStorageHandler implements StorageHandler {
 		}
 	}
 
-	private static String assemblyPath(long fileId) {
+	public static String assemblePath(long fileId) {
 		File file = new File(prefix + FileSystems.getDefault().getSeparator() + fileId);
 		return file.getAbsolutePath();
+	}
+
+	@Override
+	public void deleteFile(long fileId) {
+		File file = new File(prefix + FileSystems.getDefault().getSeparator() + fileId);
+		file.delete();
 	}
 
 }

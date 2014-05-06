@@ -55,7 +55,8 @@ struct GetFileParams
 struct PutFileParams
 {
     1:required bool canPut;
-    2:required IPType slaveIp;
+    2:required i32 fileId;
+    3:required IPType slaveIp;
 }
 
 service Service

@@ -10,6 +10,14 @@ public class FileOnServer {
 	private Long serverId;
 
 	private Long priority;
+	
+	public FileOnServer() {}
+	
+	public FileOnServer(long fid, long slid, long prio) {
+		fileId = fid;
+		serverId = slid;
+		priority = prio;
+	}
 
 	public long getFileId() {
 		return fileId;
