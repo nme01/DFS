@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -67,8 +68,17 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public File fetchFileByFileName(String fileName) {
 		final String query = "select id, name, size, status from files where name=?";
-		return getJdbcTemplate().queryForObject(query, new Object[] { fileName }, new FileRowMapper());
-
+		File result = null;
+		try
+		{
+			result = getJdbcTemplate().queryForObject(query, new Object[] { fileName }, new FileRowMapper());
+		}
+		catch (EmptyResultDataAccessException e)
+		{
+			//null file
+			logger.info("File " + fileName + " not found on server.");
+		}
+		return result;
 	}
 
 	@Override

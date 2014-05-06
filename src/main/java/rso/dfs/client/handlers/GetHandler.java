@@ -41,6 +41,13 @@ public class GetHandler extends HandlerBase {
 			e.printStackTrace();
 		}
 
+		//TODO: it's temporary handling of 'file not found case'
+		if(getFileParams.getFileId() < 0)
+		{
+			System.out.print("File not found!");
+			return;
+		}
+		
 		// assembly filePartDescription
 		FilePartDescription filePartDescription = new FilePartDescription();
 		filePartDescription.setFileId(getFileParams.getFileId());

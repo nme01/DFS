@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import rso.dfs.model.ServerRole;
 import rso.dfs.server.handler.FileStorageHandler;
 import rso.dfs.server.handler.StorageHandler;
+import rso.dfs.commons.DFSConstans;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -170,6 +171,11 @@ public class ServerHandler implements Service.Iface {
 	public GetFileParams getFile(String fileName) throws TException {
 		log.debug("getFile Invoked");
 		rso.dfs.model.File file = repository.getFileByFileName(fileName);
+		if(file == null)
+		{
+			//TODO: it's a temporary sign of 'file not found' case. Exception in da future.
+			return new GetFileParams(-1,0);
+		}
 
 		Server slave = repository.getSlaveByFile(file);
 
@@ -259,6 +265,14 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public boolean removeFile(String filepath) throws TException {
 		final rso.dfs.model.File file = modelDAO.fetchFileByFileName(filepath);
+		if(file == null)
+		{
+			/*TODO: result of false indicates unability to remove the file, 
+			 *   maybe exception should be thrown with description of special case? 
+			 */ 
+			return false;
+		}
+		
 		file.setStatus(FileStatus.TO_DELETE);
 		modelDAO.updateFile(file);
 		
@@ -268,7 +282,7 @@ public class ServerHandler implements Service.Iface {
 						.getId());
 				for (Server server : servers) {
 					Service.Client client = new Client(
-							getTprotocol(server.getIp()));
+							getTprotocol(server.getIp(),DFSConstans.STORAGE_SERVER_PORT_NUMBER));
 					try {
 						client.removeFileSlave((int) file.getId());
 					} catch (TException e1) {
@@ -282,7 +296,7 @@ public class ServerHandler implements Service.Iface {
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
-					
+					fos.setServerId((long)2); //TODO: server id != ip, fixed for test data
 					modelDAO.deleteFileOnServer(fos);
 				}
 
@@ -366,10 +380,14 @@ public class ServerHandler implements Service.Iface {
 		filePart.setData(dataToSend);
 		return filePart;
 	}
-
+	
 	private TProtocol getTprotocol(String ip) {
+		return getTprotocol(ip, 9090);
+	}
+
+	private TProtocol getTprotocol(String ip, int port) {
 		TTransport transport;
-		transport = new TSocket(ip, 9090);
+		transport = new TSocket(ip, port);
 		try {
 			transport.open();
 		} catch (TTransportException e) {

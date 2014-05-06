@@ -36,7 +36,7 @@ public class RemoveHandler extends HandlerBase {
 			boolean removeFileSuccess = serviceClient.removeFile(filePath);
 			if(!removeFileSuccess)
 			{
-				
+				System.out.print("File does not exist!");
 			}
 			
 		}catch (Exception e) {
