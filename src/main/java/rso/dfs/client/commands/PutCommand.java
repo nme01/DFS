@@ -30,7 +30,7 @@ public class PutCommand extends ClientActionBase {
 		try {
 			handler.performPut(filePath, fileSize);
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 	}
 	

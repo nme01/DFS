@@ -169,7 +169,7 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public GetFileParams getFile(String fileName) throws TException {
-		log.debug("getFile Invoked");
+		log.debug("getFile Invoked on file " + fileName);
 		rso.dfs.model.File file = repository.getFileByFileName(fileName);
 		if(file == null)
 		{
@@ -208,6 +208,7 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public PutFileParams putFile(String filepath, long size) throws TException {
+		log.info("Master received put file request for file " + filepath);
 		List<Server> slaves = modelDAO.fetchServersByRole(ServerRole.SLAVE);
 		Collections.shuffle(slaves);
 		String slaveAddress = null;
@@ -268,7 +269,7 @@ public class ServerHandler implements Service.Iface {
 		if(file == null)
 		{
 			/*TODO: result of false indicates unability to remove the file, 
-			 *   maybe exception should be thrown with description of special case? 
+			 *   maybe exception should be thrown with description of special  
 			 */ 
 			return false;
 		}
@@ -354,8 +355,7 @@ public class ServerHandler implements Service.Iface {
 	/**
 	 * Dummy version sending whole file
 	 * 
-	 * @return null - when whole file was sent (filePartDescription.getOffset is
-	 *         equal to file size.
+	 * @return FilePart - when whole file was sent data is set to [].
 	 * */
 	@Override
 	public FilePart getFileFromSlave(FilePartDescription filePartDescription)
