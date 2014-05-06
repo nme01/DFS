@@ -41,7 +41,6 @@ import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSDataSource;
 import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
-import rso.dfs.server.handler.FileStorageHandler;
 import rso.dfs.utils.IpConverter;
 
 /**
@@ -65,8 +64,6 @@ public class ServerHandler implements Service.Iface {
 	private FileStorageHandler storageHandler;
 	private CoreStatus coreStatus;
 	private DFSModelDAO modelDAO;
-	
-	private StorageHandler storageHandler;
 
 	public ServerHandler(Server me) {
 		this(me, new DFSModelDAOImpl(new DFSDataSource()));
@@ -78,7 +75,6 @@ public class ServerHandler implements Service.Iface {
 		this.modelDAO = modelDAO;
 		this.storageHandler = new FileStorageHandler();
 		repository = new DFSRepositoryImpl();
-		this.storageHandler = new FileStorageHandler();
 	}
 
 	@Override
