@@ -1,4 +1,4 @@
-package rso.dfs.Server;
+package rso.dfs.server;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.model.ServerRole;
-import rso.dfs.Server.handler.FileStorageHandler;
-import rso.dfs.Server.handler.StorageHandler;
+import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.server.handler.StorageHandler;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -225,16 +225,20 @@ public class ServerHandler implements Service.Iface {
 		if (slaveAddress == null) {
 			putFileParams.setCanPut(false);
 		} else {
-			rso.dfs.model.File file = new rso.dfs.model.File();
-			file.setName(filepath);
-			file.setSize(size);
-			file.setStatus(FileStatus.UPLOAD);
-			Long fileid = modelDAO.saveFile(file);
+			try {
+				rso.dfs.model.File file = new rso.dfs.model.File();
+				file.setName(filepath);
+				file.setSize(size);
+				file.setStatus(FileStatus.UPLOAD);
+				Long fileid = modelDAO.saveFile(file);
 
-			putFileParams.setCanPut(true);
-			putFileParams.setSlaveIp(IpConverter
-					.getIntegerIpformString(slaveAddress));
-			putFileParams.setFileId(fileid);
+				putFileParams.setCanPut(true);
+				putFileParams.setSlaveIp(IpConverter
+						.getIntegerIpformString(slaveAddress));
+				//putFileParams.setFileId(fileid);
+			} catch (Exception e) {
+				//wysypka;
+			}
 		}
 		return putFileParams;
 	}

@@ -1,4 +1,4 @@
-package rso.dfs.Server.handler;
+package rso.dfs.server.handler;
 
 import java.io.File;
 import java.io.IOException;
