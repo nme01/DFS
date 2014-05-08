@@ -18,10 +18,14 @@ import rso.dfs.model.FileOnServer;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
+import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.mapper.FileRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
 
 /**
+ * WARNING: THIS IS DATA ACCESS LAYER
+ * REMEMBER TO USE {@link DFSRepository} instead of this.
+ * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {

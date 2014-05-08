@@ -1,17 +1,10 @@
 package rso.dfs.server;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -21,9 +14,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rso.dfs.model.ServerRole;
-import rso.dfs.server.handler.FileStorageHandler;
-import rso.dfs.server.handler.StorageHandler;
 import rso.dfs.commons.DFSConstans;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
@@ -34,14 +24,14 @@ import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
 import rso.dfs.generated.SystemStatus;
+import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.FileStatus;
 import rso.dfs.model.Server;
-import rso.dfs.model.dao.DFSModelDAO;
+import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
-import rso.dfs.model.dao.psql.DFSDataSource;
-import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
+import rso.dfs.server.handler.FileStorageHandler;
 import rso.dfs.utils.IpConverter;
 
 /**
@@ -53,29 +43,32 @@ public class ServerHandler implements Service.Iface {
 	final static Logger log = LoggerFactory.getLogger(ServerHandler.class);
 
 	/**
-	 * This server. TODO : provide better naming... :(
+	 * This server
+	 * TODO : provide better naming... :(
 	 * */
 	private Server me;
 
 	/**
-	 * Provides storage operations.
+	 * Provides data access layer.
+	 * (FOR MASTER-NAMING SERVERS)
 	 * */
-
 	private DFSRepository repository;
+
+	/**
+	 * Provides storage features.
+	 * (FOR SLAVE-STORAGE SERVERS)
+	 * */
 	private FileStorageHandler storageHandler;
+	
+	/**
+	 * 
+	 * */
 	private CoreStatus coreStatus;
-	private DFSModelDAO modelDAO;
-
+	
 	public ServerHandler(Server me) {
-		this(me, new DFSModelDAOImpl(new DFSDataSource()));
-
-	}
-
-	public ServerHandler(Server me, DFSModelDAO modelDAO) {
 		this.me = me;
-		this.modelDAO = modelDAO;
 		this.storageHandler = new FileStorageHandler();
-		repository = new DFSRepositoryImpl();
+		this.repository = new DFSRepositoryImpl();
 	}
 
 	@Override
@@ -86,7 +79,6 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
-		modelDAO = new DFSModelDAOImpl(new DFSDataSource());
 		Server server = new Server();
 		// server.setIp(); //skad mam to wziac? do strukturki trzeba dodac? to
 		// samo nizej
@@ -96,12 +88,12 @@ public class ServerHandler implements Service.Iface {
 
 		List<Long> ids = req.getFileIds();
 		for (long fileId : ids) {
-			if (modelDAO.fetchFileById(fileId) != null) {
+			if (repository.getFileById(fileId)!= null) {
 				FileOnServer fileOnServer = new FileOnServer();
 				fileOnServer.setFileId(fileId);
 				fileOnServer.setServerId(server.getId());
 				// fileOnServer.setPriority(0);
-				modelDAO.saveFileOnServer(fileOnServer);
+				repository.saveFileOnServer(fileOnServer);
 				ids.remove(fileId);
 			}
 			;
@@ -170,7 +162,7 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public GetFileParams getFile(String fileName) throws TException {
 		log.debug("getFile Invoked on file " + fileName);
-		rso.dfs.model.File file = repository.getFileByFileName(fileName);
+		File file = repository.getFileByFileName(fileName);
 		if(file == null)
 		{
 			//TODO: it's a temporary sign of 'file not found' case. Exception in da future.
@@ -208,14 +200,19 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public PutFileParams putFile(String filepath, long size) throws TException {
+		if(me.getRole() != ServerRole.MASTER){
+			// TODO: ILLEGAL
+			log.error("");
+			return null;
+		}
 		log.info("Master received put file request for file " + filepath);
-		List<Server> slaves = modelDAO.fetchServersByRole(ServerRole.SLAVE);
+		List<Server> slaves = repository.getSlaves();
 		Collections.shuffle(slaves);
 		String slaveAddress = null;
 		long slaveId = -1;
 		for (Server server : slaves) {
 			long filesMemory = 0;
-			for (rso.dfs.model.File file : modelDAO.fetchFilesOnServer(server)) {
+			for (File file : repository.getFilesOnSlave(server)) {
 				filesMemory += file.getSize();
 			}
 			if (server.getMemory() - filesMemory <= size)
@@ -232,17 +229,18 @@ public class ServerHandler implements Service.Iface {
 			putFileParams.setCanPut(false);
 		} else {
 			try {
-				rso.dfs.model.File file = new rso.dfs.model.File();
+				File file = new File();
 				file.setName(filepath);
 				file.setSize(size);
 				file.setStatus(FileStatus.UPLOAD);
-				Long fileid = modelDAO.saveFile(file);
-				modelDAO.saveFileOnServer(new FileOnServer(fileid, slaveId, 0));
+				Long fileId = repository.saveFile(file);
+				
+				repository.saveFileOnServer(new FileOnServer(fileId, slaveId, 0));
 
 				putFileParams.setCanPut(true);
 				putFileParams.setSlaveIp(IpConverter
 						.getIntegerIpformString(slaveAddress));
-				putFileParams.setFileId(fileid);
+				putFileParams.setFileId(fileId);
 			} catch (Exception e) {
 				//wysypka;
 			}
@@ -265,7 +263,7 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public boolean removeFile(String filepath) throws TException {
-		final rso.dfs.model.File file = modelDAO.fetchFileByFileName(filepath);
+		final File file = repository.getFileByFileName(filepath);
 		if(file == null)
 		{
 			/*TODO: result of false indicates unability to remove the file, 
@@ -275,12 +273,12 @@ public class ServerHandler implements Service.Iface {
 		}
 		
 		file.setStatus(FileStatus.TO_DELETE);
-		modelDAO.updateFile(file);
+
+		repository.updateFile(file);
 		
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
-				List<Server> servers = modelDAO.fetchServersByFileId(file
-						.getId());
+				List<Server> servers = repository.getSlavesByFile(file);
 				for (Server server : servers) {
 					Service.Client client = new Client(
 							getTprotocol(server.getIp(),DFSConstans.STORAGE_SERVER_PORT_NUMBER));
@@ -298,10 +296,10 @@ public class ServerHandler implements Service.Iface {
 						e.printStackTrace();
 					}
 					fos.setServerId((long)2); //TODO: server id != ip, fixed for test data
-					modelDAO.deleteFileOnServer(fos);
+					repository.deleteFileOnServer(fos);
 				}
 
-				modelDAO.deleteFile(file);
+				repository.deleteFile(file);
 			}
 		});
 		thread.start();
@@ -316,15 +314,8 @@ public class ServerHandler implements Service.Iface {
 	 * @return FilePartDescription
 	 */
 	@Override
-	public FilePartDescription sendFileToSlaveRequest(long fileId)
-			throws TException {
-
-		File file = new File(FileStorageHandler.assemblePath(fileId));
-		try {
-			file.createNewFile();
-		} catch (IOException ioe) {
-			return null;
-		}
+	public FilePartDescription sendFileToSlaveRequest(long fileId) throws TException {
+		storageHandler.createFile(fileId);
 		return new FilePartDescription((int) fileId, (long) 0);
 	}
 
@@ -382,6 +373,7 @@ public class ServerHandler implements Service.Iface {
 	}
 	
 	private TProtocol getTprotocol(String ip) {
+		// TODO: hardcoded value
 		return getTprotocol(ip, 9090);
 	}
 

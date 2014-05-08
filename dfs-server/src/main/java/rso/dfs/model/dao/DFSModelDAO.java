@@ -8,14 +8,14 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 
 /**
+ * WARNING: THIS IS DATA ACCESS LAYER
+ * REMEMBER TO USE {@link DFSRepository} instead of this.
+ * 
  * @author Adam Papros <adam.papros@gmail.com>
  * @author Mateusz Statkiewicz
  * */
 public interface DFSModelDAO {
 
-	/**
-	 * 
-	 * */
 	public void testDatabaseConnection();
 
 	public int deleteFile(File file);

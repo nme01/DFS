@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.model.File;
+import rso.dfs.model.FileOnServer;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
@@ -27,6 +28,12 @@ public class DFSRepositoryImpl implements DFSRepository {
 		modelDAO = new DFSModelDAOImpl(dataSource);
 	}
 
+	@Override
+	public void deleteFile(final File file) {
+		log.debug("");
+		int numberOfAffectedRows = modelDAO.deleteFile(file);
+	}
+	
 	@Override
 	public Server getMasterServer() {
 		// fetch master
@@ -65,5 +72,56 @@ public class DFSRepositoryImpl implements DFSRepository {
 		}
 
 		return servers.get(0);
+	}
+
+	@Override
+	public List<Server> getSlaves() {
+		log.debug("");
+		return modelDAO.fetchServersByRole(ServerRole.SLAVE);
+	}
+
+	@Override
+	public File getFileById(Long fileId) {
+		log.debug("");
+		return modelDAO.fetchFileById(fileId);
+	}
+
+	@Override
+	public void saveFileOnServer(FileOnServer fileOnServer) {
+		log.debug("");
+		modelDAO.saveFileOnServer(fileOnServer);
+		
+	}
+
+	@Override
+	public List<File> getFilesOnSlave(Server slave) {
+		log.debug("");
+		return modelDAO.fetchFilesOnServer(slave);
+	}
+
+	@Override
+	public Long saveFile(final File file) {
+		log.debug("");
+		return modelDAO.saveFile(file);
+	}
+	
+	@Override
+	public void updateFile(final File file) {
+		log.debug("");
+		int numberOfAffectedRows = modelDAO.updateFile(file);
+	}
+
+	@Override
+	public void deleteFileOnServer(FileOnServer fileOnServer) {
+		log.debug("");
+		int numberOfAffectedRows = modelDAO.deleteFileOnServer(fileOnServer);
+		
+	}
+
+	@Override
+	public List<Server> getSlavesByFile(File file) {
+		log.debug("");
+		return modelDAO.fetchServersByFileId(file.getId());
+
 	}
 }

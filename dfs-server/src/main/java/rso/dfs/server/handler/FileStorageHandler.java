@@ -50,4 +50,15 @@ public class FileStorageHandler implements StorageHandler {
 		file.delete();
 	}
 
+	@Override
+	public void createFile(long fileId) {
+		File file = new File(assemblePath(fileId));
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 }

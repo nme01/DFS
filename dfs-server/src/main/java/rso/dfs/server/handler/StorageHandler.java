@@ -11,4 +11,7 @@ public interface StorageHandler {
 	public void writeFile(long fileId, byte[] fileBody);
 	
 	public void deleteFile(long fileId);
+
+	void createFile(long fileId);
+	
 }
