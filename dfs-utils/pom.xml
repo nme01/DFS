@@ -4,17 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>rso</groupId>
-	<artifactId>dfs</artifactId>
-	<packaging>pom</packaging>
-	<version>1.0-SNAPSHOT</version>
-	<name>RSO - Distributed File System</name>
-	
-	<modules>
-		<module>dfs-thrift</module>
-		<module>dfs-client</module>
-		<module>dfs-server</module>
-		<module>dfs-utils</module>
-	</modules>
+	<artifactId>dfs-utils</artifactId>
+	<packaging>jar</packaging>
+	<version>0.1</version>
+	<name>RSO - Distributed File System - Utilities</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,14 +21,18 @@
 		<package.output.dir>dist</package.output.dir>
 		<package.output.dir.tmp>dist/tmp</package.output.dir.tmp>
 
-		<main-class>rso.dfs.App</main-class>
 		<main-package>rso.dfs</main-package>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>rso</groupId>
+			<artifactId>dfs-thrift</artifactId>
+			<version>0.1</version>
+		</dependency>
 
 		<dependency>
-			<groupId>junit</groupId>
+			 <groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit-version}</version>
 			<scope>test</scope>
@@ -53,6 +50,7 @@
 			<version>1.2</version>
 		</dependency>
 
+		
 		<!-- logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -80,11 +78,12 @@
 			<version>1.1</version>
 			<scope>runtime</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>
 		<plugins>
-			
+
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<version>2.9</version>
