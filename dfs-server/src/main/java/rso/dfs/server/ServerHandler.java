@@ -324,14 +324,13 @@ public class ServerHandler implements Service.Iface {
 	 * @return FilePartDescription
 	 */
 	@Override
-	public FilePartDescription sendFilePartToSlave(FilePart filePart)
-			throws TException {
+	public FilePartDescription sendFilePartToSlave(FilePart filePart) throws TException {
 		try {
 			// TODO: check if the filePart is from the expected client
 			byte[] dataBuffer = filePart.data.array();
-			log.info("Got a file part of fileid " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
+			log.info("Got a file part of fileId " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
 			storageHandler.writeFile(filePart.fileId, dataBuffer);
-			
+
 			return new FilePartDescription(filePart.fileId, filePart.offset + dataBuffer.length);
 
 		} catch (Exception e) {
