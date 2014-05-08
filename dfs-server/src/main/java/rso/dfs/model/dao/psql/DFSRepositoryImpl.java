@@ -1,5 +1,6 @@
 package rso.dfs.model.dao.psql;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,31 +14,56 @@ import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 
 /**
+ * Master and Shadows repository
+ * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class DFSRepositoryImpl implements DFSRepository {
 
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
 
-	private DFSModelDAO modelDAO;
+	/**
+	 * Information about master server.
+	 * */
+	private Server master;
 	
-	private DFSDataSource dataSource;
+	/**
+	 * Master's DAO.
+	 * */
+	private DFSModelDAO masterDAO;
+	
+	/**
+	 * Collection for shadows 
+	 * */
+	private HashMap<Server, DFSModelDAO> shadowsMap;
+	
 
-	public DFSRepositoryImpl() {
-		dataSource = new DFSDataSource();
-		modelDAO = new DFSModelDAOImpl(dataSource);
+	public DFSRepositoryImpl(Server master) {
+		this.master = master;
+		shadowsMap = new HashMap<>();
 	}
 
+	public void addShadow(Server shadow) {
+		log.debug("");
+		shadowsMap.put(shadow, new DFSModelDAOImpl(new DFSDataSource(shadow.getIp())));
+	}
+
+	public void removeShadow(Server shadowToRemove) {
+		log.debug("");
+		DFSModelDAO removedDAO = (DFSModelDAO) shadowsMap.remove(shadowToRemove);
+
+	}
+	
 	@Override
 	public void deleteFile(final File file) {
 		log.debug("");
-		int numberOfAffectedRows = modelDAO.deleteFile(file);
+		int numberOfAffectedRows = masterDAO.deleteFile(file);
 	}
 	
 	@Override
 	public Server getMasterServer() {
 		// fetch master
-		List<Server> list = modelDAO.fetchServersByRole(ServerRole.MASTER);
+		List<Server> list = masterDAO.fetchServersByRole(ServerRole.MASTER);
 
 		if (list.size() > 1) {
 			// raise fatal error
@@ -51,20 +77,20 @@ public class DFSRepositoryImpl implements DFSRepository {
 	@Override
 	public void saveMaster(Server server) {
 		log.debug("Saving master:" + server.toString());
-		modelDAO.saveServer(server);
+		masterDAO.saveServer(server);
 	}
 
 	@Override
 	public File getFileByFileName(String fileName) {
 		log.debug("Fetching file: fileName=" + fileName);
-		return modelDAO.fetchFileByFileName(fileName);
+		return masterDAO.fetchFileByFileName(fileName);
 	}
 
 	@Override
 	public Server getSlaveByFile(File file) {
 		log.debug("Fetching servers with file: " + file.getName());
 
-		List<Server> servers = modelDAO.fetchServersByFileId(file.getId());
+		List<Server> servers = masterDAO.fetchServersByFileId(file.getId());
 
 		// TODO :choose server !
 		if (servers == null || servers.isEmpty()) {
@@ -77,51 +103,51 @@ public class DFSRepositoryImpl implements DFSRepository {
 	@Override
 	public List<Server> getSlaves() {
 		log.debug("");
-		return modelDAO.fetchServersByRole(ServerRole.SLAVE);
+		return masterDAO.fetchServersByRole(ServerRole.SLAVE);
 	}
 
 	@Override
 	public File getFileById(Long fileId) {
 		log.debug("");
-		return modelDAO.fetchFileById(fileId);
+		return masterDAO.fetchFileById(fileId);
 	}
 
 	@Override
 	public void saveFileOnServer(FileOnServer fileOnServer) {
 		log.debug("");
-		modelDAO.saveFileOnServer(fileOnServer);
+		masterDAO.saveFileOnServer(fileOnServer);
 		
 	}
 
 	@Override
 	public List<File> getFilesOnSlave(Server slave) {
 		log.debug("");
-		return modelDAO.fetchFilesOnServer(slave);
+		return masterDAO.fetchFilesOnServer(slave);
 	}
 
 	@Override
 	public Long saveFile(final File file) {
 		log.debug("");
-		return modelDAO.saveFile(file);
+		return masterDAO.saveFile(file);
 	}
 	
 	@Override
 	public void updateFile(final File file) {
 		log.debug("");
-		int numberOfAffectedRows = modelDAO.updateFile(file);
+		int numberOfAffectedRows = masterDAO.updateFile(file);
 	}
 
 	@Override
 	public void deleteFileOnServer(FileOnServer fileOnServer) {
 		log.debug("");
-		int numberOfAffectedRows = modelDAO.deleteFileOnServer(fileOnServer);
+		int numberOfAffectedRows = masterDAO.deleteFileOnServer(fileOnServer);
 		
 	}
 
 	@Override
 	public List<Server> getSlavesByFile(File file) {
 		log.debug("");
-		return modelDAO.fetchServersByFileId(file.getId());
+		return masterDAO.fetchServersByFileId(file.getId());
 
 	}
 }

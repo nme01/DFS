@@ -18,6 +18,7 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
+import rso.dfs.model.dao.psql.EmptyRepository;
 import rso.dfs.utils.InetAddressUtils;
 
 public class DFSServer {
@@ -41,13 +42,15 @@ public class DFSServer {
 		if (ServerRole.getServerRole(args[0]) == ServerRole.MASTER) {
 			me.setMemory(DFSConstans.NAMING_SERVER_MEMORY);
 			me.setRole(ServerRole.MASTER);
+			repository = new DFSRepositoryImpl(me);
 		} else {
 			me.setMemory(DFSConstans.STORAGE_SERVER_MEMORY);
 			me.setRole(ServerRole.SLAVE);
+			repository = new EmptyRepository();
+			
 		}
-
-		repository = new DFSRepositoryImpl();
-		handler = new ServerHandler(me);
+	
+		handler = new ServerHandler(me, repository);
 		procesor = new Service.Processor(handler);
 
 	}

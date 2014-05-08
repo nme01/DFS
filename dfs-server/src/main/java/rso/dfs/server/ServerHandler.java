@@ -10,7 +10,6 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,6 @@ import rso.dfs.model.FileStatus;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
-import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.handler.FileStorageHandler;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
@@ -66,10 +64,10 @@ public class ServerHandler implements Service.Iface {
 	 * */
 	private CoreStatus coreStatus;
 	
-	public ServerHandler(Server me) {
+	public ServerHandler(Server me, DFSRepository repository) {
 		this.me = me;
 		this.storageHandler = new FileStorageHandler();
-		this.repository = new DFSRepositoryImpl();
+		this.repository = repository;
 	}
 
 	@Override
