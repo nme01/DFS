@@ -32,6 +32,7 @@ import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
 
 /**
@@ -275,28 +276,25 @@ public class ServerHandler implements Service.Iface {
 		file.setStatus(FileStatus.TO_DELETE);
 
 		repository.updateFile(file);
-		
+
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				List<Server> servers = repository.getSlavesByFile(file);
 				for (Server server : servers) {
-					Service.Client client = new Client(
-							getTprotocol(server.getIp(),DFSConstans.STORAGE_SERVER_PORT_NUMBER));
-					try {
+					try (DFSTSocket socket = new DFSTSocket(server.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+						TProtocol protocol = new TBinaryProtocol(socket);
+						Service.Client client = new Client(protocol);
 						client.removeFileSlave((int) file.getId());
-					} catch (TException e1) {
-						e1.printStackTrace();
-					}
-					FileOnServer fos = new FileOnServer();
-					fos.setFileId(file.getId());
-					try {
-						fos.setServerId((long) IpConverter
-								.getIntegerIpformString(server.getIp()));
-					} catch (UnknownHostException e) {
+						FileOnServer fos = new FileOnServer();
+						fos.setFileId(file.getId());
+						fos.setServerId((long) IpConverter.getIntegerIpformString(server.getIp()));
+
+						fos.setServerId((long) 2); // TODO: server id != ip,
+													// fixed for test data
+						repository.deleteFileOnServer(fos);
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					fos.setServerId((long)2); //TODO: server id != ip, fixed for test data
-					repository.deleteFileOnServer(fos);
 				}
 
 				repository.deleteFile(file);
@@ -356,8 +354,7 @@ public class ServerHandler implements Service.Iface {
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
 		}
 
-		byte[] dataToSend = storageHandler.readFile(filePartDescription
-				.getFileId());
+		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId());
 		if (filePartDescription.getOffset() >= dataToSend.length) {
 			FilePart filePart = new FilePart();
 			filePart.setFileId(filePartDescription.getFileId());
@@ -371,21 +368,5 @@ public class ServerHandler implements Service.Iface {
 		filePart.setData(dataToSend);
 		return filePart;
 	}
-	
-	private TProtocol getTprotocol(String ip) {
-		// TODO: hardcoded value
-		return getTprotocol(ip, 9090);
-	}
 
-	private TProtocol getTprotocol(String ip, int port) {
-		TTransport transport;
-		transport = new TSocket(ip, port);
-		try {
-			transport.open();
-		} catch (TTransportException e) {
-			e.printStackTrace();
-		}
-		TProtocol protocol = new TBinaryProtocol(transport);
-		return protocol;
-	}
 }
