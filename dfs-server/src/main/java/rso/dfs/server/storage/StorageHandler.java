@@ -1,4 +1,4 @@
-package rso.dfs.server.handler;
+package rso.dfs.server.storage;
 
 /**
  * @author Adam Papros<adam.papros@gmail.com>

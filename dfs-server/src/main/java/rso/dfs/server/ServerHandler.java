@@ -29,8 +29,8 @@ import rso.dfs.model.FileStatus;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
-import rso.dfs.server.handler.FileStorageHandler;
-import rso.dfs.server.handler.StorageHandler;
+import rso.dfs.server.storage.FileStorageHandler;
+import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
 

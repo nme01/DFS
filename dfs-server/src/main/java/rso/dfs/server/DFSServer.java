@@ -19,9 +19,9 @@ import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.model.dao.psql.EmptyRepository;
-import rso.dfs.server.handler.EmptyStorageHandler;
-import rso.dfs.server.handler.FileStorageHandler;
-import rso.dfs.server.handler.StorageHandler;
+import rso.dfs.server.storage.EmptyStorageHandler;
+import rso.dfs.server.storage.FileStorageHandler;
+import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.utils.InetAddressUtils;
 
 public class DFSServer {
