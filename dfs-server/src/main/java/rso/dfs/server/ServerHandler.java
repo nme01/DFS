@@ -30,6 +30,7 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.server.handler.StorageHandler;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
 
@@ -57,16 +58,16 @@ public class ServerHandler implements Service.Iface {
 	 * Provides storage features.
 	 * (FOR SLAVE-STORAGE SERVERS)
 	 * */
-	private FileStorageHandler storageHandler;
+	private StorageHandler storageHandler;
 	
 	/**
 	 * 
 	 * */
 	private CoreStatus coreStatus;
 	
-	public ServerHandler(Server me, DFSRepository repository) {
+	public ServerHandler(Server me, DFSRepository repository, StorageHandler storageHandler) {
 		this.me = me;
-		this.storageHandler = new FileStorageHandler();
+		this.storageHandler = storageHandler;
 		this.repository = repository;
 	}
 

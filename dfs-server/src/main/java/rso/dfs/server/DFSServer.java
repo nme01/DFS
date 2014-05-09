@@ -19,13 +19,16 @@ import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.model.dao.psql.EmptyRepository;
+import rso.dfs.server.handler.EmptyStorageHandler;
+import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.server.handler.StorageHandler;
 import rso.dfs.utils.InetAddressUtils;
 
 public class DFSServer {
 
 	final static Logger log = LoggerFactory.getLogger(DFSServer.class);
 
-	private ServerHandler handler;
+	private ServerHandler serviceHandler;
 
 	private Service.Processor procesor;
 
@@ -33,6 +36,8 @@ public class DFSServer {
 	private Server me;
 
 	private DFSRepository repository;
+	
+	private StorageHandler storageHandler;
 
 	public DFSServer(String[] args) throws UnknownHostException {
 
@@ -42,16 +47,19 @@ public class DFSServer {
 		if (ServerRole.getServerRole(args[0]) == ServerRole.MASTER) {
 			me.setMemory(DFSConstans.NAMING_SERVER_MEMORY);
 			me.setRole(ServerRole.MASTER);
+			
 			repository = new DFSRepositoryImpl(me);
+			storageHandler = new EmptyStorageHandler();
 		} else {
 			me.setMemory(DFSConstans.STORAGE_SERVER_MEMORY);
 			me.setRole(ServerRole.SLAVE);
-			repository = new EmptyRepository();
 			
+			repository = new EmptyRepository();
+			storageHandler = new FileStorageHandler();
 		}
 	
-		handler = new ServerHandler(me, repository);
-		procesor = new Service.Processor(handler);
+		serviceHandler = new ServerHandler(me, repository, storageHandler);
+		procesor = new Service.Processor(serviceHandler);
 
 	}
 
