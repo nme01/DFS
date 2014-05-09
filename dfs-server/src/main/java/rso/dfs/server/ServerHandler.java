@@ -135,9 +135,31 @@ public class ServerHandler implements Service.Iface {
 
 	}
 
+	/**
+	 * Invoked on slave by master. Master force slave to replicate data
+	 * (identified by @param fileId) from invoked to another slave (identified
+	 * by @param slaveIP )
+	 * */
 	@Override
-	public void replicate(long fileID, int slaveIP) throws TException {
-		// TODO Auto-generated method stub
+	public void replicate(long fileId, int slaveIP) throws TException {
+		log.debug("Method REPLICATE(fileId=" + fileId + ", slaveIP=" + slaveIP);
+		if (me.getRole() != ServerRole.SLAVE) {
+			// raise fatal error
+			return;
+		}
+
+		byte[] fileBody = storageHandler.readFile(fileId);
+		
+
+		try (DFSTSocket socket = new DFSTSocket(IpConverter.getStringIpFromInteger(slaveIP), DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+			socket.open();
+			TProtocol protocol = new TBinaryProtocol(socket);
+			
+			//TODO: RPC
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
