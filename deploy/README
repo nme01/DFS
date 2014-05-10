@@ -1,0 +1,30 @@
+Dystrybucja ubuntu-server 14.04 z virtualboximages.com.
+
+Instalować na VMware Player - jest najmniej problemów.
+
+Skrypty wykorzystują konto 'ubuntu'.
+
+Na serwerze należy wykonać
+sudo visudo #hasło reverse
+i dopisać na końcu linię
+
+ubuntu ALL=(ALL) NOPASSWD: ALL
+-----
+
+lokalne skomplilowanie wszystkiego co trzeba mavenem:
+./makeall
+
+Upload klucza publicznego SSH:
+./uploadSSH <ip servera>
+
+Instalacja zależności (postgres itd)
+./installDependencies <ip servera>
+
+Deploy aplikacji (serwerowej)
+./deployToServer <ip servera>
+
+./runMaster <ip servera>
+Uruchamia mastera.
+
+./killemAll <ip servera>
+Zabija wszelką javę na serwerze

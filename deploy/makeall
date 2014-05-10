@@ -1,0 +1,4 @@
+cd ../dfs-utils
+mvn install
+cd ../dfs-server
+mvn install
