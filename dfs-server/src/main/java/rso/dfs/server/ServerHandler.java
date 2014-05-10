@@ -304,8 +304,6 @@ public class ServerHandler implements Service.Iface {
 						e.printStackTrace();
 					}
 
-					fos.setServerId((long)2); //TODO: server id != ip, fixed for test data
-					modelDAO.deleteFileOnServer(fos);
 					transport.close();
 				}
 				repository.deleteFile(file);
