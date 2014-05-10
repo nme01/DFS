@@ -3,11 +3,11 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>rso</groupId>
-	<artifactId>dfs-thrift</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>dfs-thrift</artifactId>
+    <groupId>rso</groupId>
+    <packaging>jar</packaging>
 	<version>0.1</version>
-	<name>RSO - Apache Thrift Generated Files</name>
+	<name>RSO - Distributed File System - Apache Thrift Generated Files</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
