@@ -282,8 +282,16 @@ public class ServerHandler implements Service.Iface {
 				List<Server> servers = modelDAO.fetchServersByFileId(file
 						.getId());
 				for (Server server : servers) {
-					Service.Client client = new Client(
-							getTprotocol(server.getIp(),DFSConstans.STORAGE_SERVER_PORT_NUMBER));
+					TTransport transport;
+					transport = new TSocket(server.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER);
+					try {
+						transport.open();
+					} catch (TTransportException e) {
+						e.printStackTrace();
+					}
+					TProtocol protocol = new TBinaryProtocol(transport);
+					
+					Service.Client client = new Client(protocol);
 					try {
 						client.removeFileSlave((int) file.getId());
 					} catch (TException e1) {
@@ -299,9 +307,11 @@ public class ServerHandler implements Service.Iface {
 					}
 					fos.setServerId((long)2); //TODO: server id != ip, fixed for test data
 					modelDAO.deleteFileOnServer(fos);
+					transport.close();
 				}
 
 				modelDAO.deleteFile(file);
+				
 			}
 		});
 		thread.start();
