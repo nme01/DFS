@@ -12,7 +12,7 @@ public class IpConverter {
 	/**
 	 * 
 	 * */
-	public static int getIntegerIpformString(String dottedString) throws UnknownHostException {
+	public static int getIntegerIpfromString(String dottedString) throws UnknownHostException {
 		return pack(InetAddress.getByName(dottedString).getAddress());
 	}
 

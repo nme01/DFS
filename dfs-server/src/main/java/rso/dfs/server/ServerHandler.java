@@ -2,8 +2,13 @@ package rso.dfs.server;
 
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -96,8 +101,7 @@ public class ServerHandler implements Service.Iface {
 				// fileOnServer.setPriority(0);
 				repository.saveFileOnServer(fileOnServer);
 				ids.remove(fileId);
-			}
-			;
+			};
 		}
 		TTransport transport;
 
@@ -139,7 +143,7 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void replicate(long fileID, int slaveIP) throws TException {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -176,7 +180,7 @@ public class ServerHandler implements Service.Iface {
 		getFileParams.setFileId(file.getId());
 
 		try {
-			getFileParams.setSlaveIp(IpConverter.getIntegerIpformString(slave
+			getFileParams.setSlaveIp(IpConverter.getIntegerIpfromString(slave
 					.getIp()));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -203,47 +207,81 @@ public class ServerHandler implements Service.Iface {
 	public PutFileParams putFile(String filepath, long size) throws TException {
 		if(me.getRole() != ServerRole.MASTER){
 			// TODO: ILLEGAL
-			log.error("");
-			return null;
+			log.error("putFile attempted on a server different than the current master.");
+			PutFileParams retval = new PutFileParams();
+			retval.canPut = false;
+			retval.fileId = 0;
+			retval.slaveIp = 0;
+			return retval;
 		}
 		log.info("Master received put file request for file " + filepath);
 		List<Server> slaves = repository.getSlaves();
-		Collections.shuffle(slaves);
+		
 		String slaveAddress = null;
 		long slaveId = -1;
+		Map<Server, Long> freeMemoryMap = new HashMap<Server, Long>();
+		
 		for (Server server : slaves) {
 			long filesMemory = 0;
 			for (File file : repository.getFilesOnSlave(server)) {
 				filesMemory += file.getSize();
 			}
+			
 			if (server.getMemory() - filesMemory <= size)
 				continue;
-
-			slaveAddress = server.getIp();
-			slaveId = server.getId();
-			break;
+			
+			freeMemoryMap.put(server, filesMemory); // po miejscu zajętym
+			//freeMemoryMap.put(server, server.getMemory() - filesMemory); // po miejscu wolnym
 		}
-
+		
+		List<Server> keys = new ArrayList<Server>(freeMemoryMap.keySet());
+		final Map sortmap = freeMemoryMap;
+		Collections.sort(keys,
+				new Comparator() {
+					public int compare(Object left, Object right) {
+						Long leftVal = (Long)sortmap.get((Server)left);
+						Long rightVal = (Long)sortmap.get((Server)right);
+						
+						return leftVal.compareTo(rightVal);
+					}
+		});
+		
+		Iterator i = keys.iterator();
+		long replDegree = 3L; // serverConfig.getReplDegree();
 		PutFileParams putFileParams = new PutFileParams();
 		putFileParams.setCanPut(true);
-		if (slaveAddress == null) {
+		if (!i.hasNext()) {
 			putFileParams.setCanPut(false);
 		} else {
 			try {
+				Server mainRepl = (Server)i.next();
 				File file = new File();
 				file.setName(filepath);
 				file.setSize(size);
 				file.setStatus(FileStatus.UPLOAD);
 				Long fileId = repository.saveFile(file);
 				
-				repository.saveFileOnServer(new FileOnServer(fileId, slaveId, 0));
+				repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), 0));
 
 				putFileParams.setCanPut(true);
 				putFileParams.setSlaveIp(IpConverter
-						.getIntegerIpformString(slaveAddress));
+						.getIntegerIpfromString(mainRepl.getIp()));
 				putFileParams.setFileId(fileId);
+				replDegree--;
 			} catch (Exception e) {
-				//wysypka;
+				//TODO: wysypka UnknownHostException (??);
+			}
+		}
+		
+		if (i.hasNext() && replDegree-- > 0) {
+			Server secRepl = (Server)i.next();
+			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+				dfstSocket.open();
+				TProtocol protocol = new TBinaryProtocol(dfstSocket);
+				Service.Client serviceClient = new Service.Client(protocol);
+				serviceClient.replicate(putFileParams.getFileId(), IpConverter.getIntegerIpfromString(secRepl.getIp()));
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return putFileParams;
@@ -295,7 +333,7 @@ public class ServerHandler implements Service.Iface {
 						client.removeFileSlave((int) file.getId());
 						FileOnServer fos = new FileOnServer();
 						fos.setFileId(file.getId());
-						fos.setServerId((long) IpConverter.getIntegerIpformString(server.getIp()));
+						fos.setServerId((long) IpConverter.getIntegerIpfromString(server.getIp()));
 
 						fos.setServerId((long) 2); // TODO: server id != ip,
 													// fixed for test data
@@ -307,6 +345,7 @@ public class ServerHandler implements Service.Iface {
 					transport.close();
 				}
 				repository.deleteFile(file);
+
 
 			}
 		});
