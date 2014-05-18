@@ -1,4 +1,16 @@
-cd ../dfs-utils
-mvn install
-cd ../dfs-server
-mvn install
+if [ $1 == '-s' ]
+then
+    cd ../dfs-server
+    mvn install
+elif [ $1 == '-c' ]
+then
+    cd ../dfs-client
+    mvn install
+else
+    cd ../dfs-thrift
+    mvn install
+    cd ../dfs-utils
+    mvn install
+    cd ../dfs-server
+    mvn install
+fi

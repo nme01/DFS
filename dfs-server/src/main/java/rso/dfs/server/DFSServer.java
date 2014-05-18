@@ -59,18 +59,21 @@ public class DFSServer {
 			me.setRole(ServerRole.SLAVE);
 			//FIXME: simplifying assumption: IP will be given by user who runs slave as 3rd arg. 
 			me.setIp(args[2]);
+			log.info("Master IP is " + args[2] + "Slave ip is " + args[1]);
 
-			//FIXME: temporary for localtesting. Later: dropDB by cleandb repo method
-			Server masterServer = repository.getMasterServer();
-			if(masterServer == null)
+			//if master is not on the same server, clean db.
+			if(    !args[1].equals("127.0.0.1") 
+				&& !args[1].equals("localhost") 
+			    && !args[1].equals(args[2]))
 			{
-				Server master = new Server();
-				master.setIp(args[1]);
-				master.setLastConnection(new DateTime());
-				master.setRole(ServerRole.MASTER);
-				repository.saveServer(master);
+				repository.cleanDB();
 			}
-						
+			
+			Server master = new Server();
+			master.setIp(args[1]);
+			master.setLastConnection(new DateTime());
+			master.setRole(ServerRole.MASTER);
+			repository.saveServer(master);
 		}
 		
 
@@ -101,26 +104,25 @@ public class DFSServer {
 	}
 
 	private void run() {
-
-		try {
+		//TODO: is running server in another thread needed?
+		/*try {
 
 			Runnable simple = new Runnable() {
 
 				@Override
 				public void run() {
-					
-
 				}
 			};
 			new Thread(simple).start();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
 		simple(procesor);
 	}
 
 	public void simple(Service.Processor processor) {
 		try {
+			log.debug("Starting simple server");
 			TServerTransport serverTransport;
 			// TODO: fix this because it's ugly and probably not needed.
 			if (me.getRole() == ServerRole.MASTER) {
@@ -133,6 +135,7 @@ public class DFSServer {
 						
 			if(me.getRole() == ServerRole.SLAVE)
 			{
+				log.debug("Registering slave server");
 				String masterIP = repository.getMasterServer().getIp();
 				//register new slave
 
@@ -156,6 +159,7 @@ public class DFSServer {
 			server.serve();
 		} catch (Exception e) {
 			log.error(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 

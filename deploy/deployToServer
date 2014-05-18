@@ -1,5 +1,5 @@
 ssh ubuntu@$1 "rm -rf /home/ubuntu/rsodist"
 scp -r ../dfs-server/dist/ ubuntu@$1:/home/ubuntu/rsodist
 scp -r ../sql/ ubuntu@$1:/home/ubuntu/rsodist/
-ssh ubuntu@$1 "cd /home/ubuntu/rsodist/sql/; chmod +x all2.sh; sudo pg_createcluster 9.3 main --start; sudo -u postgres ./all2.sh; cd ..; chmod +x dfs_*"
+ssh ubuntu@$1 "cd /home/ubuntu/rsodist/; mkdir tmp; cd /home/ubuntu/rsodist/sql/; chmod +x all2.sh; sudo pg_createcluster 9.3 main --start; sudo -u postgres ./all2.sh; cd ..; chmod +x dfs_*"
 
