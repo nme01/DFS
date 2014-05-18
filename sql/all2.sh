@@ -1,6 +1,5 @@
 psql -c "DROP DATABASE rsodfs;"
-psql -c "
-DROP USER rsodfs;"
+psql -c "DROP USER rsodfs;"
 
 psql -c "
 CREATE USER rsodfs WITH PASSWORD 'rsodfs11';"
@@ -51,7 +50,13 @@ create table version (
 	log bigserial not null
 );
 
-GRANT ALL ON files, servers,files_on_servers, version TO rsodfs;
+create view servers_vw as
+select s.id,s.ip,s.role,s.memory,s.last_connection, s.memory-sum(f.size) as freeMemory from servers s 
+	join files_on_servers fos on fos.server_id = s.id
+	join files f on fos.file_id = f.id
+	group by s.id,s.ip,s.role,s.memory,s.last_connection;
+
+GRANT ALL ON files, servers,files_on_servers, version, servers_vw TO rsodfs;
 "
 
 #psql -d rsodfs -f insert_test_data.sql
