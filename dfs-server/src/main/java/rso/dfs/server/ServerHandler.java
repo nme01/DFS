@@ -16,6 +16,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
 
@@ -75,6 +77,7 @@ public class ServerHandler implements Service.Iface {
 		this.me = me;
 		this.storageHandler = new FileStorageHandler();
 		this.repository = new DFSRepositoryImpl();
+		this.coreStatus = new CoreStatus("", new ArrayList<String>()); //FIXME: temp just not to be null
 	}
 
 	@Override
@@ -85,34 +88,38 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
+		log.info("Got registerSlave request! Slave IP: " + req.getSlaveIP() + "; list of files {" + req.getFileIds() +  "}");
 		Server server = new Server();
-		// server.setIp(); //skad mam to wziac? do strukturki trzeba dodac? to
-		// samo nizej
-		// server.setMemory(memory);
-		// server.setRole();
-		// modelDAO.saveServer(server);
+		
+		server.setIp(req.getSlaveIP());
+		server.setMemory(DFSConstans.STORAGE_SERVER_MEMORY); //FIXME: not really i guess
+		server.setRole(ServerRole.SLAVE);
+		server.setLastConnection(new DateTime());
+		repository.saveServer(server);
 
-		List<Long> ids = req.getFileIds();
-		for (long fileId : ids) {
+		List<Integer> ids = req.getFileIds();
+		for (int fileId : ids) {
 			if (repository.getFileById(fileId)!= null) {
 				FileOnServer fileOnServer = new FileOnServer();
 				fileOnServer.setFileId(fileId);
 				fileOnServer.setServerId(server.getId());
 				// fileOnServer.setPriority(0);
 				repository.saveFileOnServer(fileOnServer);
-				ids.remove(fileId);
+				ids.remove((Integer)fileId); //FIXME: is removing element legal in java?
 			};
 		}
-		TTransport transport;
-
-		transport = new TSocket("localhost", 9090); // skad wziac ipka i port?
-		transport.open();
-
-		TProtocol protocol = new TBinaryProtocol(transport);
-		Service.Client client = new Service.Client(protocol);
-		for (long fileId : ids) {
-			client.removeFileSlave(fileId);
+		
+		try(DFSClosingClient cclient = new DFSClosingClient(req.getSlaveIP(), 
+				DFSConstans.STORAGE_SERVER_PORT_NUMBER))
+		{
+			Client client = cclient.getClient();
+			for (Integer fileId : ids) {
+				client.removeFileSlave(fileId);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		
 		return coreStatus;
 	}
 
@@ -135,26 +142,26 @@ public class ServerHandler implements Service.Iface {
 	}
 
 	@Override
-	public void prepareForReceiving(long fileID, long size) throws TException {
+	public void prepareForReceiving(int fileID, long size) throws TException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void replicate(long fileID, int slaveIP) throws TException {
+	public void replicate(int fileID, String slaveIP) throws TException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public boolean isFileUsed(long fileID) throws TException {
+	public boolean isFileUsed(int fileID) throws TException {
 		// to w ogole potrzebne??
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void removeFileSlave(long fileID) throws TException {
+	public void removeFileSlave(int fileID) throws TException {
 		storageHandler.deleteFile(fileID);
 	}
 
@@ -171,7 +178,7 @@ public class ServerHandler implements Service.Iface {
 		if(file == null)
 		{
 			//TODO: it's a temporary sign of 'file not found' case. Exception in da future.
-			return new GetFileParams(-1,0);
+			return new GetFileParams(-1,"");
 		}
 
 		Server slave = repository.getSlaveByFile(file);
@@ -179,13 +186,8 @@ public class ServerHandler implements Service.Iface {
 		GetFileParams getFileParams = new GetFileParams();
 		getFileParams.setFileId(file.getId());
 
-		try {
-			getFileParams.setSlaveIp(IpConverter.getIntegerIpfromString(slave
-					.getIp()));
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-
-		}
+		getFileParams.setSlaveIp(slave.getIp());
+		
 		return getFileParams;
 	}
 
@@ -211,7 +213,7 @@ public class ServerHandler implements Service.Iface {
 			PutFileParams retval = new PutFileParams();
 			retval.canPut = false;
 			retval.fileId = 0;
-			retval.slaveIp = 0;
+			retval.slaveIp = "";
 			return retval;
 		}
 		log.info("Master received put file request for file " + filepath);
@@ -259,17 +261,27 @@ public class ServerHandler implements Service.Iface {
 				file.setName(filepath);
 				file.setSize(size);
 				file.setStatus(FileStatus.UPLOAD);
-				Long fileId = repository.saveFile(file);
+				Integer fileId = repository.saveFile(file);
 				
 				repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), 0));
 
 				putFileParams.setCanPut(true);
-				putFileParams.setSlaveIp(IpConverter
-						.getIntegerIpfromString(mainRepl.getIp()));
+				putFileParams.setSlaveIp(mainRepl.getIp());
 				putFileParams.setFileId(fileId);
 				replDegree--;
-			} catch (Exception e) {
+			}
+			catch (org.springframework.dao.DuplicateKeyException e)
+			{
+				log.error("File exists!");
+				PutFileParams retval = new PutFileParams();
+				retval.canPut = false;
+				retval.fileId = 0;
+				retval.slaveIp = "";
+				return retval;
+			}
+			catch (Exception e) {
 				//TODO: wysypka UnknownHostException (??);
+				e.printStackTrace();
 			}
 		}
 		
@@ -279,7 +291,7 @@ public class ServerHandler implements Service.Iface {
 				dfstSocket.open();
 				TProtocol protocol = new TBinaryProtocol(dfstSocket);
 				Service.Client serviceClient = new Service.Client(protocol);
-				serviceClient.replicate(putFileParams.getFileId(), IpConverter.getIntegerIpfromString(secRepl.getIp()));
+				serviceClient.replicate(putFileParams.getFileId(), secRepl.getIp());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -319,33 +331,27 @@ public class ServerHandler implements Service.Iface {
 			public void run() {
 				List<Server> servers = repository.getSlavesByFile(file);
 				for (Server server : servers) {
-					TTransport transport;
-					transport = new TSocket(server.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER);
-					try {
-						transport.open();
-					} catch (TTransportException e) {
-						e.printStackTrace();
-					}
-					TProtocol protocol = new TBinaryProtocol(transport);
-					
-					Service.Client client = new Client(protocol);
-					try {
-						client.removeFileSlave((int) file.getId());
-						FileOnServer fos = new FileOnServer();
-						fos.setFileId(file.getId());
-						fos.setServerId((long) IpConverter.getIntegerIpfromString(server.getIp()));
-
-						fos.setServerId((long) 2); // TODO: server id != ip,
-													// fixed for test data
-						repository.deleteFileOnServer(fos);
-					} catch (Exception e) {
-						e.printStackTrace();
+					try(DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER))
+					{
+						
+						Service.Client client = dfsclient.getClient();
+						try {
+							client.removeFileSlave((int) file.getId());
+							FileOnServer fos = new FileOnServer();
+							fos.setFileId(file.getId());
+							fos.setServerId(server.getId());
+							repository.deleteFileOnServer(fos);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} catch (TTransportException e1) {
+						e1.printStackTrace();
+					} catch (Exception e1) {
+						e1.printStackTrace();
 					}
 
-					transport.close();
 				}
 				repository.deleteFile(file);
-
 
 			}
 		});
@@ -361,9 +367,9 @@ public class ServerHandler implements Service.Iface {
 	 * @return FilePartDescription
 	 */
 	@Override
-	public FilePartDescription sendFileToSlaveRequest(long fileId) throws TException {
+	public FilePartDescription sendFileToSlaveRequest(int fileId) throws TException {
 		storageHandler.createFile(fileId);
-		return new FilePartDescription((int) fileId, (long) 0);
+		return new FilePartDescription(fileId, (long) 0);
 	}
 
 	/**
@@ -415,6 +421,12 @@ public class ServerHandler implements Service.Iface {
 		filePart.setFileId(filePartDescription.getFileId());
 		filePart.setData(dataToSend);
 		return filePart;
+	}
+
+	@Override
+	public void fileUploadSuccess(int fileID, String slaveIP) throws TException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

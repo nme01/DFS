@@ -54,4 +54,4 @@ create table version (
 GRANT ALL ON files, servers,files_on_servers, version TO rsodfs;
 "
 
-psql -d rsodfs -f insert_test_data.sql
+#psql -d rsodfs -f insert_test_data.sql

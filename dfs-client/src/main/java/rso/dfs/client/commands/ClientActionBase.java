@@ -5,9 +5,6 @@ package rso.dfs.client.commands;
  * */
 public abstract class ClientActionBase implements ClientAction {
 
-	// TODO : FIX THIS SHIT
-	protected String masterIpAddress = "localhost";
-
 	@Override
 	public boolean correspondsToString(String s) {
 		return s.contains(getCommandName());

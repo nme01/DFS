@@ -23,24 +23,23 @@ public class GetCommand extends ClientActionBase {
 	}
 
 	@Override
-	public void performCommand(String line) throws Exception {
-		String filePath = assemblyFileName(line);
+	public void performCommand(String line, String masterIP) throws Exception {
 
-		GetHandler handler = new GetHandler(masterIpAddress);
+		String[] tokens = line.split(" ");
+		if (tokens.length != 3) {
+			// raise error
+			System.err.println("Get error, invalid number of args");
+		}
+		String filePathSrc = tokens[1];
+		String filePathDst = tokens[2];
+		
+		GetHandler handler = new GetHandler(masterIP);
 		try {
-			handler.performGet(filePath);
+			handler.performGet(filePathSrc,filePathDst);
 		} catch (Exception e) {
 
 		}
 
-	}
-
-	private String assemblyFileName(final String line) {
-		String[] tokens = line.split(" ");
-		if (tokens.length != 2) {
-			// raise error
-		}
-		return tokens[1];
 	}
 
 }

@@ -30,7 +30,7 @@ public class DFSModelDAOImplTest extends IntegrationTestBase {
 
 		File file = createTestFile();
 
-		Long fileId = modelDAO.saveFile(file);
+		Integer fileId = modelDAO.saveFile(file);
 
 		File fetchedFile = modelDAO.fetchFileById(fileId);
 		Assert.assertEquals(file.getName(), fetchedFile.getName());
@@ -84,7 +84,7 @@ public class DFSModelDAOImplTest extends IntegrationTestBase {
 		
 		File file = createTestFile();
 
-		Long fileId = modelDAO.saveFile(file);
+		Integer fileId = modelDAO.saveFile(file);
 		file = modelDAO.fetchFileByFileName(file.getName());
 
 		FileOnServer fileOnServer = new FileOnServer();

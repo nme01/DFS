@@ -24,7 +24,7 @@ public interface DFSModelDAO {
 
 	public int deleteFileOnServer(FileOnServer fileOnServer);
 
-	public File fetchFileById(Long fileId);
+	public File fetchFileById(Integer fileId);
 
 	public File fetchFileByFileName(String fileName);
 
@@ -34,9 +34,9 @@ public interface DFSModelDAO {
 	
 	public List<File> fetchFilesOnServer(Server server);
 	
-	public List<Server> fetchServersByFileId(long fileId);
+	public List<Server> fetchServersByFileId(Integer fileId);
 
-	public Long saveFile(File file);
+	public Integer saveFile(File file);
 
 	public void saveFileOnServer(FileOnServer fileOnServer);
 
@@ -45,5 +45,7 @@ public interface DFSModelDAO {
 	public int updateFile(File file);
 
 	public int updateServer(Server server);
+
+	public void cleanDB();
 
 }

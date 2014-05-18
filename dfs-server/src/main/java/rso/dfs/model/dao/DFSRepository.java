@@ -19,11 +19,11 @@ public interface DFSRepository {
 	
 	public Server getMasterServer();
 
-	public void saveMaster(Server server);
+	public void saveServer(Server server);
 	
 	public File getFileByFileName(String fileName);
 	
-	public File getFileById(Long fileId);
+	public File getFileById(Integer fileId);
 
 	public Server getSlaveByFile(File file);
 	
@@ -35,10 +35,10 @@ public interface DFSRepository {
 	
 	public void saveFileOnServer(final FileOnServer fileOnServer);
 	
-	public Long saveFile(final File file);
+	public Integer saveFile(final File file);
 
 	public void updateFile(final File file);
 
-
+	public void cleanDB();
 	
 }

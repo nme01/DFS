@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -21,6 +23,7 @@ import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.mapper.FileRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
+import rso.dfs.server.DFSServer;
 
 /**
  * WARNING: THIS IS DATA ACCESS LAYER
@@ -30,6 +33,8 @@ import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
  * */
 public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
+	final static Logger log = LoggerFactory.getLogger(DFSModelDAOImpl.class);
+	
 	public DFSModelDAOImpl(DriverManagerDataSource dataSource) {
 		super();
 		setDataSource(dataSource);
@@ -63,7 +68,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public File fetchFileById(Long fileId) {
+	public File fetchFileById(Integer fileId) {
 		final String query = "select id, name, size, status from files where id=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { fileId }, new FileRowMapper());
 
@@ -98,7 +103,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public List<Server> fetchServersByFileId(long fileId) { 
+	public List<Server> fetchServersByFileId(Integer fileId) { 
 		final String query = "select id, ip, role, memory, last_connection from servers , files_on_servers where files_on_servers.server_id=servers.id and files_on_servers.file_id = ?";
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
@@ -112,7 +117,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	
 		
 	@Override
-	public Long saveFile(final File file) {
+	public Integer saveFile(final File file) {
 		final String query = "insert into files (name, size, status) values(?, ?, ?)";
 
 		KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -128,7 +133,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 				return ps;
 			}
 		}, keyHolder);
-		return keyHolder.getKey().longValue();
+		return keyHolder.getKey().intValue();
 	}
 
 	@Override
@@ -156,6 +161,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 				return ps;
 			}
 		}, keyHolder);
+		log.debug("Server saved in DAO. Key value is: " + keyHolder.getKey().longValue());
 		return keyHolder.getKey().longValue();
 	}
 
@@ -170,6 +176,19 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public int updateServer(Server server) {
 		final String query = "update servers set role=?, memory=?, last_connection where ip=?";
 		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), server.getLastConnection(), server.getIp() });
+	}
+
+	@Override
+	public void cleanDB() {
+		final String query3 = "TRUNCATE files_on_servers CASCADE";
+		getJdbcTemplate().update(query3);
+		
+		final String query = "TRUNCATE files CASCADE";
+		getJdbcTemplate().update(query);
+		
+		final String query2 = "TRUNCATE servers CASCADE";
+		getJdbcTemplate().update(query2);
+
 	}
 
 }

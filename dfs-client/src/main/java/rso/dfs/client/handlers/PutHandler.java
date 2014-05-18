@@ -20,6 +20,7 @@ import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
 import rso.dfs.utils.DFSArrayUtils;
+import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
 
@@ -30,14 +31,14 @@ public class PutHandler extends HandlerBase {
 		super(masterIpAddress);
 	}
 
-	public void performPut(String filePath, long fileSize) throws Exception {
+	public void performPut(String filePathSrc, String filePathDst, long fileSize) throws Exception {
 
 		PutFileParams putFileParams = null;
 		byte[] dataBuffer;
 		//long chunkSize = 0;
 		long offset = 0;
 		try {
-			File hm = new File(filePath);
+			File hm = new File(filePathSrc);
 			if (!hm.canRead()) throw new IOException("File is unreachable!");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -46,7 +47,7 @@ public class PutHandler extends HandlerBase {
 			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
-			putFileParams = serviceClient.putFile(filePath, fileSize);
+			putFileParams = serviceClient.putFile(filePathDst, fileSize);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -63,12 +64,11 @@ public class PutHandler extends HandlerBase {
 		FilePart chunk = null;
 		FilePartDescription fileDesc = null;
 		
-		try (DFSTSocket dfstSocket = new DFSTSocket("localhost", DFSConstans.STORAGE_SERVER_PORT_NUMBER);) {
-			dfstSocket.open();
-			TProtocol protocol = new TBinaryProtocol(dfstSocket);
-			Service.Client serviceClient = new Service.Client(protocol);
+		try (DFSClosingClient ccClient = new DFSClosingClient(putFileParams.getSlaveIp(), 
+				DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+			Service.Client serviceClient = ccClient.getClient();
 			
-			dataBuffer = Files.readAllBytes(Paths.get(filePath));
+			dataBuffer = Files.readAllBytes(Paths.get(filePathSrc));
 			
 			chunk = new FilePart();
 			chunk.setFileId(putFileParams.getFileId());

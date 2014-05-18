@@ -16,7 +16,7 @@ public class FileRowMapper implements ParameterizedRowMapper<File> {
 	@Override
 	public File mapRow(ResultSet resultSet, int rowNum) throws SQLException {
 		File file = new File();
-		file.setId(resultSet.getLong("id"));
+		file.setId(((Long)resultSet.getLong("id")).intValue());
 		file.setName(resultSet.getString("name"));
 		file.setSize(resultSet.getLong("size"));
 		file.setStatus(FileStatus.getFileStatus(resultSet.getString("status")));

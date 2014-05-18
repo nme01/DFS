@@ -15,6 +15,7 @@ import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.GetFileParams;
 import rso.dfs.generated.Service;
 import rso.dfs.utils.DFSArrayUtils;
+import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
 
@@ -27,7 +28,7 @@ public class GetHandler extends HandlerBase {
 		super(masterIpAddress);
 	}
 
-	public void performGet(String filePath) throws Exception {
+	public void performGet(String filePathSrc, String filePathDst) throws Exception {
 
 		GetFileParams getFileParams = null;
 
@@ -35,7 +36,7 @@ public class GetHandler extends HandlerBase {
 			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
-			getFileParams = serviceClient.getFile(filePath);
+			getFileParams = serviceClient.getFile(filePathSrc);
 
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -48,6 +49,8 @@ public class GetHandler extends HandlerBase {
 			return;
 		}
 		
+		;
+		
 		// assembly filePartDescription
 		FilePartDescription filePartDescription = new FilePartDescription();
 		filePartDescription.setFileId(getFileParams.getFileId());
@@ -55,10 +58,9 @@ public class GetHandler extends HandlerBase {
 
 		ArrayList<FilePart> fileParts = new ArrayList<>();
 
-		try (DFSTSocket dfstSocket = new DFSTSocket("localhost", DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
-			dfstSocket.open();
-			TProtocol protocol = new TBinaryProtocol(dfstSocket);
-			Service.Client serviceClient = new Service.Client(protocol);
+		try (DFSClosingClient ccClient = new DFSClosingClient(getFileParams.getSlaveIp(), 
+				DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+			Service.Client serviceClient = ccClient.getClient();
 
 			FilePart filePart = null;
 			long offset = 0;
@@ -72,7 +74,6 @@ public class GetHandler extends HandlerBase {
 				
 				fileParts.add(filePart);
 			}
-
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -80,7 +81,7 @@ public class GetHandler extends HandlerBase {
 		byte[] fileBody = createFileBody(fileParts);
 
 		
-		saveFileBody(filePath, fileBody);
+		saveFileBody(filePathDst, fileBody);
 
 	}
 
