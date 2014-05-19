@@ -1,28 +1,20 @@
 package rso.dfs.client.handlers;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
-import rso.dfs.commons.DFSConstans;
+import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
-import rso.dfs.utils.DFSArrayUtils;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
-import rso.dfs.utils.IpConverter;
 
 
 public class PutHandler extends HandlerBase {
@@ -43,7 +35,7 @@ public class PutHandler extends HandlerBase {
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSConstans.NAMING_SERVER_PORT_NUMBER)) {
+		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
 			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
@@ -65,7 +57,7 @@ public class PutHandler extends HandlerBase {
 		FilePartDescription fileDesc = null;
 		
 		try (DFSClosingClient ccClient = new DFSClosingClient(putFileParams.getSlaveIp(), 
-				DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+				DFSProperties.getProperties().getStorageServerPort())) {
 			Service.Client serviceClient = ccClient.getClient();
 			
 			dataBuffer = Files.readAllBytes(Paths.get(filePathSrc));

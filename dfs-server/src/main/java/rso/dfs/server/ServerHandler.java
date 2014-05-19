@@ -1,6 +1,5 @@
 package rso.dfs.server;
 
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,14 +12,12 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rso.dfs.commons.DFSConstans;
+import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -40,7 +37,6 @@ import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.handler.FileStorageHandler;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
-import rso.dfs.utils.IpConverter;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
@@ -92,7 +88,7 @@ public class ServerHandler implements Service.Iface {
 		Server server = new Server();
 		
 		server.setIp(req.getSlaveIP());
-		server.setMemory(DFSConstans.STORAGE_SERVER_MEMORY); //FIXME: not really i guess
+		server.setMemory(DFSProperties.getProperties().getStorageServerMemory()); //FIXME: not really i guess
 		server.setRole(ServerRole.SLAVE);
 		server.setLastConnection(new DateTime());
 		repository.saveServer(server);
@@ -110,7 +106,7 @@ public class ServerHandler implements Service.Iface {
 		}
 		
 		try(DFSClosingClient cclient = new DFSClosingClient(req.getSlaveIP(), 
-				DFSConstans.STORAGE_SERVER_PORT_NUMBER))
+				DFSProperties.getProperties().getStorageServerPort()))
 		{
 			Client client = cclient.getClient();
 			for (Integer fileId : ids) {
@@ -287,7 +283,7 @@ public class ServerHandler implements Service.Iface {
 		
 		if (i.hasNext() && replDegree-- > 0) {
 			Server secRepl = (Server)i.next();
-			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
 				dfstSocket.open();
 				TProtocol protocol = new TBinaryProtocol(dfstSocket);
 				Service.Client serviceClient = new Service.Client(protocol);
@@ -331,7 +327,7 @@ public class ServerHandler implements Service.Iface {
 			public void run() {
 				List<Server> servers = repository.getSlavesByFile(file);
 				for (Server server : servers) {
-					try(DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSConstans.STORAGE_SERVER_PORT_NUMBER))
+					try(DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSProperties.getProperties().getStorageServerPort()))
 					{
 						
 						Service.Client client = dfsclient.getClient();
