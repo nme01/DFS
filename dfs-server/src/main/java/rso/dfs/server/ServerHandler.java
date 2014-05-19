@@ -425,8 +425,11 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void fileUploadSuccess(int fileID, String slaveIP) throws TException {
-		// TODO Auto-generated method stub
-		
+		rso.dfs.model.File f = repository.getFileById(fileID);
+		f.setStatus(FileStatus.HELD);
+		repository.updateFile(f);
+		//TODO repository not implements Files_on_servers interface
+		//which i will use here
 	}
 
 }
