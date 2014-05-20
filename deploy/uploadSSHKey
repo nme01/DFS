@@ -1,0 +1,7 @@
+if [ ! -f ~/.ssh/id_rsa.pub ]
+then
+    ssh-keygen -t rsa
+fi
+ssh ubuntu@$1 '[ -d /home/ubuntu/.ssh ] || mkdir -p /home/ubuntu/.ssh ]'
+scp ~/.ssh/id_rsa.pub ubuntu@$1:/home/ubuntu/.ssh/authorized_keys
+

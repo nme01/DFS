@@ -1,0 +1,46 @@
+HOW TO VMware:
+
+Podążaj za listą kroków:
+
+1. Pobrać dystrybucję ubuntu-server 14.04 z virtualboximages.com. Skrypty wykorzystują domyślne dla dystrybucji konto 'ubuntu' z hasłem reverse (można zmienić).
+
+2. Zainstalować VMware Player - jest najmniej problemów.
+
+3. 
+Na serwerze należy wykonać
+sudo visudo 
+i dopisać na końcu linię
+ubuntu ALL=(ALL) NOPASSWD: ALL
+
+4. Wgrać klucz publiczny: 
+./uploadSSH <ip serwera>
+
+5. Zainstalować zależności (postgres itd) 
+./installDependencies <ip servera>
+
+Kroki deploymentu aplikacji
+
+1. Lokalne skomplilowanie wszystkiego co trzeba mavenem:
+./makeall
+
+2. Deploy aplikacji (serwerowej)
+./deployToServer <ip servera>
+
+3. Uruchomienie aplikacji:
+./runMaster <ip serwera>
+./runSlave <ip serwera> <ip mastera>
+
+
+Korzystanie z DFS:
+1. Kompilacja klienta do lokalnego uruchomienia:
+./makeall -c
+
+2. Uruchomienie klienta
+./runClientHere <ip serwera>
+
+-----
+
+W razie potrzeby:
+./killemAll <ip servera>
+Zabija wszelką javę na serwerze.
+

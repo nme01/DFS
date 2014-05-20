@@ -1,0 +1,1 @@
+java -cp "../dfs-client/dist/lib/*:../dfs-client/dist/conf/" rso.dfs.client.DFSClient "$@"

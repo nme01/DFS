@@ -1,0 +1,1 @@
+ssh ubuntu@$1 "cd /home/ubuntu/rsodist/;echo $2 $1; ./dfs_storage_server.sh $2 $1"

@@ -4,17 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>rso</groupId>
-	<artifactId>dfs</artifactId>
-	<packaging>pom</packaging>
-	<version>1.0-SNAPSHOT</version>
-	<name>RSO - Distributed File System</name>
-	
-	<modules>
-		<module>dfs-thrift</module>
-		<module>dfs-client</module>
-		<module>dfs-server</module>
-		<module>dfs-utils</module>
-	</modules>
+	<artifactId>dfs-server</artifactId>
+	<packaging>jar</packaging>
+	<version>0.1</version>
+	<name>RSO - Distributed File System - Server Application</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -33,12 +26,39 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>rso</groupId>
+			<artifactId>dfs-thrift</artifactId>
+			<version>0.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>rso</groupId>
+			<artifactId>dfs-utils</artifactId>
+			<version>0.1</version>
+		</dependency>
+
+
+
+		<dependency>
+			<groupId>org.apache.thrift</groupId>
+			<artifactId>libthrift</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit-version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok-version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -53,6 +73,44 @@
 			<version>1.2</version>
 		</dependency>
 
+		<dependency>
+			<groupId>jline</groupId>
+			<artifactId>jline</artifactId>
+			<version>2.11</version>
+		</dependency>
+
+
+		<!-- TODO : remove this if is not needed -->
+		<!-- Spring dependencies -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring-version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring-version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring-version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring-version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 		<!-- logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -80,11 +138,55 @@
 			<version>1.1</version>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- Database -->
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.2-1003-jdbc4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>${spring-version}</version>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<excutable>java</excutable>
+					<mainClass>${main-class}</mainClass>
+					<!-- <commandlineArgs>${target.cmd.args}</commandlineArgs> -->
+					<includePluginDependencies>false</includePluginDependencies>
+					<systemProperties>
+						<systemProperty>
+							<key>log4j.configuration</key>
+							<value>log4j.xml</value>
+						</systemProperty>
+					</systemProperties>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<version>2.9</version>
@@ -179,7 +281,12 @@
 										<include>*.bat</include>
 									</includes>
 								</resource>
-
+								<resource>
+									<directory>.</directory>
+									<includes>
+										<include>*.sh</include>
+									</includes>
+								</resource>
 							</resources>
 						</configuration>
 					</execution>
