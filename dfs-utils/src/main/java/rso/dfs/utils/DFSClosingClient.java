@@ -6,7 +6,6 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import rso.dfs.commons.DFSConstans;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
 

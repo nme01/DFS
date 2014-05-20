@@ -23,7 +23,6 @@ import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.mapper.FileRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
-import rso.dfs.server.DFSServer;
 
 /**
  * WARNING: THIS IS DATA ACCESS LAYER
