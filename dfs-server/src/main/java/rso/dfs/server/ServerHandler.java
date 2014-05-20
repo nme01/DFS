@@ -80,6 +80,18 @@ public class ServerHandler implements Service.Iface {
 	}
 
 	@Override
+	public List<String> listFileNames() throws TException {
+		log.debug("New LS request.");
+		List<File> files = repository.getAllFiles();
+
+		List<String> fileNames = new ArrayList<>();
+		for (File f : files) {
+			fileNames.add(f.getName());
+		}
+		return fileNames;
+	}
+
+	@Override
 	public SystemStatus getStatus() throws TException {
 		// TODO Auto-generated method stub
 		return null;

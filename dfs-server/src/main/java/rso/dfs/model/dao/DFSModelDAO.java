@@ -48,4 +48,6 @@ public interface DFSModelDAO {
 
 	public void cleanDB();
 
+	public List<File> fetchAllFiles();
+
 }
