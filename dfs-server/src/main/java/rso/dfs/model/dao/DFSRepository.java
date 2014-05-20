@@ -40,5 +40,7 @@ public interface DFSRepository {
 	public void updateFile(final File file);
 
 	public void cleanDB();
+
+	public List<File> getAllFiles();
 	
 }

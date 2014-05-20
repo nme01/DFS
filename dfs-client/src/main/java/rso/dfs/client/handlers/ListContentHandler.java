@@ -1,5 +1,6 @@
 package rso.dfs.client.handlers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import rso.dfs.commons.DFSProperties;
@@ -13,14 +14,19 @@ public class ListContentHandler extends HandlerBase {
 		// TODO Auto-generated constructor stub
 	}
 
-	public List<String> performLS() {
+	public void performLS() {
+		List<String> fileList = new ArrayList<>();
 		try (DFSClosingClient closingClient = new DFSClosingClient(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
 			Service.Client serviceClient = closingClient.getClient();
-			// serviceClient. get Files List
+			fileList = serviceClient.listFileNames();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
+
+		for (String fileName : fileList) {
+			System.out.println(fileName);
+		}
+
 	}
 
 }

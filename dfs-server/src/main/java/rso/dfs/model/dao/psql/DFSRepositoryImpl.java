@@ -130,4 +130,8 @@ public class DFSRepositoryImpl implements DFSRepository {
 	public void cleanDB() {
 		modelDAO.cleanDB();
 	}
+	@Override
+	public List<File> getAllFiles() {
+		return modelDAO.fetchAllFiles();
+	}
 }

@@ -67,6 +67,9 @@ service Service
 //returns administrative system status
 SystemStatus getStatus(),
 
+// returns list of file names 
+list<string> listFileNames(),
+
 //infrastucure building
 //slave sends request to master to register to serve
 CoreStatus registerSlave(1:NewSlaveRequest req),
