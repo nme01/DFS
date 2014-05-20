@@ -16,7 +16,7 @@ public class ExitCommand extends ClientActionBase {
 	}
 
 	@Override
-	public void performCommand(String line) {
+	public void performCommand(String line, String masterIP) {
 		System.out.println("Bye");
 		System.exit(0);
 

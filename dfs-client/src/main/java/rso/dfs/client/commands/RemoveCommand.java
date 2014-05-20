@@ -1,8 +1,5 @@
 package rso.dfs.client.commands;
 
-import java.io.File;
-
-import rso.dfs.client.handlers.GetHandler;
 import rso.dfs.client.handlers.RemoveHandler;
 
 /**
@@ -24,10 +21,10 @@ public class RemoveCommand extends ClientActionBase {
 	}
 
 	@Override
-	public void performCommand(String line) throws Exception {
+	public void performCommand(String line, String masterIP) throws Exception {
 		String filePath = assemblyFileName(line);
 
-		RemoveHandler handler = new RemoveHandler(masterIpAddress);
+		RemoveHandler handler = new RemoveHandler(masterIP);
 		try {
 			handler.performRemove(filePath);
 		} catch (Exception e) {

@@ -25,8 +25,16 @@ public class DFSClient {
 
 	private List<ClientAction> clientActionList;
 	private final String welcomeMessage = "Welcome to RSO DFS Client";
-
-	private void initialize() {
+	private String masterIPAddress = null;
+	
+	private void initialize(String args[]) {
+		if (args.length < 1)
+		{
+			//FIXME: use some logger or sth
+			System.err.println("You should provide ip address as arg"); 
+			System.exit(-1);
+		}
+		masterIPAddress = args[0];
 		clientActionList = new ArrayList<>();
 		clientActionList.add(new HelpCommand(clientActionList));
 		clientActionList.add(new GetCommand());
@@ -48,7 +56,8 @@ public class DFSClient {
 	public void run() throws IOException {
 		printWelcomeMessage();
 
-		ConsoleReader reader = new ConsoleReader(System.in, System.out, new UnsupportedTerminal());
+		ConsoleReader reader = new ConsoleReader(System.in, System.out, 
+				new UnsupportedTerminal());
 		// TODO: flavored terminals do not work under eclipse -> in development
 		// we use UnsupportedTerminal
 		// but UnsupportedTerminal does not provide autocomplete feature :(
@@ -74,7 +83,7 @@ public class DFSClient {
 			for (ClientAction clientAction : clientActionList) {
 				if (clientAction.correspondsToString(line)) {
 					try {
-						clientAction.performCommand(line);
+						clientAction.performCommand(line,masterIPAddress);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -105,7 +114,7 @@ public class DFSClient {
 
 	public static void main(String[] args) throws IOException {
 		DFSClient dfsClient = new DFSClient();
-		dfsClient.initialize();
+		dfsClient.initialize(args);
 		dfsClient.run();
 	}
 }

@@ -2,3 +2,4 @@
 /dist
 *.log
 /.settings
+/sql/my_all.sh

@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -23,12 +25,14 @@ import rso.dfs.model.dao.psql.mapper.FileRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
 
 /**
- * WARNING: THIS IS DATA ACCESS LAYER
- * REMEMBER TO USE {@link DFSRepository} instead of this.
+ * WARNING: THIS IS DATA ACCESS LAYER REMEMBER TO USE {@link DFSRepository}
+ * instead of this.
  * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
+
+	final static Logger log = LoggerFactory.getLogger(DFSModelDAOImpl.class);
 
 	public DFSModelDAOImpl(DriverManagerDataSource dataSource) {
 		super();
@@ -63,7 +67,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public File fetchFileById(Long fileId) {
+	public File fetchFileById(Integer fileId) {
 		final String query = "select id, name, size, status from files where id=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { fileId }, new FileRowMapper());
 
@@ -73,13 +77,10 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public File fetchFileByFileName(String fileName) {
 		final String query = "select id, name, size, status from files where name=?";
 		File result = null;
-		try
-		{
+		try {
 			result = getJdbcTemplate().queryForObject(query, new Object[] { fileName }, new FileRowMapper());
-		}
-		catch (EmptyResultDataAccessException e)
-		{
-			//null file
+		} catch (EmptyResultDataAccessException e) {
+			// null file
 			logger.info("File " + fileName + " not found on server.");
 		}
 		return result;
@@ -98,7 +99,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	}
 
 	@Override
-	public List<Server> fetchServersByFileId(long fileId) { 
+	public List<Server> fetchServersByFileId(Integer fileId) {
 		final String query = "select id, ip, role, memory, last_connection from servers , files_on_servers where files_on_servers.server_id=servers.id and files_on_servers.file_id = ?";
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
@@ -109,10 +110,9 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		final String query = "select id, name, size, status from files join files_on_servers on id=files_on_servers.file_id where files_on_servers.server_id=?";
 		return getJdbcTemplate().query(query, new Object[] { server.getId() }, new FileRowMapper());
 	}
-	
-		
+
 	@Override
-	public Long saveFile(final File file) {
+	public Integer saveFile(final File file) {
 		final String query = "insert into files (name, size, status) values(?, ?, ?)";
 
 		KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -128,7 +128,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 				return ps;
 			}
 		}, keyHolder);
-		return keyHolder.getKey().longValue();
+		return keyHolder.getKey().intValue();
 	}
 
 	@Override
@@ -156,6 +156,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 				return ps;
 			}
 		}, keyHolder);
+		log.debug("Server saved in DAO. Key value is: " + keyHolder.getKey().longValue());
 		return keyHolder.getKey().longValue();
 	}
 
@@ -172,4 +173,22 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), server.getLastConnection(), server.getIp() });
 	}
 
+	@Override
+	public void cleanDB() {
+		final String query3 = "TRUNCATE files_on_servers CASCADE";
+		getJdbcTemplate().update(query3);
+
+		final String query = "TRUNCATE files CASCADE";
+		getJdbcTemplate().update(query);
+
+		final String query2 = "TRUNCATE servers CASCADE";
+		getJdbcTemplate().update(query2);
+
+	}
+
+	@Override
+	public List<File> fetchAllFiles() {
+		final String query = "select id, name, size, status from files";
+		return getJdbcTemplate().query(query, new FileRowMapper());
+	}
 }

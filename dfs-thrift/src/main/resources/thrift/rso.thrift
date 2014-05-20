@@ -1,6 +1,8 @@
+namespace java rso.dfs.generated
+
 typedef i32 int
 typedef i64 long
-typedef i32 IPType
+typedef string IPType
 
 enum ServerType {
     Slave,
@@ -44,7 +46,8 @@ struct FilePart {
 // communication initiated by new node
 // new node sends to master file list
 struct NewSlaveRequest {
-    1:list<int> fileIds
+    1:required IPType slaveIP;
+    2:list<int> fileIds;
 }
 struct GetFileParams
 {
@@ -64,6 +67,8 @@ service Service
 //returns administrative system status
 SystemStatus getStatus(),
 
+// returns list of file names 
+list<string> listFileNames(),
 
 //infrastucure building
 //slave sends request to master to register to serve
@@ -97,12 +102,14 @@ bool removeFile(1:string filepath),
 
 // Input: file ID (should be a structure? I think it’s too simple)
 // returns: which part of file should be sent next
-FilePartDescription sendFileToSlaveRequest(1: long fileId),
+FilePartDescription sendFileToSlaveRequest(1: int fileId),
 
 // Input: part of file which has to be sent
 // returns: which part of file should be sent next, special value in case of finish
 FilePartDescription sendFilePartToSlave(1: FilePart filePart),
-FilePart getFileFromSlave(1: FilePartDescription filePartDescription)
+FilePart getFileFromSlave(1: FilePartDescription filePartDescription),
+
+void fileUploadSuccess(1:int fileID, 2: IPType slaveIP) 
 }
 
 

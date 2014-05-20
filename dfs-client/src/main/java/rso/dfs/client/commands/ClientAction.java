@@ -9,7 +9,7 @@ public interface ClientAction {
 
 	public String getHelp();
 
-	public void performCommand(String line) throws Exception;
+	public void performCommand(String line, String masterIP) throws Exception;
 
 	public boolean correspondsToString(String s);
 

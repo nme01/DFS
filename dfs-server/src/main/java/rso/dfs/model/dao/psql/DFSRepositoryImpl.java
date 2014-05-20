@@ -56,7 +56,6 @@ public class DFSRepositoryImpl implements DFSRepository {
 	
 	@Override
 	public void deleteFile(final File file) {
-		log.debug("");
 		int numberOfAffectedRows = masterDAO.deleteFile(file);
 	}
 	
@@ -66,8 +65,10 @@ public class DFSRepositoryImpl implements DFSRepository {
 		List<Server> list = masterDAO.fetchServersByRole(ServerRole.MASTER);
 
 		if (list.size() > 1) {
-			// raise fatal error
-			System.exit(-123);
+			// raise fatal error AND WRITE LOG MESSAGE
+			log.error("More than one master found in DB, core panic");
+			System.exit(-1);
+			
 		} else if (list.isEmpty()) {
 			return null;
 		}
@@ -75,8 +76,8 @@ public class DFSRepositoryImpl implements DFSRepository {
 	}
 
 	@Override
-	public void saveMaster(Server server) {
-		log.debug("Saving master:" + server.toString());
+	public void saveServer(Server server) {
+		log.debug("Saving server:" + server.toString());
 		masterDAO.saveServer(server);
 	}
 
@@ -107,7 +108,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 	}
 
 	@Override
-	public File getFileById(Long fileId) {
+	public File getFileById(Integer fileId) {
 		log.debug("");
 		return masterDAO.fetchFileById(fileId);
 	}
@@ -126,7 +127,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 	}
 
 	@Override
-	public Long saveFile(final File file) {
+	public Integer saveFile(final File file) {
 		log.debug("");
 		return masterDAO.saveFile(file);
 	}
@@ -149,5 +150,14 @@ public class DFSRepositoryImpl implements DFSRepository {
 		log.debug("");
 		return masterDAO.fetchServersByFileId(file.getId());
 
+	}
+
+	@Override
+	public void cleanDB() {
+		modelDAO.cleanDB();
+	}
+	@Override
+	public List<File> getAllFiles() {
+		return modelDAO.fetchAllFiles();
 	}
 }

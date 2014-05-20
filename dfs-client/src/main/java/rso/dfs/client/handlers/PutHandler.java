@@ -1,27 +1,20 @@
 package rso.dfs.client.handlers;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
-import rso.dfs.commons.DFSConstans;
+import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.PutFileParams;
 import rso.dfs.generated.Service;
-import rso.dfs.utils.DFSArrayUtils;
+import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
-import rso.dfs.utils.IpConverter;
 
 
 public class PutHandler extends HandlerBase {
@@ -30,23 +23,23 @@ public class PutHandler extends HandlerBase {
 		super(masterIpAddress);
 	}
 
-	public void performPut(String filePath, long fileSize) throws Exception {
+	public void performPut(String filePathSrc, String filePathDst, long fileSize) throws Exception {
 
 		PutFileParams putFileParams = null;
 		byte[] dataBuffer;
 		//long chunkSize = 0;
 		long offset = 0;
 		try {
-			File hm = new File(filePath);
+			File hm = new File(filePathSrc);
 			if (!hm.canRead()) throw new IOException("File is unreachable!");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSConstans.NAMING_SERVER_PORT_NUMBER)) {
+		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
 			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);
-			putFileParams = serviceClient.putFile(filePath, fileSize);
+			putFileParams = serviceClient.putFile(filePathDst, fileSize);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -63,12 +56,11 @@ public class PutHandler extends HandlerBase {
 		FilePart chunk = null;
 		FilePartDescription fileDesc = null;
 		
-		try (DFSTSocket dfstSocket = new DFSTSocket("localhost", DFSConstans.STORAGE_SERVER_PORT_NUMBER);) {
-			dfstSocket.open();
-			TProtocol protocol = new TBinaryProtocol(dfstSocket);
-			Service.Client serviceClient = new Service.Client(protocol);
+		try (DFSClosingClient ccClient = new DFSClosingClient(putFileParams.getSlaveIp(), 
+				DFSProperties.getProperties().getStorageServerPort())) {
+			Service.Client serviceClient = ccClient.getClient();
 			
-			dataBuffer = Files.readAllBytes(Paths.get(filePath));
+			dataBuffer = Files.readAllBytes(Paths.get(filePathSrc));
 			
 			chunk = new FilePart();
 			chunk.setFileId(putFileParams.getFileId());

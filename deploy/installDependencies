@@ -1,0 +1,2 @@
+ssh ubuntu@$1 "sudo apt-get update"
+ssh ubuntu@$1 "echo "y" | sudo apt-get install openjdk-7-jre-headless postgresql"

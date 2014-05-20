@@ -20,15 +20,22 @@ public class PutCommand extends ClientActionBase {
 	}
 
 	@Override
-	public void performCommand(String line) {
-		// TODO Auto-generated method stub
-		String filePath = assembleFileName(line);
-		File thisFile = new File(filePath);
+	public void performCommand(String line, String masterIP) {
+
+		String[] tokens = line.split(" ");
+		if (tokens.length != 3) {
+			// raise error
+			System.err.println("Get error, invalid number of args");
+		}
+		String filePathSrc = tokens[1];
+		String filePathDst = tokens[2];
+		
+		File thisFile = new File(filePathSrc);
 		long fileSize = thisFile.length();
 		
-		PutHandler handler = new PutHandler(masterIpAddress);
+		PutHandler handler = new PutHandler(masterIP);
 		try {
-			handler.performPut(filePath, fileSize);
+			handler.performPut(filePathSrc,filePathDst, fileSize);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

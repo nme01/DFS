@@ -281,7 +281,12 @@
 										<include>*.bat</include>
 									</includes>
 								</resource>
-
+								<resource>
+									<directory>.</directory>
+									<includes>
+										<include>*.sh</include>
+									</includes>
+								</resource>
 							</resources>
 						</configuration>
 					</execution>
