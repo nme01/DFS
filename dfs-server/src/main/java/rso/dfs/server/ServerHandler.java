@@ -67,6 +67,14 @@ public class ServerHandler implements Service.Iface {
 	 * */
 	private CoreStatus coreStatus;
 
+
+	/**
+	 * Contains statuses which files where used;
+	 * key -> fileId;
+	 * value -> value needed to double timeout delete
+	 * */
+	private HashMap<Integer, Integer> files = new HashMap<>();	
+	
 	public ServerHandler(Server me) {
 		this.me = me;
 		this.storageHandler = new FileStorageHandler();
@@ -220,9 +228,11 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public boolean isFileUsed(int fileID) throws TException {
-		// to w ogole potrzebne??
-		// TODO Auto-generated method stub
-		return false;
+		int counter = files.get(fileID);
+		if (counter>2)	//TODO get value from config
+				return false;
+		files.put(fileID, counter+1);
+		return true;
 	}
 
 	@Override
@@ -385,12 +395,28 @@ public class ServerHandler implements Service.Iface {
 		}
 
 		file.setStatus(FileStatus.TO_DELETE);
-
 		repository.updateFile(file);
 
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				List<Server> servers = repository.getSlavesByFile(file);
+				boolean isFileUsed = true;
+				while(isFileUsed)
+				{
+					isFileUsed = false;
+					for (Server server : servers) {
+						try (DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
+
+							Service.Client client = dfsclient.getClient();
+							isFileUsed = isFileUsed || client.isFileUsed(file.getId());
+							} catch (TTransportException e) {
+								e.printStackTrace();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+					};
+					//if (isFileUsed) wait timeout from config					
+				}
 				for (Server server : servers) {
 					try (DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
 
@@ -412,7 +438,6 @@ public class ServerHandler implements Service.Iface {
 
 				}
 				repository.deleteFile(file);
-
 			}
 		});
 		thread.start();
@@ -463,6 +488,8 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public FilePart getFileFromSlave(FilePartDescription filePartDescription) throws TException {
 
+		files.put(filePartDescription.fileId, 0);
+		
 		if (me.getRole() == rso.dfs.model.ServerRole.MASTER || filePartDescription.getOffset() >= repository.getFileById(filePartDescription.getFileId()).getSize()) {
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
 		}
@@ -491,6 +518,7 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void fileUploadSuccess(int fileID, String slaveIP) throws TException {
 		rso.dfs.model.File f = repository.getFileById(fileID);
+
 		f.setStatus(FileStatus.HELD);
 		long serverId = 0;
 		for (Server s : repository.getSlaves())
