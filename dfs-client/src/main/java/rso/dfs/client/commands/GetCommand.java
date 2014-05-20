@@ -1,7 +1,5 @@
 package rso.dfs.client.commands;
 
-import java.io.File;
-
 import rso.dfs.client.handlers.GetHandler;
 
 /**
