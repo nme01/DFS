@@ -2,10 +2,12 @@ package rso.dfs.model.dao.psql;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rso.dfs.event.DFSEvent;
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.Server;
@@ -18,7 +20,7 @@ import rso.dfs.model.dao.DFSRepository;
  * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class DFSRepositoryImpl implements DFSRepository {
+public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
 
@@ -26,21 +28,25 @@ public class DFSRepositoryImpl implements DFSRepository {
 	 * Information about master server.
 	 * */
 	private Server master;
-	
+
 	/**
 	 * Master's DAO.
 	 * */
 	private DFSModelDAO masterDAO;
-	
+
 	/**
-	 * Collection for shadows 
+	 * Collection for shadows
 	 * */
 	private HashMap<Server, DFSModelDAO> shadowsMap;
-	
 
-	public DFSRepositoryImpl(Server master) {
+	private BlockingQueue<DFSEvent> blockingQueue;
+
+	private boolean killRepository = false;
+
+	public DFSRepositoryImpl(Server master, BlockingQueue<DFSEvent> blockingQueue) {
 		this.master = master;
-		shadowsMap = new HashMap<>();
+		this.blockingQueue = blockingQueue;
+		this.shadowsMap = new HashMap<>();
 	}
 
 	public void addShadow(Server shadow) {
@@ -53,12 +59,12 @@ public class DFSRepositoryImpl implements DFSRepository {
 		DFSModelDAO removedDAO = (DFSModelDAO) shadowsMap.remove(shadowToRemove);
 
 	}
-	
+
 	@Override
 	public void deleteFile(final File file) {
 		int numberOfAffectedRows = masterDAO.deleteFile(file);
 	}
-	
+
 	@Override
 	public Server getMasterServer() {
 		// fetch master
@@ -68,7 +74,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 			// raise fatal error AND WRITE LOG MESSAGE
 			log.error("More than one master found in DB, core panic");
 			System.exit(-1);
-			
+
 		} else if (list.isEmpty()) {
 			return null;
 		}
@@ -117,7 +123,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 	public void saveFileOnServer(FileOnServer fileOnServer) {
 		log.debug("");
 		masterDAO.saveFileOnServer(fileOnServer);
-		
+
 	}
 
 	@Override
@@ -131,7 +137,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		log.debug("");
 		return masterDAO.saveFile(file);
 	}
-	
+
 	@Override
 	public void updateFile(final File file) {
 		log.debug("");
@@ -142,7 +148,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 	public void deleteFileOnServer(FileOnServer fileOnServer) {
 		log.debug("");
 		int numberOfAffectedRows = masterDAO.deleteFileOnServer(fileOnServer);
-		
+
 	}
 
 	@Override
@@ -156,8 +162,28 @@ public class DFSRepositoryImpl implements DFSRepository {
 	public void cleanDB() {
 		masterDAO.cleanDB();
 	}
+
 	@Override
 	public List<File> getAllFiles() {
 		return masterDAO.fetchAllFiles();
+	}
+
+	@Override
+	public void run() {
+
+		while (!killRepository) {
+			try {
+				DFSEvent e = blockingQueue.take();
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	public void killRepository() {
+		this.killRepository = true;
 	}
 }

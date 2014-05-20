@@ -3,6 +3,8 @@ package rso.dfs.server;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.commons.DFSProperties;
+import rso.dfs.event.DFSEvent;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
@@ -50,17 +53,25 @@ public class DFSServer {
 		me.setIp(InetAddressUtils.getInetAddressAsString());
 		me.setLastConnection(new DateTime());
 		if (ServerRole.getServerRole(args[0]) == ServerRole.MASTER) {
-			repository = new DFSRepositoryImpl(me);
+			// queue for messages from master to
+			// thread that updates shadows' databases
 			
-			//init db FIXME: for now clean db, it's probably not the best solution
+			BlockingQueue<DFSEvent> blockingQueue = new LinkedBlockingQueue<>();
+
+			repository = new DFSRepositoryImpl(me, blockingQueue);
+
+			// init db FIXME: for now clean db, it's probably not the best solution
 			repository.cleanDB();
 			
 			me.setMemory(DFSProperties.getProperties().getNamingServerMemory());
 			me.setRole(ServerRole.MASTER);
 			
 			repository.saveServer(me);
+			
+			// create empty object for storage handler
 			storageHandler = new EmptyStorageHandler();
 		} else {
+			// create empty object for slave 
 			repository = new EmptyRepository();
 			
 			me.setMemory(DFSProperties.getProperties().getStorageServerMemory());
