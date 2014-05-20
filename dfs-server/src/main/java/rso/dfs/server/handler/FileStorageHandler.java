@@ -1,6 +1,7 @@
 package rso.dfs.server.handler;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -16,15 +17,26 @@ public class FileStorageHandler implements StorageHandler {
 	private static final String prefix = "tmp";
 
 	@Override
-	public byte[] readFile(long fileId) {
+	public byte[] readFile(long fileId, long offset) {
+//		Path path = Paths.get(assemblePath(fileId));
+//		byte[] bytes;
+//		try {
+//			bytes = Files.readAllBytes(path);
+//		} catch (IOException e) {
+//			throw new RuntimeException("Unable to read file. " + e);
+//		}
+		
 		Path path = Paths.get(assemblePath(fileId));
-		byte[] bytes;
+		File inputFile = new File(assemblePath(fileId));
+		byte [] bytes = new byte[0];
 		try {
-			bytes = Files.readAllBytes(path);
-		} catch (IOException e) {
-			throw new RuntimeException("Unable to read file. " + e);
+			FileInputStream fis = new FileInputStream(inputFile);
+			fis.read(bytes, (int)offset, (int)(Files.size(path) - offset)); // TODO: chunk size
+			fis.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			// ...
 		}
-
 		return bytes;
 	}
 
@@ -48,6 +60,19 @@ public class FileStorageHandler implements StorageHandler {
 	public void deleteFile(long fileId) {
 		File file = new File(prefix + FileSystems.getDefault().getSeparator() + fileId);
 		file.delete();
+	}
+	
+	@Override
+	public long getFileSize(long fileId) {
+		Path path = Paths.get(assemblePath(fileId));
+		long fileSize = 0;
+		try {
+			fileSize = Files.size(path);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return fileSize;
 	}
 
 	@Override

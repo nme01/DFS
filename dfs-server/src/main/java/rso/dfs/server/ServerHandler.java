@@ -38,6 +38,7 @@ import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.utils.DFSArrayUtils;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
 import rso.dfs.utils.IpConverter;
@@ -149,8 +150,54 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void replicate(int fileID, String slaveIP) throws TException {
-		// TODO Auto-generated method stub
 		
+		final int fid = fileID;
+		final String sip = slaveIP;
+		final long sid = me.getId();
+		
+		Thread thread = new Thread(new Runnable() {
+			int fileID = fid;
+			String slaveIP = sip;
+			long slaveID = sid;
+			public void run() {
+				FilePartDescription filePartDescription = new FilePartDescription();
+				filePartDescription.setFileId(fileID);
+				filePartDescription.setOffset(0);
+
+				ArrayList<FilePart> fileParts = new ArrayList<>();
+				
+				try (DFSClosingClient ccClient = new DFSClosingClient(slaveIP, 
+						DFSConstans.STORAGE_SERVER_PORT_NUMBER)) {
+					Service.Client serviceClient = ccClient.getClient();
+
+					FilePart filePart = null;
+					long offset = 0;
+					while (true) {
+						filePartDescription.setOffset(offset);
+						filePart = serviceClient.getFileFromSlave(filePartDescription);
+						if (filePart.getData().length == 0) {
+							break;
+						}
+						offset += filePart.getData().length;
+						
+						fileParts.add(filePart);
+					}
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+				
+				byte[] dataBuffer = new byte[0];
+				for (FilePart filePart : fileParts) {
+					dataBuffer = DFSArrayUtils.concat(dataBuffer, filePart.getData());
+				}
+				storageHandler.writeFile(fileID, dataBuffer); // TODO: the entire file goes through the memory at the moment!
+				
+				repository.saveFileOnServer(new FileOnServer(fileID, slaveID, 0));
+			}
+			
+		});
+		thread.start();
+		return;
 	}
 
 	@Override
@@ -404,11 +451,17 @@ public class ServerHandler implements Service.Iface {
 	public FilePart getFileFromSlave(FilePartDescription filePartDescription)
 			throws TException {
 
-		if (me.getRole() == rso.dfs.model.ServerRole.MASTER) {
+		if (me.getRole() == rso.dfs.model.ServerRole.MASTER || filePartDescription.getOffset() >= repository.getFileById(filePartDescription.getFileId()).getSize()) {
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
 		}
-
-		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId());
+		
+		while (filePartDescription.getOffset() >= storageHandler.getFileSize(storageHandler.getFileSize(filePartDescription.getFileId()))) {
+			//TODO: handle timeouts
+			//put cond var on a queue
+			//sendFileParttoSlave will remove and signal them
+		}
+			
+		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId(), filePartDescription.getOffset());
 		if (filePartDescription.getOffset() >= dataToSend.length) {
 			FilePart filePart = new FilePart();
 			filePart.setFileId(filePartDescription.getFileId());
