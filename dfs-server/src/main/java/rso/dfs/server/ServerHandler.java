@@ -467,7 +467,7 @@ public class ServerHandler implements Service.Iface {
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
 		}
 
-		while (filePartDescription.getOffset() >= storageHandler.getFileSize(storageHandler.getFileSize(filePartDescription.getFileId()))) {
+		while (filePartDescription.getOffset() >= storageHandler.getFileSize(filePartDescription.getFileId())) {
 			// TODO: handle timeouts
 			// put cond var on a queue
 			// sendFileParttoSlave will remove and signal them
