@@ -10,6 +10,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
 import rso.dfs.commons.DFSConstans;
+import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.GetFileParams;
@@ -29,7 +30,7 @@ public class RemoveHandler extends HandlerBase {
 
 	public void performRemove(String filePath) throws Exception {
 
-		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSConstans.NAMING_SERVER_PORT_NUMBER)) {
+		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
 			dfstSocket.open();
 			TProtocol protocol = new TBinaryProtocol(dfstSocket);
 			Service.Client serviceClient = new Service.Client(protocol);

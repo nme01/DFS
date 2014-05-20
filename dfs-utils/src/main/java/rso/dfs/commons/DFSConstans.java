@@ -3,6 +3,7 @@ package rso.dfs.commons;
 /**
  * @author Adam Papros <adam.papros@gmail.com>
  * */
+@Deprecated
 public class DFSConstans {
 
 	public static final int NAMING_SERVER_PORT_NUMBER = 9090;

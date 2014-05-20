@@ -13,7 +13,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rso.dfs.commons.DFSConstans;
+import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
@@ -23,7 +23,6 @@ import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.InetAddressUtils;
-import rso.dfs.utils.IpConverter;
 
 public class DFSServer {
 
@@ -50,12 +49,12 @@ public class DFSServer {
 			//init db FIXME: for now clean db, it's probably not the best solution
 			repository.cleanDB();
 			
-			me.setMemory(DFSConstans.NAMING_SERVER_MEMORY);
+			me.setMemory(DFSProperties.getProperties().getNamingServerMemory());
 			me.setRole(ServerRole.MASTER);
 			
 			repository.saveServer(me);
 		} else {
-			me.setMemory(DFSConstans.STORAGE_SERVER_MEMORY);
+			me.setMemory(DFSProperties.getProperties().getStorageServerMemory());
 			me.setRole(ServerRole.SLAVE);
 			//FIXME: simplifying assumption: IP will be given by user who runs slave as 3rd arg. 
 			me.setIp(args[2]);
@@ -126,9 +125,9 @@ public class DFSServer {
 			TServerTransport serverTransport;
 			// TODO: fix this because it's ugly and probably not needed.
 			if (me.getRole() == ServerRole.MASTER) {
-				serverTransport = new TServerSocket(DFSConstans.NAMING_SERVER_PORT_NUMBER);
+				serverTransport = new TServerSocket(DFSProperties.getProperties().getNamingServerPort());
 			} else {
-				serverTransport = new TServerSocket(DFSConstans.STORAGE_SERVER_PORT_NUMBER);
+				serverTransport = new TServerSocket(DFSProperties.getProperties().getStorageServerPort());
 			}
 
 			TServer server = new TSimpleServer(new Args(serverTransport).processor(processor));
@@ -141,7 +140,7 @@ public class DFSServer {
 
 				try(DFSClosingClient cclient = 
 						new DFSClosingClient(masterIP, 
-								DFSConstans.NAMING_SERVER_PORT_NUMBER))
+								DFSProperties.getProperties().getNamingServerPort()))
 				{
 
 					Client client = cclient.getClient();
