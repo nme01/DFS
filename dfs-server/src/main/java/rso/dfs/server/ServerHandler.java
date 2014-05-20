@@ -228,11 +228,16 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public boolean isFileUsed(int fileID) throws TException {
+		if (files.containsKey(fileID))
+		{
 		int counter = files.get(fileID);
-		if (counter>2)	//TODO get value from config
-				return false;
-		files.put(fileID, counter+1);
-		return true;
+		if (counter<2)	//TODO get value from config
+			{
+			files.put(fileID, counter+1);
+			return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
