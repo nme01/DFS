@@ -31,17 +31,7 @@ public class EmptyRepository implements DFSRepository {
 	}
 
 	@Override
-	public void saveMaster(Server server) {
-		throw new IllegalStateException(message);
-	}
-
-	@Override
 	public File getFileByFileName(String fileName) {
-		throw new IllegalStateException(message);
-	}
-
-	@Override
-	public File getFileById(Long fileId) {
 		throw new IllegalStateException(message);
 	}
 
@@ -71,12 +61,34 @@ public class EmptyRepository implements DFSRepository {
 	}
 
 	@Override
-	public Long saveFile(File file) {
+	public Integer saveFile(File file) {
 		throw new IllegalStateException(message);
 	}
 
 	@Override
 	public void updateFile(File file) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public void saveServer(Server server) {
+		throw new IllegalStateException(message);
+
+	}
+
+	@Override
+	public File getFileById(Integer fileId) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public void cleanDB() {
+		throw new IllegalStateException(message);
+
+	}
+
+	@Override
+	public List<File> getAllFiles() {
 		throw new IllegalStateException(message);
 	}
 

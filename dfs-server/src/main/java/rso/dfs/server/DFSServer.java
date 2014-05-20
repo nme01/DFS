@@ -21,6 +21,7 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
+import rso.dfs.model.dao.psql.EmptyRepository;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.server.storage.EmptyStorageHandler;
 import rso.dfs.server.storage.FileStorageHandler;
@@ -44,12 +45,12 @@ public class DFSServer {
 
 	public DFSServer(String[] args) throws UnknownHostException {
 
-		repository = new DFSRepositoryImpl();
 		
 		me = new Server();
 		me.setIp(InetAddressUtils.getInetAddressAsString());
 		me.setLastConnection(new DateTime());
 		if (ServerRole.getServerRole(args[0]) == ServerRole.MASTER) {
+			repository = new DFSRepositoryImpl(me);
 			
 			//init db FIXME: for now clean db, it's probably not the best solution
 			repository.cleanDB();
@@ -60,6 +61,8 @@ public class DFSServer {
 			repository.saveServer(me);
 			storageHandler = new EmptyStorageHandler();
 		} else {
+			repository = new EmptyRepository();
+			
 			me.setMemory(DFSProperties.getProperties().getStorageServerMemory());
 			me.setRole(ServerRole.SLAVE);
 			//FIXME: simplifying assumption: IP will be given by user who runs slave as 3rd arg. 

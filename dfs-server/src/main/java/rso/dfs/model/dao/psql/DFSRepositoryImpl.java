@@ -154,10 +154,10 @@ public class DFSRepositoryImpl implements DFSRepository {
 
 	@Override
 	public void cleanDB() {
-		modelDAO.cleanDB();
+		masterDAO.cleanDB();
 	}
 	@Override
 	public List<File> getAllFiles() {
-		return modelDAO.fetchAllFiles();
+		return masterDAO.fetchAllFiles();
 	}
 }
