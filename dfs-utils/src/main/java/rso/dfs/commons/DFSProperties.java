@@ -18,6 +18,8 @@ public class DFSProperties {
 	private Long namingServerMemory;
 	private Long storageServerMemory;
 	private Long filePartSize;
+	private Integer isFileUsedTimeout;
+	private Integer deleteCounter;
 	private List<String> servers;
 	
 	private static DFSProperties dfsproperties;
@@ -51,6 +53,8 @@ public class DFSProperties {
 				}
 			}
 		}
+		dfsproperties.setIsFileUsedTimeout(Integer.parseInt(properties.getProperty("isFileUsedTimeout")));
+		dfsproperties.setDeleteCounter(Integer.parseInt(properties.getProperty("deleteCounter")));
 		dfsproperties.setDbname(properties.getProperty("database"));
 		dfsproperties.setDbpassword(properties.getProperty("dbpassword"));
 		dfsproperties.setDbport(Integer.parseInt(properties.getProperty("dbport")));
@@ -128,6 +132,22 @@ public class DFSProperties {
 	}
 	public void setServers(List<String> servers) {
 		this.servers = servers;
+	}
+
+	public Integer getDeleteCounter() {
+		return deleteCounter;
+	}
+
+	public void setDeleteCounter(Integer deleteCounter) {
+		this.deleteCounter = deleteCounter;
+	}
+
+	public Integer getIsFileUsedTimeout() {
+		return isFileUsedTimeout;
+	}
+
+	public void setIsFileUsedTimeout(Integer isFileUsedTimeout) {
+		this.isFileUsedTimeout = isFileUsedTimeout;
 	}
 	
 }

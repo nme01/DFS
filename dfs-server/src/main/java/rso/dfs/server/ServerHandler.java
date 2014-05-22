@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -160,8 +161,7 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public CoreStatus getCoreStatus() throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		return coreStatus;
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class ServerHandler implements Service.Iface {
 		if (files.containsKey(fileID))
 		{
 		int counter = files.get(fileID);
-		if (counter<2)	//TODO get value from config
+		if (counter<DFSProperties.getProperties().getDeleteCounter())	
 			{
 			files.put(fileID, counter+1);
 			return true;
@@ -243,6 +243,7 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void removeFileSlave(int fileID) throws TException {
 		storageHandler.deleteFile(fileID);
+		files.remove(fileID);
 	}
 
 	/**
@@ -420,7 +421,12 @@ public class ServerHandler implements Service.Iface {
 								e.printStackTrace();
 							}
 					};
-					//if (isFileUsed) wait timeout from config					
+					if (isFileUsed)
+						try {
+							TimeUnit.SECONDS.sleep(DFSProperties.getProperties().getIsFileUsedTimeout());
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}	
 				}
 				for (Server server : servers) {
 					try (DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
