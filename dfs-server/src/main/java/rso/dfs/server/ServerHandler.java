@@ -8,13 +8,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-<<<<<<< HEAD
 import java.util.concurrent.TimeUnit;
-=======
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
->>>>>>> 0dbb13a62f6ce339ff98ce767a98a18a478d47ae
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
