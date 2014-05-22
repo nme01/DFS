@@ -8,7 +8,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+<<<<<<< HEAD
 import java.util.concurrent.TimeUnit;
+=======
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+>>>>>>> 0dbb13a62f6ce339ff98ce767a98a18a478d47ae
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -67,7 +73,12 @@ public class ServerHandler implements Service.Iface {
 	 * 
 	 * */
 	private CoreStatus coreStatus;
-
+	
+	/**
+	 * Map of replicating slaves waiting for a file.
+	 * */
+	private Lock awaitingSlavesLock = new ReentrantLock();
+	private Map<Long, List<Condition>> awaitingSlaves = new HashMap<Long, List<Condition>>();
 
 	/**
 	 * Contains statuses which files where used;
@@ -481,7 +492,15 @@ public class ServerHandler implements Service.Iface {
 			byte[] dataBuffer = filePart.data.array();
 			log.info("Got a file part of fileId " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
 			storageHandler.writeFile(filePart.fileId, dataBuffer);
-
+			
+			awaitingSlavesLock.lock();
+			List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePart.getFileId());
+			for(Condition c : slavesAwaitingFileID) {
+				c.signal();
+			}
+			slavesAwaitingFileID.clear();
+			awaitingSlavesLock.unlock();
+			
 			return new FilePartDescription(filePart.fileId, filePart.offset + dataBuffer.length);
 
 		} catch (Exception e) {
@@ -499,6 +518,8 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public FilePart getFileFromSlave(FilePartDescription filePartDescription) throws TException {
 
+		Condition fileReady = awaitingSlavesLock.newCondition();
+		
 		files.put(filePartDescription.fileId, 0);
 		
 		if (me.getRole() == rso.dfs.model.ServerRole.MASTER || filePartDescription.getOffset() >= repository.getFileById(filePartDescription.getFileId()).getSize()) {
@@ -509,6 +530,17 @@ public class ServerHandler implements Service.Iface {
 			// TODO: handle timeouts
 			// put cond var on a queue
 			// sendFileParttoSlave will remove and signal them
+			awaitingSlavesLock.lock();
+			try {
+				List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePartDescription.getFileId());
+				slavesAwaitingFileID.add(fileReady);
+				fileReady.await();
+			} catch (InterruptedException ie) {
+				/* Just cycle through again, the thread will sleep if the file isn't ready. 
+				 * TODO: Check when InterruptedException might screw things up. */
+			}
+			awaitingSlavesLock.unlock();
+			
 		}
 
 		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId(), filePartDescription.getOffset());
