@@ -134,4 +134,9 @@ public class DFSRepositoryImpl implements DFSRepository {
 	public List<File> getAllFiles() {
 		return modelDAO.fetchAllFiles();
 	}
+
+	@Override
+	public Server getServerByIp(String ip) {
+		return modelDAO.fetchServerByIp(ip);
+	}
 }

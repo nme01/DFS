@@ -22,6 +22,8 @@ public class ServerRowMapper implements ParameterizedRowMapper<Server> {
 		server.setMemory(rs.getLong("memory"));
 		server.setLastConnection(new DateTime(rs.getTimestamp("last_connection").getTime()));
 		server.setRole(ServerRole.getServerRole(rs.getString("role")));
+		server.setFreeMemory(rs.getLong("freeMemory"));
+		
 
 		return server;
 	}

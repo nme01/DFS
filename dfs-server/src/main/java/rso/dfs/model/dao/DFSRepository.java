@@ -27,6 +27,8 @@ public interface DFSRepository {
 
 	public Server getSlaveByFile(File file);
 	
+	public Server getServerByIp(String ip);
+	
 	public List<Server> getSlavesByFile(File file);
 
 	public List<Server> getSlaves();

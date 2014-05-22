@@ -560,12 +560,8 @@ public class ServerHandler implements Service.Iface {
 		rso.dfs.model.File f = repository.getFileById(fileID);
 
 		f.setStatus(FileStatus.HELD);
-		long serverId = 0;
-		for (Server s : repository.getSlaves())
-		{
-			if (s.getIp().equals(slaveIP)) serverId = s.getId();
-		}
-		FileOnServer fos = new FileOnServer(fileID,serverId,0);
+		Server s = repository.getServerByIp(slaveIP);
+		FileOnServer fos = new FileOnServer(fileID,s.getId(),0);
 
 		repository.saveFileOnServer(fos);
 		repository.updateFile(f);

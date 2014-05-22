@@ -17,6 +17,8 @@ public class Server {
 
 	private DateTime lastConnection;
 
+	private long freeMemory;
+	
 	public Long getId() {
 		return id;
 	}
@@ -66,6 +68,14 @@ public class Server {
 	@Override
 	public String toString() {
 		return "Server [ip=" + ip + ", role=" + role + ", memory=" + memory + ", lastConnection=" + lastConnection + "]";
+	}
+
+	public long getFreeMemory() {
+		return freeMemory;
+	}
+
+	public void setFreeMemory(long freeMemory) {
+		this.freeMemory = freeMemory;
 	}
 
 }
