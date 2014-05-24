@@ -34,8 +34,9 @@ create table files_on_servers (
 create index pk_filesonservers on files_on_servers (file_id, server_id);
 create index fk_filesonservers on files_on_servers (server_id);
 
-create table version (
-	log bigserial not null
+create table log (
+	version bigserial not null,
+	sql text
 );
 
 create view servers_vw as
