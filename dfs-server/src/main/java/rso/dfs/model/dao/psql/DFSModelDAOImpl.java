@@ -17,11 +17,13 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.mapper.FileRowMapper;
+import rso.dfs.model.dao.psql.mapper.QueryRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
 
 /**
@@ -203,5 +205,17 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public List<File> fetchAllFiles() {
 		final String query = "select id, name, size, status from files";
 		return getJdbcTemplate().query(query, new FileRowMapper());
+	}
+
+	@Override
+	public List<Query> fetchAllQueries() {
+		final String query = "select version, sql from log order by version";
+		return getJdbcTemplate().query(query, new QueryRowMapper());
+	}
+
+	@Override
+	public List<Query> fetchQueriesAfter(long version) {
+		final String query = "select version, sql from log where version > ? order by version";
+		return getJdbcTemplate().query(query, new Object[] { version }, new QueryRowMapper());
 	}
 }

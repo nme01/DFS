@@ -4,6 +4,7 @@ import java.util.List;
 
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 
@@ -49,5 +50,9 @@ public interface DFSModelDAO {
 	public void cleanDB();
 
 	public List<File> fetchAllFiles();
+
+	public List<Query> fetchQueriesAfter(long version);
+
+	public List<Query> fetchAllQueries();
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 
 /**
@@ -44,5 +45,9 @@ public interface DFSRepository {
 	public void cleanDB();
 
 	public List<File> getAllFiles();
+	
+	public List<Query> getQueriesAfter(long version);
+
+	public List<Query> getAllQueries();
 	
 }
