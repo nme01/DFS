@@ -88,19 +88,19 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public Server fetchServerByIp(String ip) {
-		final String query = "select id, ip, role, memory, last_connection from servers_vw where ip=?";
+		final String query = "select id, ip, role, memory, last_connection, freeMemory from servers_vw where ip=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { ip }, new ServerRowMapper());
 	}
 
 	@Override
 	public List<Server> fetchServersByRole(ServerRole role) {
-		final String query = "select id, ip, role, memory, last_connection from servers_vw where role=?";
+		final String query = "select id, ip, role, memory, last_connection, freeMemory from servers_vw where role=?";
 		return getJdbcTemplate().query(query, new Object[] { role.getCode() }, new ServerRowMapper());
 	}
 
 	@Override
 	public List<Server> fetchServersByFileId(Integer fileId) {
-		final String query = "select id, ip, role, memory, last_connection from servers_vw , files_on_servers where files_on_servers.server_id=servers.id and files_on_servers.file_id = ?";
+		final String query = "select id, ip, role, memory, last_connection, freeMemory from servers_vw , files_on_servers where files_on_servers.server_id=servers_vw.id and files_on_servers.file_id = ?";
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
 	}
