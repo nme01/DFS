@@ -287,6 +287,12 @@
 										<include>*.sh</include>
 									</includes>
 								</resource>
+								<resource>
+									<directory>../</directory>
+									<includes>
+										<include>config.properties</include>
+									</includes>
+								</resource>
 							</resources>
 						</configuration>
 					</execution>

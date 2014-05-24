@@ -4,6 +4,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.commons.DFSProperties;
+import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
@@ -53,12 +55,14 @@ public class DFSServer {
 			me.setRole(ServerRole.MASTER);
 			
 			repository.saveServer(me);
+
+			handler = new ServerHandler(me, new CoreStatus(me.getIp(),new ArrayList<String>()));
 		} else {
 			me.setMemory(DFSProperties.getProperties().getStorageServerMemory());
 			me.setRole(ServerRole.SLAVE);
 			//FIXME: simplifying assumption: IP will be given by user who runs slave as 3rd arg. 
 			me.setIp(args[2]);
-			log.info("Master IP is " + args[2] + "Slave ip is " + args[1]);
+			log.info("Master IP is " + args[2] + "; Slave ip is " + args[1]);
 
 			//if master is not on the same server, clean db.
 			if(    !args[1].equals("127.0.0.1") 
@@ -73,10 +77,13 @@ public class DFSServer {
 			master.setLastConnection(new DateTime());
 			master.setRole(ServerRole.MASTER);
 			repository.saveServer(master);
+			
+			handler = new ServerHandler(me, new CoreStatus(master.getIp(),new ArrayList<String>()));
 		}
 		
 
-		handler = new ServerHandler(me);
+		
+		
 		procesor = new Service.Processor(handler);
 
 	
@@ -135,7 +142,10 @@ public class DFSServer {
 			if(me.getRole() == ServerRole.SLAVE)
 			{
 				log.debug("Registering slave server");
-				String masterIP = repository.getMasterServer().getIp();
+				
+				//possible warning: thrift method executed locally
+				String masterIP  = handler.getCoreStatus().getMasterAddress();
+				
 				//register new slave
 
 				try(DFSClosingClient cclient = 
@@ -144,12 +154,13 @@ public class DFSServer {
 				{
 
 					Client client = cclient.getClient();
-					//
+					//possible warning: thrift method executed locally
 					ArrayList<Integer> fileList = new ArrayList<Integer>();
 					String slaveIP = me.getIp();
 					NewSlaveRequest request = new NewSlaveRequest(slaveIP, fileList);
 					log.debug("Slave will register to master");
-					client.registerSlave(request); //TODO: do sth with result: CoreStatus
+					CoreStatus coreStatus = client.registerSlave(request);
+					handler.updateCoreStatus(coreStatus);
 					log.debug("I, humble slave with IP address " + me.getIp() + ", registered to master at " + masterIP);
 				}
 			}

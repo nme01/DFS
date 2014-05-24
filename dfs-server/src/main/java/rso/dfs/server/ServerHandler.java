@@ -84,11 +84,11 @@ public class ServerHandler implements Service.Iface {
 	 * */
 	private HashMap<Integer, Integer> files = new HashMap<>();	
 	
-	public ServerHandler(Server me) {
+	public ServerHandler(Server me, CoreStatus cs) {
 		this.me = me;
 		this.storageHandler = new FileStorageHandler();
 		this.repository = new DFSRepositoryImpl();
-		this.coreStatus = new CoreStatus("", new ArrayList<String>()); // FIXME:
+		this.coreStatus = cs; // FIXME:
 																		// temp
 																		// just
 																		// not
@@ -158,7 +158,6 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void updateCoreStatus(CoreStatus status) throws TException {
 		coreStatus = status;
-
 	}
 
 	@Override
@@ -565,6 +564,11 @@ public class ServerHandler implements Service.Iface {
 
 		repository.saveFileOnServer(fos);
 		repository.updateFile(f);
+	}
+
+	@Override
+	public void pingServer() throws TException {
+		// This method does nothing.
 	}
 
 }
