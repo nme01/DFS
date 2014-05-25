@@ -9,8 +9,8 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 
 /**
- * WARNING: THIS IS DATA ACCESS LAYER
- * REMEMBER TO USE {@link DFSRepository} instead of this.
+ * WARNING: THIS IS DATA ACCESS LAYER REMEMBER TO USE {@link DFSRepository}
+ * instead of this.
  * 
  * @author Adam Papros <adam.papros@gmail.com>
  * @author Mateusz Statkiewicz
@@ -30,18 +30,41 @@ public interface DFSModelDAO {
 	public File fetchFileByFileName(String fileName);
 
 	public Server fetchServerByIp(String ip);
-	
+
 	public List<Server> fetchServersByRole(ServerRole role);
-	
+
 	public List<File> fetchFilesOnServer(Server server);
-	
+
 	public List<Server> fetchServersByFileId(Integer fileId);
 
+	/**
+	 * Saves file.
+	 * 
+	 * @return generated id
+	 * */
 	public Integer saveFile(File file);
 
+	/**
+	 * Saves file. WARNING: fileId should be set.
+	 * */
+	public void saveFileWithId(File file);
+
+	/**
+	 * Saves fileOnServer.
+	 * */
 	public void saveFileOnServer(FileOnServer fileOnServer);
 
+	/**
+	 * Saves server.
+	 * 
+	 * @return generated id
+	 * */
 	public Long saveServer(Server server);
+
+	/**
+	 * Saves server. WARNING: serverId should be set.
+	 * */
+	public void saveServerWithId(Server server);
 
 	public int updateFile(File file);
 

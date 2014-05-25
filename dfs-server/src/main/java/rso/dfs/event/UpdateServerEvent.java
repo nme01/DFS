@@ -18,8 +18,8 @@ public class UpdateServerEvent extends DFSEvent {
 	@Override
 	public void execute() {
 		switch (modificationType) {
-		case INSERT: {
-			dao.saveServer(serverToUpdate);
+		case SAVE: {
+			dao.saveServerWithId(serverToUpdate);
 			return;
 		}
 		case DELETE: {

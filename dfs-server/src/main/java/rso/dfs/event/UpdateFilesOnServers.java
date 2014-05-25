@@ -18,7 +18,7 @@ public class UpdateFilesOnServers extends DFSEvent {
 	@Override
 	public void execute() {
 		switch (modificationType) {
-		case INSERT: {
+		case SAVE: {
 			dao.saveFileOnServer(fileOnServerToUpdate);
 			return;
 		}

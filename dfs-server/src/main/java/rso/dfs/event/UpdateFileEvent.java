@@ -18,8 +18,8 @@ public class UpdateFileEvent extends DFSEvent {
 	@Override
 	public void execute() {
 		switch (modificationType) {
-		case INSERT: {
-			dao.saveFile(fileToUpdate);
+		case SAVE: {
+			dao.saveFileWithId(fileToUpdate);
 			return;
 		}
 		case UPDATE: {
