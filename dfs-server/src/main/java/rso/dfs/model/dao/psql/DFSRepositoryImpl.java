@@ -2,6 +2,7 @@ package rso.dfs.model.dao.psql;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
@@ -119,7 +120,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		log.debug("");
 		return masterDAO.fetchServersByRole(ServerRole.SHADOW);
 	}
-	
+
 	@Override
 	public File getFileById(Integer fileId) {
 		log.debug("");
@@ -181,7 +182,11 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		while (!killRepository) {
 			try {
 				DFSEvent e = blockingQueue.take();
-				
+				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
+					e.setDao(entry.getValue());
+					e.execute();
+				}
+
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -208,6 +213,5 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	public List<Query> getAllQueries() {
 		return masterDAO.fetchAllQueries();
 	}
-	
-	
+
 }
