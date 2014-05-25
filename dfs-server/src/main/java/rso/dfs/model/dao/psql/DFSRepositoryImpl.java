@@ -83,6 +83,12 @@ public class DFSRepositoryImpl implements DFSRepository {
 	}
 
 	@Override
+	public List<Server> getShadows() {
+		log.debug("");
+		return modelDAO.fetchServersByRole(ServerRole.SHADOW);
+	}
+	
+	@Override
 	public File getFileById(Integer fileId) {
 		log.debug("");
 		return modelDAO.fetchFileById(fileId);

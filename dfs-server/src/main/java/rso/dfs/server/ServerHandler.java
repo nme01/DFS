@@ -28,6 +28,8 @@ import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.GetFileParams;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.PutFileParams;
+import rso.dfs.generated.ServerStatus;
+import rso.dfs.generated.ServerType;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
 import rso.dfs.generated.SystemStatus;
@@ -111,8 +113,14 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public SystemStatus getStatus() throws TException {
 		SystemStatus ss = new SystemStatus();
-		// TODO Auto-generated method stub
-		return null;
+		ss.setFilesNumber(repository.getAllFiles().size());		
+		Server master = repository.getMasterServer();
+		ss.addToServersStatuses(new ServerStatus(ServerType.Master,master.getFilesNumber(), master.getFreeMemory(), master.getMemory()-master.getFreeMemory()));
+		for (Server server : repository.getShadows())
+			ss.addToServersStatuses(new ServerStatus(ServerType.Shadow, server.getFilesNumber(), server.getFreeMemory(), server.getMemory()-server.getFreeMemory()));
+		for (Server server : repository.getSlaves())
+			ss.addToServersStatuses(new ServerStatus(ServerType.Slave, server.getFilesNumber(), server.getFreeMemory(), server.getMemory()-server.getFreeMemory()));
+		return ss;
 	}
 
 	@Override

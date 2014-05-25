@@ -49,5 +49,7 @@ public interface DFSRepository {
 	public List<Query> getQueriesAfter(long version);
 
 	public List<Query> getAllQueries();
+
+	public List<Server> getShadows();
 	
 }
