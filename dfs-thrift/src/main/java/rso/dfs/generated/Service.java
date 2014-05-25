@@ -48,6 +48,8 @@ public class Service {
 
     public CoreStatus getCoreStatus() throws org.apache.thrift.TException;
 
+    public void pingServer() throws org.apache.thrift.TException;
+
     public void prepareForReceiving(int fileID, long size) throws org.apache.thrift.TException;
 
     public void replicate(int fileID, String slaveIP) throws org.apache.thrift.TException;
@@ -89,6 +91,8 @@ public class Service {
     public void becomeShadow(CoreStatus status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void getCoreStatus(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+
+    public void pingServer(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void prepareForReceiving(int fileID, long size, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -265,6 +269,25 @@ public class Service {
         return result.success;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getCoreStatus failed: unknown result");
+    }
+
+    public void pingServer() throws org.apache.thrift.TException
+    {
+      send_pingServer();
+      recv_pingServer();
+    }
+
+    public void send_pingServer() throws org.apache.thrift.TException
+    {
+      pingServer_args args = new pingServer_args();
+      sendBase("pingServer", args);
+    }
+
+    public void recv_pingServer() throws org.apache.thrift.TException
+    {
+      pingServer_result result = new pingServer_result();
+      receiveBase(result, "pingServer");
+      return;
     }
 
     public void prepareForReceiving(int fileID, long size) throws org.apache.thrift.TException
@@ -760,6 +783,35 @@ public class Service {
       }
     }
 
+    public void pingServer(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      pingServer_call method_call = new pingServer_call(resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class pingServer_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public pingServer_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("pingServer", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        pingServer_args args = new pingServer_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_pingServer();
+      }
+    }
+
     public void prepareForReceiving(int fileID, long size, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
       prepareForReceiving_call method_call = new prepareForReceiving_call(fileID, size, resultHandler, this, ___protocolFactory, ___transport);
@@ -1210,6 +1262,7 @@ public class Service {
       processMap.put("updateCoreStatus", new updateCoreStatus());
       processMap.put("becomeShadow", new becomeShadow());
       processMap.put("getCoreStatus", new getCoreStatus());
+      processMap.put("pingServer", new pingServer());
       processMap.put("prepareForReceiving", new prepareForReceiving());
       processMap.put("replicate", new replicate());
       processMap.put("isFileUsed", new isFileUsed());
@@ -1342,6 +1395,26 @@ public class Service {
       public getCoreStatus_result getResult(I iface, getCoreStatus_args args) throws org.apache.thrift.TException {
         getCoreStatus_result result = new getCoreStatus_result();
         result.success = iface.getCoreStatus();
+        return result;
+      }
+    }
+
+    public static class pingServer<I extends Iface> extends org.apache.thrift.ProcessFunction<I, pingServer_args> {
+      public pingServer() {
+        super("pingServer");
+      }
+
+      public pingServer_args getEmptyArgsInstance() {
+        return new pingServer_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public pingServer_result getResult(I iface, pingServer_args args) throws org.apache.thrift.TException {
+        pingServer_result result = new pingServer_result();
+        iface.pingServer();
         return result;
       }
     }
@@ -1627,6 +1700,7 @@ public class Service {
       processMap.put("updateCoreStatus", new updateCoreStatus());
       processMap.put("becomeShadow", new becomeShadow());
       processMap.put("getCoreStatus", new getCoreStatus());
+      processMap.put("pingServer", new pingServer());
       processMap.put("prepareForReceiving", new prepareForReceiving());
       processMap.put("replicate", new replicate());
       processMap.put("isFileUsed", new isFileUsed());
@@ -1944,6 +2018,56 @@ public class Service {
 
       public void start(I iface, getCoreStatus_args args, org.apache.thrift.async.AsyncMethodCallback<CoreStatus> resultHandler) throws TException {
         iface.getCoreStatus(resultHandler);
+      }
+    }
+
+    public static class pingServer<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, pingServer_args, Void> {
+      public pingServer() {
+        super("pingServer");
+      }
+
+      public pingServer_args getEmptyArgsInstance() {
+        return new pingServer_args();
+      }
+
+      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new AsyncMethodCallback<Void>() { 
+          public void onComplete(Void o) {
+            pingServer_result result = new pingServer_result();
+            try {
+              fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+              return;
+            } catch (Exception e) {
+              LOGGER.error("Exception writing to internal frame buffer", e);
+            }
+            fb.close();
+          }
+          public void onError(Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TBase msg;
+            pingServer_result result = new pingServer_result();
+            {
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+              return;
+            } catch (Exception ex) {
+              LOGGER.error("Exception writing to internal frame buffer", ex);
+            }
+            fb.close();
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, pingServer_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+        iface.pingServer(resultHandler);
       }
     }
 
@@ -6392,6 +6516,498 @@ public class Service {
           struct.success.read(iprot);
           struct.setSuccessIsSet(true);
         }
+      }
+    }
+
+  }
+
+  public static class pingServer_args implements org.apache.thrift.TBase<pingServer_args, pingServer_args._Fields>, java.io.Serializable, Cloneable, Comparable<pingServer_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("pingServer_args");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new pingServer_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new pingServer_argsTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(pingServer_args.class, metaDataMap);
+    }
+
+    public pingServer_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public pingServer_args(pingServer_args other) {
+    }
+
+    public pingServer_args deepCopy() {
+      return new pingServer_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof pingServer_args)
+        return this.equals((pingServer_args)that);
+      return false;
+    }
+
+    public boolean equals(pingServer_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    @Override
+    public int compareTo(pingServer_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("pingServer_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class pingServer_argsStandardSchemeFactory implements SchemeFactory {
+      public pingServer_argsStandardScheme getScheme() {
+        return new pingServer_argsStandardScheme();
+      }
+    }
+
+    private static class pingServer_argsStandardScheme extends StandardScheme<pingServer_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, pingServer_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, pingServer_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class pingServer_argsTupleSchemeFactory implements SchemeFactory {
+      public pingServer_argsTupleScheme getScheme() {
+        return new pingServer_argsTupleScheme();
+      }
+    }
+
+    private static class pingServer_argsTupleScheme extends TupleScheme<pingServer_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, pingServer_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, pingServer_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class pingServer_result implements org.apache.thrift.TBase<pingServer_result, pingServer_result._Fields>, java.io.Serializable, Cloneable, Comparable<pingServer_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("pingServer_result");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new pingServer_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new pingServer_resultTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(pingServer_result.class, metaDataMap);
+    }
+
+    public pingServer_result() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public pingServer_result(pingServer_result other) {
+    }
+
+    public pingServer_result deepCopy() {
+      return new pingServer_result(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof pingServer_result)
+        return this.equals((pingServer_result)that);
+      return false;
+    }
+
+    public boolean equals(pingServer_result that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    @Override
+    public int compareTo(pingServer_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("pingServer_result(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class pingServer_resultStandardSchemeFactory implements SchemeFactory {
+      public pingServer_resultStandardScheme getScheme() {
+        return new pingServer_resultStandardScheme();
+      }
+    }
+
+    private static class pingServer_resultStandardScheme extends StandardScheme<pingServer_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, pingServer_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, pingServer_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class pingServer_resultTupleSchemeFactory implements SchemeFactory {
+      public pingServer_resultTupleScheme getScheme() {
+        return new pingServer_resultTupleScheme();
+      }
+    }
+
+    private static class pingServer_resultTupleScheme extends TupleScheme<pingServer_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, pingServer_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, pingServer_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 

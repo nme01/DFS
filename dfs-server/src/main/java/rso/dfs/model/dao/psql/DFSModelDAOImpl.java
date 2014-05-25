@@ -17,11 +17,13 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.mapper.FileRowMapper;
+import rso.dfs.model.dao.psql.mapper.QueryRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
 
 /**
@@ -33,6 +35,11 @@ import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
 public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	final static Logger log = LoggerFactory.getLogger(DFSModelDAOImpl.class);
+	
+	private void insertIntoLogTable(String sqlQuery) {
+		final String query = "insert into log (sql) values(?)";
+		getJdbcTemplate().update(query, new Object[] { sqlQuery });
+	}
 
 	public DFSModelDAOImpl(DriverManagerDataSource dataSource) {
 		super();
@@ -48,22 +55,26 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public int deleteFile(File file) {
 		final String query = "delete from files where id = ?";
-		return getJdbcTemplate().update(query, new Object[] { file.getId() });
+		int result = getJdbcTemplate().update(query, new Object[] { file.getId() });
+		insertIntoLogTable("delete from files where id ="+file.getId());
+		return result;
 
 	}
 
 	@Override
 	public int deleteServer(Server server) {
 		final String query = "delete from servers where id = ?";
-		return getJdbcTemplate().update(query, new Object[] { server.getId() });
-
+		int result =  getJdbcTemplate().update(query, new Object[] { server.getId() });
+		insertIntoLogTable("delete from servers where id = "+server.getId());
+		return result;
 	}
 
 	@Override
 	public int deleteFileOnServer(FileOnServer fileOnServer) {
 		final String query = "delete from files_on_servers where file_id = ? and server_id = ?";
-		return getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId() });
-
+		int result = getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId() });
+		insertIntoLogTable("delete from files_on_servers where file_id = "+fileOnServer.getFileId()+" and server_id = "+fileOnServer.getServerId());
+		return result;
 	}
 
 	@Override
@@ -88,19 +99,19 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public Server fetchServerByIp(String ip) {
-		final String query = "select id, ip, role, memory, last_connection from servers where ip=?";
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw where ip=?";
 		return getJdbcTemplate().queryForObject(query, new Object[] { ip }, new ServerRowMapper());
 	}
 
 	@Override
 	public List<Server> fetchServersByRole(ServerRole role) {
-		final String query = "select id, ip, role, memory, last_connection from servers where role=?";
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw where role=?";
 		return getJdbcTemplate().query(query, new Object[] { role.getCode() }, new ServerRowMapper());
 	}
 
 	@Override
 	public List<Server> fetchServersByFileId(Integer fileId) {
-		final String query = "select id, ip, role, memory, last_connection from servers , files_on_servers where files_on_servers.server_id=servers.id and files_on_servers.file_id = ?";
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw , files_on_servers where files_on_servers.server_id=servers_vw.id and files_on_servers.file_id = ?";
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
 	}
@@ -128,6 +139,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 				return ps;
 			}
 		}, keyHolder);
+		insertIntoLogTable("insert into files (name, size, status) values('"+file.getName()+"',"+file.getSize()+",'"+file.getStatus().getCode()+"')");
 		return keyHolder.getKey().intValue();
 	}
 
@@ -135,7 +147,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public void saveFileOnServer(FileOnServer fileOnServer) {
 		final String query = "insert into files_on_servers (file_id, server_id, priority) values(?, ?, ?)";
 		getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId(), fileOnServer.getPriority() });
-
+		insertIntoLogTable("insert into files_on_servers (file_id, server_id, priority) values("+fileOnServer.getFileId()+","+fileOnServer.getServerId()+","+fileOnServer.getPriority()+")");
 	}
 
 	@Override
@@ -157,19 +169,22 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 			}
 		}, keyHolder);
 		log.debug("Server saved in DAO. Key value is: " + keyHolder.getKey().longValue());
+		insertIntoLogTable("insert into servers (ip, role, memory, last_connection) values('"+server.getIp()+"','"+server.getRole().getCode()+"',"+server.getMemory()+",'"+new Timestamp(server.getLastConnection().getMillis())+"')");
 		return keyHolder.getKey().longValue();
 	}
 
 	@Override
 	public int updateFile(File file) {
 		final String query = "update files set name=?, size=?, status=? where id=?";
+		insertIntoLogTable("update files set name='"+file.getName()+"', size="+file.getSize()+", status='"+file.getStatus().getCode()+"' where id="+file.getId());
 		return getJdbcTemplate().update(query, new Object[] { file.getName(), file.getSize(), file.getStatus().getCode(), file.getId() });
 
 	}
 
 	@Override
 	public int updateServer(Server server) {
-		final String query = "update servers set role=?, memory=?, last_connection where ip=?";
+		final String query = "update servers set role=?, memory=?, last_connection=? where ip=?";
+		insertIntoLogTable("update servers set role='"+server.getRole().getCode()+"', memory="+server.getMemory()+", last_connection='"+new Timestamp(server.getLastConnection().getMillis())+"' where ip='"+server.getIp()+"'");
 		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), server.getLastConnection(), server.getIp() });
 	}
 
@@ -190,5 +205,17 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public List<File> fetchAllFiles() {
 		final String query = "select id, name, size, status from files";
 		return getJdbcTemplate().query(query, new FileRowMapper());
+	}
+
+	@Override
+	public List<Query> fetchAllQueries() {
+		final String query = "select version, sql from log order by version";
+		return getJdbcTemplate().query(query, new QueryRowMapper());
+	}
+
+	@Override
+	public List<Query> fetchQueriesAfter(long version) {
+		final String query = "select version, sql from log where version > ? order by version";
+		return getJdbcTemplate().query(query, new Object[] { version }, new QueryRowMapper());
 	}
 }

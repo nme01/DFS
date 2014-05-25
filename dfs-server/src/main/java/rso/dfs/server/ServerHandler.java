@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -24,6 +28,8 @@ import rso.dfs.generated.FilePartDescription;
 import rso.dfs.generated.GetFileParams;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.PutFileParams;
+import rso.dfs.generated.ServerStatus;
+import rso.dfs.generated.ServerType;
 import rso.dfs.generated.Service;
 import rso.dfs.generated.Service.Client;
 import rso.dfs.generated.SystemStatus;
@@ -65,12 +71,25 @@ public class ServerHandler implements Service.Iface {
 	 * 
 	 * */
 	private CoreStatus coreStatus;
+	
+	/**
+	 * Map of replicating slaves waiting for a file.
+	 * */
+	private Lock awaitingSlavesLock = new ReentrantLock();
+	private Map<Long, List<Condition>> awaitingSlaves = new HashMap<Long, List<Condition>>();
 
-	public ServerHandler(Server me, DFSRepository repository, StorageHandler storageHandler) {
+	/**
+	 * Contains statuses which files where used;
+	 * key -> fileId;
+	 * value -> value needed to double timeout delete
+	 * */
+	private HashMap<Integer, Integer> files = new HashMap<>();	
+	
+	public ServerHandler(Server me, CoreStatus cs) {
 		this.me = me;
 		this.storageHandler = storageHandler;
 		this.repository = repository;
-		this.coreStatus = new CoreStatus("", new ArrayList<String>()); // FIXME:
+		this.coreStatus = cs; // FIXME:
 																		// temp
 																		// just
 																		// not
@@ -92,8 +111,15 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public SystemStatus getStatus() throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		SystemStatus ss = new SystemStatus();
+		ss.setFilesNumber(repository.getAllFiles().size());		
+		Server master = repository.getMasterServer();
+		ss.addToServersStatuses(new ServerStatus(ServerType.Master,master.getFilesNumber(), master.getFreeMemory(), master.getMemory()-master.getFreeMemory()));
+		for (Server server : repository.getShadows())
+			ss.addToServersStatuses(new ServerStatus(ServerType.Shadow, server.getFilesNumber(), server.getFreeMemory(), server.getMemory()-server.getFreeMemory()));
+		for (Server server : repository.getSlaves())
+			ss.addToServersStatuses(new ServerStatus(ServerType.Slave, server.getFilesNumber(), server.getFreeMemory(), server.getMemory()-server.getFreeMemory()));
+		return ss;
 	}
 
 	@Override
@@ -140,7 +166,6 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void updateCoreStatus(CoreStatus status) throws TException {
 		coreStatus = status;
-
 	}
 
 	@Override
@@ -151,8 +176,7 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public CoreStatus getCoreStatus() throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		return coreStatus;
 	}
 
 	@Override
@@ -224,14 +248,22 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public boolean isFileUsed(int fileID) throws TException {
-		// to w ogole potrzebne??
-		// TODO Auto-generated method stub
+		if (files.containsKey(fileID))
+		{
+		int counter = files.get(fileID);
+		if (counter<DFSProperties.getProperties().getDeleteCounter())	
+			{
+			files.put(fileID, counter+1);
+			return true;
+			}
+		}
 		return false;
 	}
 
 	@Override
 	public void removeFileSlave(int fileID) throws TException {
 		storageHandler.deleteFile(fileID);
+		files.remove(fileID);
 	}
 
 	/**
@@ -389,12 +421,33 @@ public class ServerHandler implements Service.Iface {
 		}
 
 		file.setStatus(FileStatus.TO_DELETE);
-
 		repository.updateFile(file);
 
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				List<Server> servers = repository.getSlavesByFile(file);
+				boolean isFileUsed = true;
+				while(isFileUsed)
+				{
+					isFileUsed = false;
+					for (Server server : servers) {
+						try (DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
+
+							Service.Client client = dfsclient.getClient();
+							isFileUsed = isFileUsed || client.isFileUsed(file.getId());
+							} catch (TTransportException e) {
+								e.printStackTrace();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+					};
+					if (isFileUsed)
+						try {
+							TimeUnit.SECONDS.sleep(DFSProperties.getProperties().getIsFileUsedTimeout());
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}	
+				}
 				for (Server server : servers) {
 					try (DFSClosingClient dfsclient = new DFSClosingClient(server.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
 
@@ -416,7 +469,6 @@ public class ServerHandler implements Service.Iface {
 
 				}
 				repository.deleteFile(file);
-
 			}
 		});
 		thread.start();
@@ -449,7 +501,15 @@ public class ServerHandler implements Service.Iface {
 			byte[] dataBuffer = filePart.data.array();
 			log.info("Got a file part of fileId " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
 			storageHandler.writeFile(filePart.fileId, dataBuffer);
-
+			
+			awaitingSlavesLock.lock();
+			List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePart.getFileId());
+			for(Condition c : slavesAwaitingFileID) {
+				c.signal();
+			}
+			slavesAwaitingFileID.clear();
+			awaitingSlavesLock.unlock();
+			
 			return new FilePartDescription(filePart.fileId, filePart.offset + dataBuffer.length);
 
 		} catch (Exception e) {
@@ -467,14 +527,29 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public FilePart getFileFromSlave(FilePartDescription filePartDescription) throws TException {
 
+		Condition fileReady = awaitingSlavesLock.newCondition();
+		
+		files.put(filePartDescription.fileId, 0);
+		
 		if (me.getRole() == rso.dfs.model.ServerRole.MASTER || filePartDescription.getOffset() >= repository.getFileById(filePartDescription.getFileId()).getSize()) {
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
 		}
 
-		while (filePartDescription.getOffset() >= storageHandler.getFileSize(storageHandler.getFileSize(filePartDescription.getFileId()))) {
+		while (filePartDescription.getOffset() >= storageHandler.getFileSize(filePartDescription.getFileId())) {
 			// TODO: handle timeouts
 			// put cond var on a queue
 			// sendFileParttoSlave will remove and signal them
+			awaitingSlavesLock.lock();
+			try {
+				List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePartDescription.getFileId());
+				slavesAwaitingFileID.add(fileReady);
+				fileReady.await();
+			} catch (InterruptedException ie) {
+				/* Just cycle through again, the thread will sleep if the file isn't ready. 
+				 * TODO: Check when InterruptedException might screw things up. */
+			}
+			awaitingSlavesLock.unlock();
+			
 		}
 
 		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId(), filePartDescription.getOffset());
@@ -495,10 +570,18 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void fileUploadSuccess(int fileID, String slaveIP) throws TException {
 		rso.dfs.model.File f = repository.getFileById(fileID);
+
 		f.setStatus(FileStatus.HELD);
+		Server s = repository.getServerByIp(slaveIP);
+		FileOnServer fos = new FileOnServer(fileID,s.getId(),0);
+
+		repository.saveFileOnServer(fos);
 		repository.updateFile(f);
-		// TODO repository not implements Files_on_servers interface
-		// which i will use here
+	}
+
+	@Override
+	public void pingServer() throws TException {
+		// This method does nothing.
 	}
 
 }

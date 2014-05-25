@@ -17,6 +17,10 @@ public class Server {
 
 	private DateTime lastConnection;
 
+	private long freeMemory;
+	
+	private int filesNumber;
+	
 	public Long getId() {
 		return id;
 	}
@@ -66,6 +70,22 @@ public class Server {
 	@Override
 	public String toString() {
 		return "Server [ip=" + ip + ", role=" + role + ", memory=" + memory + ", lastConnection=" + lastConnection + "]";
+	}
+
+	public long getFreeMemory() {
+		return freeMemory;
+	}
+
+	public void setFreeMemory(long freeMemory) {
+		this.freeMemory = freeMemory;
+	}
+
+	public int getFilesNumber() {
+		return filesNumber;
+	}
+
+	public void setFilesNumber(int filesNumber) {
+		this.filesNumber = filesNumber;
 	}
 
 }

@@ -8,6 +8,10 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 public class DFSProperties {	
 	private String dbname;
 	private String dbuser;
@@ -18,7 +22,10 @@ public class DFSProperties {
 	private Long namingServerMemory;
 	private Long storageServerMemory;
 	private Long filePartSize;
+	private Integer isFileUsedTimeout;
+	private Integer deleteCounter;
 	private List<String> servers;
+	private int defaultClientTimeout;
 	
 	private static DFSProperties dfsproperties;
 	
@@ -34,6 +41,8 @@ public class DFSProperties {
 		return dfsproperties;
 	}
 	
+	final static Logger log = LoggerFactory.getLogger(DFSProperties.class);
+	
 	private static void load(){
 		Properties properties = new Properties();
 		InputStream input = null;
@@ -41,7 +50,6 @@ public class DFSProperties {
 			input = new FileInputStream("./../config.properties");
 			properties.load(input);
 		} catch (IOException ex) {
-			ex.printStackTrace();
 		} finally {
 			if (input != null) {
 				try {
@@ -51,6 +59,32 @@ public class DFSProperties {
 				}
 			}
 		}
+		
+		if(input == null)
+		{
+			try {
+				input = new FileInputStream("config.properties");
+				properties.load(input);
+			} catch (IOException ex) {
+			} finally {
+				if (input != null) {
+					try {
+						input.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		if (properties.isEmpty())
+		{
+			log.error("Critical error: configuration file not found");
+			System.exit(-1);
+		}
+		
+		dfsproperties.setIsFileUsedTimeout(Integer.parseInt(properties.getProperty("isFileUsedTimeout")));
+		dfsproperties.setDeleteCounter(Integer.parseInt(properties.getProperty("deleteCounter")));
 		dfsproperties.setDbname(properties.getProperty("database"));
 		dfsproperties.setDbpassword(properties.getProperty("dbpassword"));
 		dfsproperties.setDbport(Integer.parseInt(properties.getProperty("dbport")));
@@ -60,6 +94,7 @@ public class DFSProperties {
 		dfsproperties.setNamingServerPort(Integer.parseInt(properties.getProperty("naming_server_port")));
 		dfsproperties.setStorageServerMemory(Long.parseLong(properties.getProperty("storage_server_memory")));
 		dfsproperties.setStorageServerPort(Integer.parseInt(properties.getProperty("storage_server_port")));
+		dfsproperties.setDefaultClientTimeout(Integer.parseInt(properties.getProperty("defaultClientTimeout")));
 		Enumeration<?> e = properties.propertyNames();
 		while (e.hasMoreElements()) {
 			String key = e.nextElement().toString();
@@ -68,7 +103,7 @@ public class DFSProperties {
 			}
 		}
 	}
-	
+
 	public String getDbname() {
 		return dbname;
 	}
@@ -128,6 +163,30 @@ public class DFSProperties {
 	}
 	public void setServers(List<String> servers) {
 		this.servers = servers;
+	}
+
+	public Integer getDeleteCounter() {
+		return deleteCounter;
+	}
+
+	public void setDeleteCounter(Integer deleteCounter) {
+		this.deleteCounter = deleteCounter;
+	}
+
+	public Integer getIsFileUsedTimeout() {
+		return isFileUsedTimeout;
+	}
+
+	public void setIsFileUsedTimeout(Integer isFileUsedTimeout) {
+		this.isFileUsedTimeout = isFileUsedTimeout;
+	}
+
+	public int getDefaultClientTimeout() {
+		return defaultClientTimeout;
+	}
+
+	public void setDefaultClientTimeout(int defaultClientTimeout) {
+		this.defaultClientTimeout = defaultClientTimeout;
 	}
 	
 }

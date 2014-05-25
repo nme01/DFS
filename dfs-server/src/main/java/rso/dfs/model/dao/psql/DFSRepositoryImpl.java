@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import rso.dfs.event.DFSEvent;
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
@@ -114,6 +115,12 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	}
 
 	@Override
+	public List<Server> getShadows() {
+		log.debug("");
+		return modelDAO.fetchServersByRole(ServerRole.SHADOW);
+	}
+	
+	@Override
 	public File getFileById(Integer fileId) {
 		log.debug("");
 		return masterDAO.fetchFileById(fileId);
@@ -186,4 +193,21 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	public void killRepository() {
 		this.killRepository = true;
 	}
+
+	@Override
+	public Server getServerByIp(String ip) {
+		return modelDAO.fetchServerByIp(ip);
+	}
+
+	@Override
+	public List<Query> getQueriesAfter(long version) {
+		return modelDAO.fetchQueriesAfter(version);
+	}
+
+	@Override
+	public List<Query> getAllQueries() {
+		return modelDAO.fetchAllQueries();
+	}
+	
+	
 }

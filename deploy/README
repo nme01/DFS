@@ -2,7 +2,9 @@ HOW TO VMware:
 
 Podążaj za listą kroków:
 
-1. Pobrać dystrybucję ubuntu-server 14.04 z virtualboximages.com. Skrypty wykorzystują domyślne dla dystrybucji konto 'ubuntu' z hasłem reverse (można zmienić).
+1. Pobrać dystrybucję ubuntu-server 14.04 z 
+http://virtualboxes.org/images/ubuntu-server/ 
+Skrypty wykorzystują domyślne dla dystrybucji konto 'ubuntu' z hasłem reverse (można zmienić).
 
 2. Zainstalować VMware Player - jest najmniej problemów.
 

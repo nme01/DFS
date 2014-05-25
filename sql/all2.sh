@@ -46,17 +46,18 @@ create table files_on_servers (
 create index pk_filesonservers on files_on_servers (file_id, server_id);
 create index fk_filesonservers on files_on_servers (server_id);
 
-create table version (
-	log bigserial not null
+create table log (
+	version bigserial not null,
+	sql text
 );
 
 create view servers_vw as
-select s.id,s.ip,s.role,s.memory,s.last_connection, s.memory-sum(f.size) as freeMemory from servers s 
-	join files_on_servers fos on fos.server_id = s.id
-	join files f on fos.file_id = f.id
+select s.id,s.ip,s.role,s.memory,s.last_connection, COALESCE (count(f.id),0) as filesNumber, COALESCE (s.memory-sum(f.size),s.memory) as freeMemory from servers s 
+	left join files_on_servers fos on fos.server_id = s.id
+	left join files f on fos.file_id = f.id
 	group by s.id,s.ip,s.role,s.memory,s.last_connection;
 
-GRANT ALL ON files, servers,files_on_servers, version, servers_vw TO rsodfs;
+GRANT ALL ON files, servers,files_on_servers, log, servers_vw TO rsodfs;
 "
 
 #psql -d rsodfs -f insert_test_data.sql

@@ -78,11 +78,13 @@ CoreStatus registerSlave(1:NewSlaveRequest req),
 void updateCoreStatus(1:CoreStatus status),
 
 //master sends request to slave
-void becomeShadow(1: CoreStatus status);
+void becomeShadow(1: CoreStatus status),
 
 //client - anyone
 CoreStatus getCoreStatus(), // returns master/shadows list
 
+//ping server for checking whether it's alive
+void pingServer(),
 
 // file id, file size; master – slave
 // force slave to be ready for file (fileId) which will be sent from client
