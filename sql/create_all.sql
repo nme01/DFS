@@ -45,4 +45,4 @@ select s.id,s.ip,s.role,s.memory,s.last_connection, COALESCE (count(f.id),0) as 
 	left join files f on fos.file_id = f.id
 	group by s.id,s.ip,s.role,s.memory,s.last_connection;
 
-GRANT ALL ON files, servers,files_on_servers, version, servers_vw TO rsodfs;
+GRANT ALL ON files, servers,files_on_servers, log, servers_vw TO rsodfs;
