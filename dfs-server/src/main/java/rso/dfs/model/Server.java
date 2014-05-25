@@ -19,6 +19,8 @@ public class Server {
 
 	private long freeMemory;
 	
+	private int filesNumber;
+	
 	public Long getId() {
 		return id;
 	}
@@ -76,6 +78,14 @@ public class Server {
 
 	public void setFreeMemory(long freeMemory) {
 		this.freeMemory = freeMemory;
+	}
+
+	public int getFilesNumber() {
+		return filesNumber;
+	}
+
+	public void setFilesNumber(int filesNumber) {
+		this.filesNumber = filesNumber;
 	}
 
 }

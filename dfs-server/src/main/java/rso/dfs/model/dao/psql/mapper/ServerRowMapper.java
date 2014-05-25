@@ -23,7 +23,7 @@ public class ServerRowMapper implements ParameterizedRowMapper<Server> {
 		server.setLastConnection(new DateTime(rs.getTimestamp("last_connection").getTime()));
 		server.setRole(ServerRole.getServerRole(rs.getString("role")));
 		server.setFreeMemory(rs.getLong("freeMemory"));
-		
+		server.setFilesNumber(rs.getInt("filesNumber"));
 
 		return server;
 	}

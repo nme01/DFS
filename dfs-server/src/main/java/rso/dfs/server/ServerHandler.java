@@ -110,6 +110,7 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public SystemStatus getStatus() throws TException {
+		SystemStatus ss = new SystemStatus();
 		// TODO Auto-generated method stub
 		return null;
 	}

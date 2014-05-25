@@ -40,7 +40,7 @@ create table log (
 );
 
 create view servers_vw as
-select s.id,s.ip,s.role,s.memory,s.last_connection, COALESCE (s.memory-sum(f.size),s.memory) as freeMemory from servers s 
+select s.id,s.ip,s.role,s.memory,s.last_connection, COALESCE (count(f.id),0) as filesNumber, COALESCE (s.memory-sum(f.size),s.memory) as freeMemory from servers s 
 	left join files_on_servers fos on fos.server_id = s.id
 	left join files f on fos.file_id = f.id
 	group by s.id,s.ip,s.role,s.memory,s.last_connection;
