@@ -4,6 +4,7 @@ import java.util.List;
 
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.dao.DFSRepository;
 
@@ -89,6 +90,26 @@ public class EmptyRepository implements DFSRepository {
 
 	@Override
 	public List<File> getAllFiles() {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public Server getServerByIp(String ip) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public List<Query> getQueriesAfter(long version) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public List<Query> getAllQueries() {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public List<Server> getShadows() {
 		throw new IllegalStateException(message);
 	}
 

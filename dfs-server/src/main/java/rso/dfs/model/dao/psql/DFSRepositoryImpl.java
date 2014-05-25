@@ -117,7 +117,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	@Override
 	public List<Server> getShadows() {
 		log.debug("");
-		return modelDAO.fetchServersByRole(ServerRole.SHADOW);
+		return masterDAO.fetchServersByRole(ServerRole.SHADOW);
 	}
 	
 	@Override
@@ -196,17 +196,17 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public Server getServerByIp(String ip) {
-		return modelDAO.fetchServerByIp(ip);
+		return masterDAO.fetchServerByIp(ip);
 	}
 
 	@Override
 	public List<Query> getQueriesAfter(long version) {
-		return modelDAO.fetchQueriesAfter(version);
+		return masterDAO.fetchQueriesAfter(version);
 	}
 
 	@Override
 	public List<Query> getAllQueries() {
-		return modelDAO.fetchAllQueries();
+		return masterDAO.fetchAllQueries();
 	}
 	
 	
