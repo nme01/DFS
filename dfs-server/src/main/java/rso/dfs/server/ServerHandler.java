@@ -39,8 +39,7 @@ import rso.dfs.model.FileStatus;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
-import rso.dfs.model.dao.psql.DFSRepositoryImpl;
-import rso.dfs.server.handler.FileStorageHandler;
+import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.utils.DFSArrayUtils;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
@@ -66,7 +65,7 @@ public class ServerHandler implements Service.Iface {
 	/**
 	 * Provides storage features. (FOR SLAVE-STORAGE SERVERS)
 	 * */
-	private FileStorageHandler storageHandler;
+	private StorageHandler storageHandler;
 
 	/**
 	 * 
@@ -89,8 +88,8 @@ public class ServerHandler implements Service.Iface {
 	
 	public ServerHandler(Server me, CoreStatus cs) {
 		this.me = me;
-		this.storageHandler = new FileStorageHandler();
-		this.repository = new DFSRepositoryImpl();
+		this.storageHandler = storageHandler;
+		this.repository = repository;
 		this.coreStatus = cs; // FIXME:
 																		// temp
 																		// just
@@ -187,6 +186,11 @@ public class ServerHandler implements Service.Iface {
 
 	}
 
+	/**
+	 * Invoked on slave by master. Master force slave to replicate data
+	 * (identified by @param fileId) from invoked to another slave (identified
+	 * by @param slaveIP )
+	 * */
 	@Override
 	public void replicate(int fileID, String slaveIP, long size) throws TException {
 
@@ -643,4 +647,21 @@ public class ServerHandler implements Service.Iface {
 		// This method does nothing.
 	}
 
+	public DFSRepository getRepository() {
+		return repository;
+	}
+
+	public void setRepository(DFSRepository repository) {
+		this.repository = repository;
+	}
+
+	public StorageHandler getStorageHandler() {
+		return storageHandler;
+	}
+
+	public void setStorageHandler(StorageHandler storageHandler) {
+		this.storageHandler = storageHandler;
+	}
+
+	
 }
