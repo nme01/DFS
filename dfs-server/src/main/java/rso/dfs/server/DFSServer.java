@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.commons.DFSProperties;
-import rso.dfs.event.DFSEvent;
+import rso.dfs.event.DFSTask;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.NewSlaveRequest;
 import rso.dfs.generated.Service;
@@ -55,7 +55,7 @@ public class DFSServer {
 			// queue for messages from master to
 			// thread that updates shadows' databases
 
-			BlockingQueue<DFSEvent> blockingQueue = new LinkedBlockingQueue<>();
+			BlockingQueue<DFSTask> blockingQueue = new LinkedBlockingQueue<>();
 
 			repository = new DFSRepositoryImpl(me, blockingQueue);
 

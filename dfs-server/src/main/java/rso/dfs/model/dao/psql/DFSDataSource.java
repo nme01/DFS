@@ -8,21 +8,20 @@ import rso.dfs.commons.DFSProperties;
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class DFSDataSource extends DriverManagerDataSource {
-	
+
 	private String hostAddress;
 
+	private String url;
+
 	public static final String driverClassName = "org.postgresql.Driver";
-	public static final String url = "jdbc:postgresql://127.0.0.1:";
-	public static final String urlTemplate = "jdbc:postgresql://%s:5432/rsodfs";
-	
-	
+	public static final String urlTemplate = "jdbc:postgresql://%s:%d/%s";
 
 	public DFSDataSource(final String hostAddress) {
-		// super(driverClassName, url, userName, password);
 		super();
 		this.hostAddress = hostAddress;
+		this.url = String.format(urlTemplate, hostAddress, DFSProperties.getProperties().getDbport(), DFSProperties.getProperties().getDbname());
 		setDriverClassName(driverClassName);
-		setUrl(url + DFSProperties.getProperties().getDbport() + "/" + DFSProperties.getProperties().getDbname());
+		setUrl(url);
 		setUsername(DFSProperties.getProperties().getDbuser());
 		setPassword(DFSProperties.getProperties().getDbpassword());
 	}

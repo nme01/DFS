@@ -2,11 +2,11 @@ package rso.dfs.event;
 
 import rso.dfs.model.Server;
 
-public class UpdateServerEvent extends DFSEvent {
+public class UpdateServerTask extends DFSTask {
 
 	private final Server serverToUpdate;
 
-	public UpdateServerEvent(Server serverToUpdate, DBModificationType modificationType) {
+	public UpdateServerTask(Server serverToUpdate, DBModificationType modificationType) {
 		super(modificationType);
 		this.serverToUpdate = serverToUpdate;
 	}

@@ -28,14 +28,13 @@ public class PutHandler extends HandlerBase {
 		byte[] dataBuffer;
 		//long chunkSize = 0;
 		long offset = 0;
+		
+		
 		try {
-			File hm = new File(filePathSrc);
-			if(hm.canRead()){
-				System.err.println("File is inreachable");
-			}
+			dataBuffer = Files.readAllBytes(Paths.get(filePathSrc));
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println("There is no file");
+			System.err.println("Unable to read file");
 			return;
 		}
 		

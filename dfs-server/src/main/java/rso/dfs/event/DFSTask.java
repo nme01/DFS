@@ -2,13 +2,13 @@ package rso.dfs.event;
 
 import rso.dfs.model.dao.DFSModelDAO;
 
-public abstract class DFSEvent implements Executable{
+public abstract class DFSTask implements Executable{
 
 	protected DFSModelDAO dao;
 
 	protected DBModificationType modificationType;
 
-	public DFSEvent(DBModificationType modificationType) {
+	public DFSTask(DBModificationType modificationType) {
 		this.modificationType = modificationType;
 	}
 	public DFSModelDAO getDao() {

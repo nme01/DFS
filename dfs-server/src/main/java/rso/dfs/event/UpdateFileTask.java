@@ -2,11 +2,15 @@ package rso.dfs.event;
 
 import rso.dfs.model.File;
 
-public class UpdateFileEvent extends DFSEvent {
+/**
+ * 
+ * @author Adam Papros <adam.papros@gmial.com>
+ */
+public class UpdateFileTask extends DFSTask {
 
 	private final File fileToUpdate;
 
-	public UpdateFileEvent(File fileToUpdate, DBModificationType modificationType) {
+	public UpdateFileTask(File fileToUpdate, DBModificationType modificationType) {
 		super(modificationType);
 		this.fileToUpdate = fileToUpdate;
 	}

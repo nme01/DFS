@@ -9,10 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.event.DBModificationType;
-import rso.dfs.event.DFSEvent;
-import rso.dfs.event.UpdateFileEvent;
-import rso.dfs.event.UpdateFilesOnServers;
-import rso.dfs.event.UpdateServerEvent;
+import rso.dfs.event.DFSTask;
+import rso.dfs.event.UpdateFileTask;
+import rso.dfs.event.UpdateFilesOnServersTask;
+import rso.dfs.event.UpdateServerTask;
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.Query;
@@ -26,7 +26,7 @@ import rso.dfs.model.dao.DFSRepository;
  * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class DFSRepositoryImpl implements DFSRepository {
+public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
 
@@ -48,16 +48,16 @@ public class DFSRepositoryImpl implements DFSRepository {
 	/**
 	 * Communication queue
 	 * */
-	private BlockingQueue<DFSEvent> blockingQueue;
+	private BlockingQueue<DFSTask> blockingQueue;
 
 	private boolean killRepository = false;
 
-	public DFSRepositoryImpl(Server master, BlockingQueue<DFSEvent> blockingQueue) {
+	public DFSRepositoryImpl(Server master, BlockingQueue<DFSTask> blockingQueue) {
 		this.master = master;
 		this.masterDAO = new DFSModelDAOImpl(new DFSDataSource(master.getIp()));
 		this.blockingQueue = blockingQueue;
 		this.shadowsMap = new HashMap<>();
-		//start();
+		start();
 	}
 
 	public void addShadow(Server shadow) {
@@ -70,7 +70,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		shadow.setId(shadowId);
 		try {
 			// replicate data to daos
-			blockingQueue.put(new UpdateServerEvent(shadow, DBModificationType.SAVE));
+			blockingQueue.put(new UpdateServerTask(shadow, DBModificationType.SAVE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -89,7 +89,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		// delete on masterDAO
 		int numberOfAffectedRows = masterDAO.deleteFile(file);
 		try {
-			blockingQueue.put(new UpdateFileEvent(file, DBModificationType.DELETE));
+			blockingQueue.put(new UpdateFileTask(file, DBModificationType.DELETE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -117,7 +117,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		Long serverId = masterDAO.saveServer(server);
 		server.setId(serverId);
 		try {
-			blockingQueue.put(new UpdateServerEvent(server, DBModificationType.SAVE));
+			blockingQueue.put(new UpdateServerTask(server, DBModificationType.SAVE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -166,7 +166,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		log.debug("Saving fileOnServer, fileOnServer=", fileOnServer);
 		masterDAO.saveFileOnServer(fileOnServer);
 		try {
-			blockingQueue.put(new UpdateFilesOnServers(fileOnServer, DBModificationType.SAVE));
+			blockingQueue.put(new UpdateFilesOnServersTask(fileOnServer, DBModificationType.SAVE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -184,7 +184,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		Integer fileId = masterDAO.saveFile(file);
 		file.setId(fileId);
 		try {
-			blockingQueue.put(new UpdateFileEvent(file, DBModificationType.SAVE));
+			blockingQueue.put(new UpdateFileTask(file, DBModificationType.SAVE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -197,7 +197,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		log.debug("Updating file,file=", file);
 		int numberOfAffectedRows = masterDAO.updateFile(file);
 		try {
-			blockingQueue.put(new UpdateFileEvent(file, DBModificationType.UPDATE));
+			blockingQueue.put(new UpdateFileTask(file, DBModificationType.UPDATE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -209,7 +209,7 @@ public class DFSRepositoryImpl implements DFSRepository {
 		int numberOfAffectedRows = masterDAO.deleteFileOnServer(fileOnServer);
 
 		try {
-			blockingQueue.put(new UpdateFilesOnServers(fileOnServer, DBModificationType.DELETE));
+			blockingQueue.put(new UpdateFilesOnServersTask(fileOnServer, DBModificationType.DELETE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -234,27 +234,28 @@ public class DFSRepositoryImpl implements DFSRepository {
 		return masterDAO.fetchAllFiles();
 	}
 
-//	@Override
-//	public void run() {
-//
-//		log.debug("Repository started");
-//		while (!killRepository) {
-//			try {
-//				DFSEvent e = blockingQueue.take();
-//				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
-//					// set dao
-//					e.setDao(entry.getValue());
-//					// execute command
-//					e.execute();
-//				}
-//
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		log.debug("Repository stopped");
-//
-//	}
+	@Override
+	public void run() {
+
+		log.debug("Repository started");
+		while (!killRepository) {
+			try {
+				DFSTask task = blockingQueue.take();
+				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
+					// set dao
+					task.setDao(entry.getValue());
+					// execute command
+					log.debug("Executing on shadowDAO:");
+					task.execute();
+				}
+
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		log.debug("Repository stopped");
+
+	}
 
 	public void killRepository() {
 		this.killRepository = true;
