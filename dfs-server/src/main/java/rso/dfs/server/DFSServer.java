@@ -27,6 +27,7 @@ import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.model.dao.psql.EmptyRepository;
 import rso.dfs.server.storage.EmptyStorageHandler;
+import rso.dfs.server.storage.FileStorageHandler;
 import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.InetAddressUtils;
@@ -75,6 +76,7 @@ public class DFSServer {
 		} else {
 			// create empty object for slave
 			repository = new EmptyRepository();
+			
 
 			me.setMemory(DFSProperties.getProperties().getStorageServerMemory());
 			me.setRole(ServerRole.SLAVE);
@@ -96,6 +98,7 @@ public class DFSServer {
 			// repository.saveServer(master);
 
 			serviceHandler = new ServerHandler(me, new CoreStatus(master.getIp(), new ArrayList<String>()));
+			storageHandler = new FileStorageHandler();
 		}
 		serviceHandler.setRepository(repository);
 		serviceHandler.setStorageHandler(storageHandler);
