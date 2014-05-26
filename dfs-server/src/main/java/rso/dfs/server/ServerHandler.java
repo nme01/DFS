@@ -647,4 +647,21 @@ public class ServerHandler implements Service.Iface {
 		// This method does nothing.
 	}
 
+	public DFSRepository getRepository() {
+		return repository;
+	}
+
+	public void setRepository(DFSRepository repository) {
+		this.repository = repository;
+	}
+
+	public StorageHandler getStorageHandler() {
+		return storageHandler;
+	}
+
+	public void setStorageHandler(StorageHandler storageHandler) {
+		this.storageHandler = storageHandler;
+	}
+
+	
 }

@@ -26,7 +26,7 @@ import rso.dfs.model.dao.DFSRepository;
  * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
-public class DFSRepositoryImpl extends Thread implements DFSRepository {
+public class DFSRepositoryImpl implements DFSRepository {
 
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
 
@@ -54,8 +54,10 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	public DFSRepositoryImpl(Server master, BlockingQueue<DFSEvent> blockingQueue) {
 		this.master = master;
+		this.masterDAO = new DFSModelDAOImpl(new DFSDataSource(master.getIp()));
 		this.blockingQueue = blockingQueue;
 		this.shadowsMap = new HashMap<>();
+		//start();
 	}
 
 	public void addShadow(Server shadow) {
@@ -111,7 +113,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public void saveServer(Server server) {
-		log.debug("Saving server, server=", server);
+		log.debug("Saving server, server={}", server);
 		Long serverId = masterDAO.saveServer(server);
 		server.setId(serverId);
 		try {
@@ -232,25 +234,27 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		return masterDAO.fetchAllFiles();
 	}
 
-	@Override
-	public void run() {
-
-		while (!killRepository) {
-			try {
-				DFSEvent e = blockingQueue.take();
-				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
-					// set dao
-					e.setDao(entry.getValue());
-					// execute command
-					e.execute();
-				}
-
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
+//	@Override
+//	public void run() {
+//
+//		log.debug("Repository started");
+//		while (!killRepository) {
+//			try {
+//				DFSEvent e = blockingQueue.take();
+//				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
+//					// set dao
+//					e.setDao(entry.getValue());
+//					// execute command
+//					e.execute();
+//				}
+//
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		log.debug("Repository stopped");
+//
+//	}
 
 	public void killRepository() {
 		this.killRepository = true;
