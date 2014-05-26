@@ -7,6 +7,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import rso.dfs.server.ServerHandler;
 
 /**
  * @author Adam Papros<adam.papros@gmail.com>
@@ -15,6 +21,7 @@ import java.nio.file.Paths;
 public class FileStorageHandler implements StorageHandler {
 
 	private static final String prefix = "tmp";
+	private final static Logger log = LoggerFactory.getLogger(FileStorageHandler.class);
 
 	@Override
 	public byte[] readFile(long fileId, long offset) {
@@ -27,13 +34,14 @@ public class FileStorageHandler implements StorageHandler {
 //		}
 		
 		Path path = Paths.get(assemblePath(fileId));
-		File inputFile = new File(assemblePath(fileId));
 		byte [] bytes = new byte[0];
+		int fileSize = 0;
 		try {
-			FileInputStream fis = new FileInputStream(inputFile);
-			fis.read(bytes, (int)offset, (int)(Files.size(path) - offset)); // TODO: chunk size
-			fis.close();
+			fileSize = (int)(Files.size(path) - offset);
+			bytes = Files.readAllBytes(path);
+			bytes = Arrays.copyOfRange(bytes, (int)offset, (int)Files.size(path));
 		} catch (Exception e) {
+			log.error("readFile: error reading file " + assemblePath(fileId) + ", offset " + (int)offset + ", size " + fileSize);
 			e.printStackTrace();
 			// ...
 		}
@@ -70,7 +78,7 @@ public class FileStorageHandler implements StorageHandler {
 			fileSize = Files.size(path);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return fileSize;
 	}
