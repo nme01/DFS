@@ -76,7 +76,8 @@ public class ServerHandler implements Service.Iface {
 	 * Map of replicating slaves waiting for a file.
 	 * */
 	private Lock awaitingSlavesLock = new ReentrantLock();
-	private Map<Long, List<Condition>> awaitingSlaves = new HashMap<Long, List<Condition>>();
+	private Map<Integer, List<Condition>> awaitingSlaves = new HashMap<Integer, List<Condition>>();
+	private Long syncCounter = 1L;
 
 	/**
 	 * Contains statuses which files where used;
@@ -191,56 +192,81 @@ public class ServerHandler implements Service.Iface {
 	 * by @param slaveIP )
 	 * */
 	@Override
-	public void replicate(int fileID, String slaveIP) throws TException {
+	public void replicate(int fileID, String slaveIP, long size) throws TException {
 
 		final int fid = fileID;
 		final String sip = slaveIP;
-		final long sid = me.getId();
-
+		final long fsize = size;
+	
 		Thread thread = new Thread(new Runnable() {
 			int fileID = fid;
 			String slaveIP = sip;
-			long slaveID = sid;
-
+			long size = fsize;
+	
 			public void run() {
+				
+				log.debug(me.getIp() + ": Starting replication.");
+				
 				FilePartDescription filePartDescription = new FilePartDescription();
 				filePartDescription.setFileId(fileID);
 				filePartDescription.setOffset(0);
-
+	
 				ArrayList<FilePart> fileParts = new ArrayList<>();
-
+	
+				log.debug(me.getIp() + ": Acquiring main holding slave's operation handler.");
+				
 				try (DFSClosingClient ccClient = new DFSClosingClient(slaveIP, DFSProperties.getProperties().getStorageServerPort())) {
 					Service.Client serviceClient = ccClient.getClient();
-
+					log.debug(me.getIp() + ": Main holding slave's operation handler acquired.");
+	
 					FilePart filePart = null;
 					long offset = 0;
-					while (true) {
+					while (offset < size) {
 						filePartDescription.setOffset(offset);
+						log.debug(me.getIp() + ": Downloading fileid " + fileID + ", offset " + offset);
 						filePart = serviceClient.getFileFromSlave(filePartDescription);
+						log.debug("Got offset " + filePart.getOffset());
 						if (filePart.getData().length == 0) {
 							break;
 						}
 						offset += filePart.getData().length;
-
+	
 						fileParts.add(filePart);
 					}
 				} catch (Exception e) {
+					log.error(me.getIp() + ": Caught an unidentified exception: " + e.getMessage());
 					e.printStackTrace();
 				}
-
+	
+				log.debug(me.getIp() + ": Writing the file to storage.");
 				byte[] dataBuffer = new byte[0];
 				for (FilePart filePart : fileParts) {
 					dataBuffer = DFSArrayUtils.concat(dataBuffer, filePart.getData());
 				}
-				storageHandler.writeFile(fileID, dataBuffer); // TODO: the
+				
+				try {
+					storageHandler.writeFile(fileID, dataBuffer); // TODO: the
 																// entire file
 																// goes through
 																// the memory at
 																// the moment!
-
-				repository.saveFileOnServer(new FileOnServer(fileID, slaveID, 0));
+				} catch (Exception e) {
+					log.error("Caught an unexpected exception: " + e.getMessage());
+					e.printStackTrace();
+					return;
+				}
+	
+				log.debug(me.getIp() + ": Updating master database.");
+				try (DFSClosingClient ccClient = new DFSClosingClient(repository.getMasterServer().getIp(), DFSProperties.getProperties().getNamingServerPort())) {
+					Service.Client serviceClient = ccClient.getClient();
+					serviceClient.fileUploadSuccess(fileID, me.getIp());
+				} catch (Exception e) {
+					log.error("Caught an unidentified exception: " + e.getMessage());
+					e.printStackTrace();
+				}
+	
 			}
-
+	
 		});
 		thread.start();
 		return;
@@ -279,14 +305,14 @@ public class ServerHandler implements Service.Iface {
 		if (file == null) {
 			// TODO: it's a temporary sign of 'file not found' case. Exception
 			// in da future.
-			return new GetFileParams(-1, "");
+			return new GetFileParams(-1, "", 0);
 		}
 
 		Server slave = repository.getSlaveByFile(file);
 
 		GetFileParams getFileParams = new GetFileParams();
 		getFileParams.setFileId(file.getId());
-
+		getFileParams.setSize(file.getSize());
 		getFileParams.setSlaveIp(slave.getIp());
 
 		return getFileParams;
@@ -319,81 +345,83 @@ public class ServerHandler implements Service.Iface {
 		}
 		log.info("Master received put file request for file " + filepath);
 		List<Server> slaves = repository.getSlaves();
-
-		String slaveAddress = null;
-		long slaveId = -1;
+	
+		String mainReplIP = null;
 		Map<Server, Long> freeMemoryMap = new HashMap<Server, Long>();
-
+	
 		for (Server server : slaves) {
 			long filesMemory = 0;
 			for (File file : repository.getFilesOnSlave(server)) {
 				filesMemory += file.getSize();
 			}
-
+	
 			if (server.getMemory() - filesMemory <= size)
 				continue;
-
+	
 			freeMemoryMap.put(server, filesMemory); // po miejscu zajętym
 			// freeMemoryMap.put(server, server.getMemory() - filesMemory); //
 			// po miejscu wolnym
 		}
-
+		
+		if (freeMemoryMap.size() < 1) {
+			throw new TException("There are no available storage servers to process your request.");
+		}
+	
 		List<Server> keys = new ArrayList<Server>(freeMemoryMap.keySet());
 		final Map sortmap = freeMemoryMap;
 		Collections.sort(keys, new Comparator() {
 			public int compare(Object left, Object right) {
 				Long leftVal = (Long) sortmap.get((Server) left);
 				Long rightVal = (Long) sortmap.get((Server) right);
-
+	
 				return leftVal.compareTo(rightVal);
 			}
 		});
-
+	
 		Iterator i = keys.iterator();
 		long replDegree = 3L; // serverConfig.getReplDegree();
 		PutFileParams putFileParams = new PutFileParams();
 		putFileParams.setCanPut(true);
-		if (!i.hasNext()) {
-			putFileParams.setCanPut(false);
-		} else {
-			try {
-				Server mainRepl = (Server) i.next();
-				File file = new File();
-				file.setName(filepath);
-				file.setSize(size);
-				file.setStatus(FileStatus.UPLOAD);
-				Integer fileId = repository.saveFile(file);
-
-				repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), 0));
-
-				putFileParams.setCanPut(true);
-				putFileParams.setSlaveIp(mainRepl.getIp());
-				putFileParams.setFileId(fileId);
-				replDegree--;
-			} catch (org.springframework.dao.DuplicateKeyException e) {
-				log.error("File exists!");
-				PutFileParams retval = new PutFileParams();
-				retval.canPut = false;
-				retval.fileId = 0;
-				retval.slaveIp = "";
-				return retval;
-			} catch (Exception e) {
-				// TODO: wysypka UnknownHostException (??);
-				e.printStackTrace();
-			}
+		
+		try {
+			Server mainRepl = (Server) i.next();
+			
+			log.debug(me.getIp() + ": Main replica being saved on " + mainRepl.getIp());
+			
+			mainReplIP = mainRepl.getIp();
+			File file = new File();
+			file.setName(filepath);
+			file.setSize(size);
+			file.setStatus(FileStatus.UPLOAD);
+			Integer fileId = repository.saveFile(file);
+	
+			repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), 0));
+	
+			putFileParams.setCanPut(true);
+			putFileParams.setSlaveIp(mainRepl.getIp());
+			putFileParams.setFileId(fileId);
+			replDegree--;
+		} catch (org.springframework.dao.DuplicateKeyException e) {
+			log.error("File exists!");
+			throw new TException("File with this name already exists!");
 		}
-
-		if (i.hasNext() && replDegree-- > 0) {
+	
+		log.debug(me.getIp() + ": Remaining number of replicas: " + (keys.size() - 1));
+		
+		while (i.hasNext() && replDegree-- > 0) {
 			Server secRepl = (Server) i.next();
 			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
 				dfstSocket.open();
 				TProtocol protocol = new TBinaryProtocol(dfstSocket);
 				Service.Client serviceClient = new Service.Client(protocol);
-				serviceClient.replicate(putFileParams.getFileId(), secRepl.getIp());
+				log.debug(me.getIp() + ": Replicating to " + secRepl.getIp());
+				serviceClient.replicate(putFileParams.getFileId(), mainReplIP, size);
 			} catch (Exception e) {
+				log.error(me.getIp() + ": Replication failed on slave #" + secRepl.getId() + ": " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
+		log.debug(me.getIp() + ": returning from putFile");
 		return putFileParams;
 	}
 
@@ -496,27 +524,34 @@ public class ServerHandler implements Service.Iface {
 	 */
 	@Override
 	public FilePartDescription sendFilePartToSlave(FilePart filePart) throws TException {
+		log.debug(me.getIp() + ": sendFilePartToSlave: acquiring lock (#" + syncCounter++ + ")");
 		try {
 			// TODO: check if the filePart is from the expected client
+			awaitingSlavesLock.lock();
+			log.debug(me.getIp() + ": sendFilePartToSlave: acquired lock (#" + syncCounter++ + ")");
+			
 			byte[] dataBuffer = filePart.data.array();
 			log.info("Got a file part of fileId " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
 			storageHandler.writeFile(filePart.fileId, dataBuffer);
 			
-			awaitingSlavesLock.lock();
 			List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePart.getFileId());
-			for(Condition c : slavesAwaitingFileID) {
-				c.signal();
+			if (slavesAwaitingFileID != null) {
+				for(Condition c : slavesAwaitingFileID) {
+					c.signal();
+					log.debug(me.getIp() + ": sendFilePartToSlave: signal (#" + syncCounter++ + ")");
+				}
+				slavesAwaitingFileID.clear(); // TODO: check whether this can have game breaking complications
 			}
-			slavesAwaitingFileID.clear();
 			awaitingSlavesLock.unlock();
+			log.debug(me.getIp() + ": sendFilePartToSlave: released lock (#" + syncCounter++ + ")");
 			
 			return new FilePartDescription(filePart.fileId, filePart.offset + dataBuffer.length);
 
 		} catch (Exception e) {
-			// welcome to mcdonalds, do you want fries with that
+			log.error("Caught an exception while receiving the file from client: (" + e.getClass().getName() + ") " + e.getMessage());
 		}
 
-		return null;
+		return new FilePartDescription(-1, 0);
 	}
 
 	/**
@@ -527,33 +562,61 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public FilePart getFileFromSlave(FilePartDescription filePartDescription) throws TException {
 
+		log.debug(me.getIp() + ": getFileFromSlave running.");
+		
+		//magic
 		Condition fileReady = awaitingSlavesLock.newCondition();
 		
 		files.put(filePartDescription.fileId, 0);
 		
-		if (me.getRole() == rso.dfs.model.ServerRole.MASTER || filePartDescription.getOffset() >= repository.getFileById(filePartDescription.getFileId()).getSize()) {
+		if (me.getRole() == rso.dfs.model.ServerRole.MASTER) { 
+			// TODO: make sure you aren't requesting an offset beyond the scope of the file 
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
 		}
 
+		log.debug(me.getIp() + ": Requested offset: " + filePartDescription.getOffset() + ", file size: " + storageHandler.getFileSize(filePartDescription.getFileId()));
+		
+		awaitingSlavesLock.lock();
+		log.debug(me.getIp() + ": getFileFromSlave: acquired lock (#" + syncCounter++ + ")");
 		while (filePartDescription.getOffset() >= storageHandler.getFileSize(filePartDescription.getFileId())) {
+			log.debug(me.getIp() + ": Waiting for offset " + filePartDescription.getOffset() + " from file " + filePartDescription.getFileId());
+			
 			// TODO: handle timeouts
 			// put cond var on a queue
 			// sendFileParttoSlave will remove and signal them
-			awaitingSlavesLock.lock();
 			try {
 				List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePartDescription.getFileId());
+				if (slavesAwaitingFileID == null) {
+					slavesAwaitingFileID = new ArrayList<Condition>();
+					awaitingSlaves.put(filePartDescription.getFileId(), slavesAwaitingFileID);
+				}
 				slavesAwaitingFileID.add(fileReady);
+				log.debug(me.getIp() + ": getFileFromSlave: await (#" + syncCounter++ + ")");
 				fileReady.await();
 			} catch (InterruptedException ie) {
 				/* Just cycle through again, the thread will sleep if the file isn't ready. 
 				 * TODO: Check when InterruptedException might screw things up. */
 			}
-			awaitingSlavesLock.unlock();
-			
 		}
+		log.debug(me.getIp() + ": getFileFromSlave: released lock (#" + syncCounter++ + ")");
+		awaitingSlavesLock.unlock();
+		
+		log.debug(me.getIp() + ": File " + filePartDescription.getFileId() + ", offset: " + filePartDescription.getOffset() + " is ready.");
 
-		byte[] dataToSend = storageHandler.readFile(filePartDescription.getFileId(), filePartDescription.getOffset());
-		if (filePartDescription.getOffset() >= dataToSend.length) {
+		byte[] dataToSend = new byte[0];
+		
+		try {
+			dataToSend = storageHandler.readFile(filePartDescription.getFileId(), filePartDescription.getOffset());
+			if (filePartDescription.getOffset() >= dataToSend.length) {
+				FilePart filePart = new FilePart();
+				filePart.setFileId(filePartDescription.getFileId());
+				filePart.setData(new byte[0]);
+				log.debug(me.getIp() + ": Something's wrong :|");
+				return filePart;
+			}
+		} catch (Exception e) {
+			log.error("Caught an unexpected exception: " + e.getMessage());
+			e.printStackTrace();
 			FilePart filePart = new FilePart();
 			filePart.setFileId(filePartDescription.getFileId());
 			filePart.setData(new byte[0]);

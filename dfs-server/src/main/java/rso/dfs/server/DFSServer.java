@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
+import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.joda.time.DateTime;
@@ -143,7 +144,7 @@ public class DFSServer {
 				serverTransport = new TServerSocket(DFSProperties.getProperties().getStorageServerPort());
 			}
 
-			TServer server = new TSimpleServer(new Args(serverTransport).processor(processor));
+			TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
 			if (me.getRole() == ServerRole.SLAVE) {
 				log.debug("Registering slave server");
