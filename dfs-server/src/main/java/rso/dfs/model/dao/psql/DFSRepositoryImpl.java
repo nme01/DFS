@@ -61,7 +61,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	}
 
 	public void addShadow(Server shadow) {
-		log.debug("Adding new shadow, shadow=", shadow);
+		log.debug("Adding new shadow, shadow={}", shadow);
 		// add shadow to map
 		shadowsMap.put(shadow, new DFSModelDAOImpl(new DFSDataSource(shadow.getIp())));
 		// insert data to master's database
@@ -78,14 +78,14 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	}
 
 	public void removeShadow(Server shadowToRemove) {
-		log.debug("Removing shadow, shadow=", shadowToRemove);
+		log.debug("Removing shadow, shadow={}", shadowToRemove);
 		DFSModelDAO removedDAO = shadowsMap.remove(shadowToRemove);
 
 	}
 
 	@Override
 	public void deleteFile(final File file) {
-		log.debug("Removing file, file=", file);
+		log.debug("Removing file, file={}", file);
 		// delete on masterDAO
 		int numberOfAffectedRows = masterDAO.deleteFile(file);
 		try {
@@ -125,7 +125,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public File getFileByFileName(String fileName) {
-		log.debug("Fetching file, fileName=" + fileName);
+		log.debug("Fetching file, fileName={}" + fileName);
 		return masterDAO.fetchFileByFileName(fileName);
 	}
 
@@ -157,13 +157,13 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public File getFileById(Integer fileId) {
-		log.debug("Fetching file by id, fileId=", fileId);
+		log.debug("Fetching file by id, fileId={}", fileId);
 		return masterDAO.fetchFileById(fileId);
 	}
 
 	@Override
 	public void saveFileOnServer(FileOnServer fileOnServer) {
-		log.debug("Saving fileOnServer, fileOnServer=", fileOnServer);
+		log.debug("Saving fileOnServer, fileOnServer={}", fileOnServer);
 		masterDAO.saveFileOnServer(fileOnServer);
 		try {
 			blockingQueue.put(new UpdateFilesOnServersTask(fileOnServer, DBModificationType.SAVE));
@@ -174,13 +174,13 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public List<File> getFilesOnSlave(Server slave) {
-		log.debug("Fetching files on slave,slave=", slave);
+		log.debug("Fetching files on slave,slave={}", slave);
 		return masterDAO.fetchFilesOnServer(slave);
 	}
 
 	@Override
 	public Integer saveFile(final File file) {
-		log.debug("Saving file, file=", file);
+		log.debug("Saving file, file={}", file);
 		Integer fileId = masterDAO.saveFile(file);
 		file.setId(fileId);
 		try {
@@ -194,7 +194,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public void updateFile(final File file) {
-		log.debug("Updating file,file=", file);
+		log.debug("Updating file,file={}", file);
 		int numberOfAffectedRows = masterDAO.updateFile(file);
 		try {
 			blockingQueue.put(new UpdateFileTask(file, DBModificationType.UPDATE));
@@ -205,7 +205,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public void deleteFileOnServer(FileOnServer fileOnServer) {
-		log.debug("Deleting fileOnServer, fileOnServer=", fileOnServer);
+		log.debug("Deleting fileOnServer, fileOnServer={}", fileOnServer);
 		int numberOfAffectedRows = masterDAO.deleteFileOnServer(fileOnServer);
 
 		try {
@@ -218,7 +218,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public List<Server> getSlavesByFile(File file) {
-		log.debug("Fetching slaves by file, file=", file);
+		log.debug("Fetching slaves by file, file={}", file);
 		return masterDAO.fetchServersByFileId(file.getId());
 
 	}
@@ -245,7 +245,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 					// set dao
 					task.setDao(entry.getValue());
 					// execute command
-					log.debug("Executing on shadowDAO:");
+					log.debug("Executing change on shadowDAO, task={}",task);
 					task.execute();
 				}
 

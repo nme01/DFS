@@ -30,4 +30,9 @@ public abstract class DFSTask {
 		this.modificationType = modificationType;
 	}
 
+	@Override
+	public String toString() {
+		return "DFSTask [dao=" + dao + ", modificationType=" + modificationType + "]";
+	}
+
 }
