@@ -22,6 +22,8 @@ public class DFSProperties {
 	private Long namingServerMemory;
 	private Long storageServerMemory;
 	private Long filePartSize;
+	private Long replicationFactor;
+	private Long pingEvery;
 	private Integer isFileUsedTimeout;
 	private Integer deleteCounter;
 	private List<String> servers;
@@ -93,6 +95,8 @@ public class DFSProperties {
 		dfsproperties.setNamingServerMemory(Long.parseLong(properties.getProperty("naming_server_memory")));
 		dfsproperties.setNamingServerPort(Integer.parseInt(properties.getProperty("naming_server_port")));
 		dfsproperties.setStorageServerMemory(Long.parseLong(properties.getProperty("storage_server_memory")));
+		dfsproperties.setReplicationFactor(Long.parseLong(properties.getProperty("replicationFactor")));
+		dfsproperties.setPingEvery(Long.parseLong(properties.getProperty("pingEvery")));
 		dfsproperties.setStorageServerPort(Integer.parseInt(properties.getProperty("storage_server_port")));
 		dfsproperties.setDefaultClientTimeout(Integer.parseInt(properties.getProperty("defaultClientTimeout")));
 		Enumeration<?> e = properties.propertyNames();
@@ -187,6 +191,22 @@ public class DFSProperties {
 
 	public void setDefaultClientTimeout(int defaultClientTimeout) {
 		this.defaultClientTimeout = defaultClientTimeout;
+	}
+
+	public Long getReplicationFactor() {
+		return replicationFactor;
+	}
+
+	public void setReplicationFactor(Long replicationFactor) {
+		this.replicationFactor = replicationFactor;
+	}
+
+	public Long getPingEvery() {
+		return pingEvery;
+	}
+
+	public void setPingEvery(Long pingEvery) {
+		this.pingEvery = pingEvery;
 	}
 	
 }

@@ -40,6 +40,7 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.server.storage.StorageHandler;
+import rso.dfs.server.utils.SelectStorageServers;
 import rso.dfs.utils.DFSArrayUtils;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
@@ -344,42 +345,13 @@ public class ServerHandler implements Service.Iface {
 			return retval;
 		}
 		log.info("Master received put file request for file " + filepath);
-		List<Server> slaves = repository.getSlaves();
-	
 		String mainReplIP = null;
-		Map<Server, Long> freeMemoryMap = new HashMap<Server, Long>();
-	
-		for (Server server : slaves) {
-			long filesMemory = 0;
-			for (File file : repository.getFilesOnSlave(server)) {
-				filesMemory += file.getSize();
-			}
-	
-			if (server.getMemory() - filesMemory <= size)
-				continue;
-	
-			freeMemoryMap.put(server, filesMemory); // po miejscu zajętym
-			// freeMemoryMap.put(server, server.getMemory() - filesMemory); //
-			// po miejscu wolnym
-		}
 		
-		if (freeMemoryMap.size() < 1) {
-			throw new TException("There are no available storage servers to process your request.");
-		}
-	
-		List<Server> keys = new ArrayList<Server>(freeMemoryMap.keySet());
-		final Map sortmap = freeMemoryMap;
-		Collections.sort(keys, new Comparator() {
-			public int compare(Object left, Object right) {
-				Long leftVal = (Long) sortmap.get((Server) left);
-				Long rightVal = (Long) sortmap.get((Server) right);
-	
-				return leftVal.compareTo(rightVal);
-			}
-		});
+		
+		List<Server> keys = SelectStorageServers.getListOfBestStorageServers(repository, size);
 	
 		Iterator i = keys.iterator();
-		long replDegree = 3L; // serverConfig.getReplDegree();
+		long replDegree = DFSProperties.getProperties().getReplicationFactor();
 		PutFileParams putFileParams = new PutFileParams();
 		putFileParams.setCanPut(true);
 		
@@ -410,7 +382,8 @@ public class ServerHandler implements Service.Iface {
 		
 		while (i.hasNext() && replDegree-- > 0) {
 			Server secRepl = (Server) i.next();
-			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
+			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), 
+					DFSProperties.getProperties().getStorageServerPort())) {
 				dfstSocket.open();
 				TProtocol protocol = new TBinaryProtocol(dfstSocket);
 				Service.Client serviceClient = new Service.Client(protocol);
@@ -424,6 +397,8 @@ public class ServerHandler implements Service.Iface {
 		log.debug(me.getIp() + ": returning from putFile");
 		return putFileParams;
 	}
+
+
 
 	@Override
 	public PutFileParams putFileFailure(String filepath, long size) throws TException {

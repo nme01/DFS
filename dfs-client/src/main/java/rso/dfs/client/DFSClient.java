@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.thrift.transport.TTransportException;
+
 import jline.UnsupportedTerminal;
 import jline.console.ConsoleReader;
 import jline.console.completer.ArgumentCompleter;
@@ -18,6 +20,12 @@ import rso.dfs.client.commands.HelpCommand;
 import rso.dfs.client.commands.ListContentCommand;
 import rso.dfs.client.commands.PutCommand;
 import rso.dfs.client.commands.RemoveCommand;
+import rso.dfs.commons.DFSProperties;
+import rso.dfs.generated.CoreStatus;
+import rso.dfs.generated.FilePart;
+import rso.dfs.generated.Service;
+import rso.dfs.generated.Service.Client;
+import rso.dfs.utils.DFSClosingClient;
 
 /**
  * @author Adam Papros <adam.papros@gmail.com>
@@ -35,6 +43,31 @@ public class DFSClient {
 			System.err.println("You should provide ip address as arg"); 
 			System.exit(-1);
 		}
+		
+		//get master ip address
+		
+		try (DFSClosingClient ccClient = new DFSClosingClient(args[0], 
+				DFSProperties.getProperties().getStorageServerPort())) {
+			Service.Client serviceClient = ccClient.getClient();
+			CoreStatus coreStatus = serviceClient.getCoreStatus();
+			masterIPAddress = coreStatus.getMasterAddress();
+		}catch (Exception e){
+			System.err.println("Service is not available on given ip: " + args[0] + ", exiting...");
+			System.exit(-1);
+		}
+		
+		try(DFSClosingClient cclient = 
+				new DFSClosingClient(masterIPAddress,
+						DFSProperties.getProperties().getStorageServerPort(),2000)) //FIXME: magicnumber
+		{
+			Client client = cclient.getClient();
+			client.pingServer();
+		} catch (Exception e) {
+			System.err.println("Naming service is not available on ip: " + masterIPAddress + ", exiting...");
+			System.exit(-1);
+		}
+		
+		
 		masterIPAddress = args[0];
 		clientActionList = new ArrayList<>();
 		clientActionList.add(new HelpCommand(clientActionList));

@@ -8,52 +8,50 @@ source ../config.properties
 uphosts=0
 masterip=0
 
+log="servicedebug"
+
 function startService()
 {
     ip=$1
     echo "Trying $ip ..."
     if [[ $uphosts > 0 ]]; then
-        ./runSlave $ip $masterip &
+        ./runSlave $ip $masterip &>$log &
         pid=$!
-        sleep 1
+        sleep 2
         ./runCheckServer $ip
         result=$?
-        echo "slave server result is $result"
         if [[ $result == 0 ]]; then
 	   #we've got a new host
            uphosts=$(($uphosts+1))
-           echo "Slave $ip is ready to serve $uphosts"
+           echo "   Slave $ip is ready to serve."
         else
-           echo "Server $ip failed to init"
+           echo "   Server $ip failed to init"
            disown $pid
            kill -9 $pid &>/dev/null
         fi
         
     else
-        ./runMaster $ip &
+        ./runMaster $ip &>$log &
         pid=$!
-        sleep 1
+        sleep 2
         ./runCheckServer $ip
         result=$?
-        echo "result is $result"
         if [[ $result == 1 ]]; then
             #it's an error, kill ssh
-            echo "Server $ip failed to init"
+            echo "    Server $ip failed to init."
             disown $pid
             kill -9 $pid &>/dev/null
         else
 	    #it's a new master!
             masterip=$ip
             uphosts=$(($uphosts+1))
-	    echo "Master $ip is ready to serve $uphosts"
+	    echo "    Master $ip is ready to serve $uphosts"
         fi
     fi
 }
 
 if [[ $1 == 'start' ]]
 then
-
-uphosts=0
 
 for i in {1..9}; do
    varName=server0$i
@@ -73,5 +71,11 @@ for i in {1..9}; do
       fi
    fi
 done
-
+    echo
+    if [[ $uphosts > 1 ]]; then
+        echo "Service started succesfully."
+        echo "Master IP: $masterip"
+        echo "There are $uphosts servers running"
+        echo
+    fi	
 fi

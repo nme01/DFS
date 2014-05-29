@@ -21,7 +21,14 @@ public class CheckServerStatus {
 			System.err.println("You should provide ip address as arg"); 
 			System.exit(-1);
 		}
-		System.exit(checkAlive(args[0]));
+		if(checkAlive(args[0]))
+		{
+			System.exit(0);
+		}
+		else
+		{
+			System.exit(1);
+		}
 	}
 
 	/**
@@ -29,7 +36,7 @@ public class CheckServerStatus {
 	 * @param string IP of the server
 	 * @return 0 on success, not 0 on failure
 	 */
-	public static int checkAlive(String string) {
+	public static boolean checkAlive(String string) {
 		int returnvar = 0;
 		int timeoutInMs = 2000; 
 		try{
@@ -46,7 +53,7 @@ public class CheckServerStatus {
 			returnvar = 1;
 		} 
 		//everything is fine, return true
-		return returnvar;
+		return (returnvar==0);
 	}
 
 }
