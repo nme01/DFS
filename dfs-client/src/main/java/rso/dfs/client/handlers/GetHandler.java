@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
+import rso.dfs.client.handlers.error.FileNotFoundError;
+import rso.dfs.client.handlers.error.FileOperationError;
 import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -19,6 +21,8 @@ import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
 
 /**
+ * Performs get operation.
+ * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */
 public class GetHandler extends HandlerBase {
@@ -37,19 +41,15 @@ public class GetHandler extends HandlerBase {
 			Service.Client serviceClient = new Service.Client(protocol);
 			getFileParams = serviceClient.getFile(filePathSrc);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		//TODO: it's temporary handling of 'file not found case'
-		if(getFileParams.getFileId() < 0)
-		{
-			System.out.print("File not found!");
-			return;
+		// TODO: it's temporary handling of 'file not found case'
+		if (getFileParams.getFileId() < 0) {
+			throw new FileNotFoundError();
 		}
-		
-		;
-		
+
 		// assembly filePartDescription
 		FilePartDescription filePartDescription = new FilePartDescription();
 		filePartDescription.setFileId(getFileParams.getFileId());
@@ -57,8 +57,7 @@ public class GetHandler extends HandlerBase {
 
 		ArrayList<FilePart> fileParts = new ArrayList<>();
 
-		try (DFSClosingClient ccClient = new DFSClosingClient(getFileParams.getSlaveIp(), 
-				DFSProperties.getProperties().getStorageServerPort())) {
+		try (DFSClosingClient ccClient = new DFSClosingClient(getFileParams.getSlaveIp(), DFSProperties.getProperties().getStorageServerPort())) {
 			Service.Client serviceClient = ccClient.getClient();
 
 			FilePart filePart = null;
@@ -70,16 +69,18 @@ public class GetHandler extends HandlerBase {
 					break;
 				}
 				offset += filePart.getData().length;
-				
+
 				fileParts.add(filePart);
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
+			// TODO : probably this place is good for checking slave or shit connection
+			
+			
 			e.printStackTrace();
 		}
 
 		byte[] fileBody = createFileBody(fileParts);
 
-		
 		saveFileBody(filePathDst, fileBody);
 
 	}
@@ -92,13 +93,12 @@ public class GetHandler extends HandlerBase {
 		return bs;
 	}
 
-	private void saveFileBody(String filePathString, byte[] body) {
+	private void saveFileBody(String filePathString, byte[] body) throws Exception {
 		Path path = Paths.get(filePathString);
 		try {
 			Files.write(path, body);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new FileOperationError("Unable to save file.", e);
 		}
 	}
 
