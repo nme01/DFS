@@ -53,6 +53,7 @@ struct GetFileParams
 {
     1:required i32 fileId;
     2:required IPType slaveIp;
+ 	3:required i64 size;
 }
 
 struct PutFileParams
@@ -90,7 +91,7 @@ void pingServer(),
 // force slave to be ready for file (fileId) which will be sent from client
 void prepareForReceiving(1: int fileID, 2:long size),
 //file id, slave ip
-void replicate(1:int fileID, 2:IPType slaveIP),
+void replicate(1:int fileID, 2:IPType slaveIP, 3:long size),
 //master - slave
 bool isFileUsed(1:int fileID),
 void removeFileSlave(1:int fileID),

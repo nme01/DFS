@@ -8,7 +8,7 @@ import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 
 /**
- * Repository
+ * Master and Shadows repository
  * 
  * @author Adam Papros <adam.papros@gmail.com>
  * */

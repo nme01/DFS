@@ -14,11 +14,12 @@ public class ListContentHandler extends HandlerBase {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void performLS() {
+	public void performLS() throws Exception {
 		List<String> fileList = new ArrayList<>();
+
 		try (DFSClosingClient closingClient = new DFSClosingClient(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
-			Service.Client serviceClient = closingClient.getClient();
-			fileList = serviceClient.listFileNames();
+			Service.Client client = closingClient.getClient();
+			fileList = client.listFileNames();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

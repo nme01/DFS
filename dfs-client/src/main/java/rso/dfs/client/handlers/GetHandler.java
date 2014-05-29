@@ -63,7 +63,7 @@ public class GetHandler extends HandlerBase {
 
 			FilePart filePart = null;
 			long offset = 0;
-			while (true) {
+			while (offset < getFileParams.getSize()) {
 				filePartDescription.setOffset(offset);
 				filePart = serviceClient.getFileFromSlave(filePartDescription);
 				if (filePart.getData().length == 0) {

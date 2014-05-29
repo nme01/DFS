@@ -27,6 +27,7 @@ public class GetCommand extends ClientActionBase {
 		if (tokens.length != 3) {
 			// raise error
 			System.err.println("Get error, invalid number of args");
+			return;
 		}
 		String filePathSrc = tokens[1];
 		String filePathDst = tokens[2];
@@ -35,7 +36,7 @@ public class GetCommand extends ClientActionBase {
 		try {
 			handler.performGet(filePathSrc,filePathDst);
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 
 	}

@@ -11,7 +11,7 @@ public abstract class IntegrationTestBase {
 
 	public IntegrationTestBase() {
 		super();
-		dataSource = new DFSDataSource();
+		dataSource = new DFSDataSource("");
 		dataSource.setPassword("rsodfs11");
 		dataSource.setUrl("jdbc:postgresql://127.0.0.1:5432/rsodfs");
 		dataSource.setUsername("rsodfs");
