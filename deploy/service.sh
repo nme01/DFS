@@ -77,7 +77,6 @@ function stop()
     fi
 }
 
-git commit -m "Much better service.sh script. Uses nmap to determine "
 
 
 echo "DFS Service script"
