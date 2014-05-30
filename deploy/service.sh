@@ -9,6 +9,8 @@ uphosts=0
 masterip=0
 
 log="servicedebug"
+deploylog="deploydebug"
+stoplog="stopdebug"
 
 function startService()
 {
@@ -23,9 +25,9 @@ function startService()
         if [[ $result == 0 ]]; then
 	   #we've got a new host
            uphosts=$(($uphosts+1))
-           echo "   Slave $ip is ready to serve."
+           echo "    Slave $ip is ready to serve."
         else
-           echo "   Server $ip failed to init"
+           echo "    Server $ip failed to init"
            disown $pid
            kill -9 $pid &>/dev/null
         fi
@@ -45,16 +47,46 @@ function startService()
 	    #it's a new master!
             masterip=$ip
             uphosts=$(($uphosts+1))
-	    echo "    Master $ip is ready to serve $uphosts"
+	    echo "    Master $ip is ready to serve"
         fi
     fi
 }
 
-if [[ $1 == 'start' ]]
-then
-echo "----------------------------------" >$log
-echo Log for `date` >$log
-echo "----------------------------------" >$log 
+function deploy()
+{
+    ip=$1
+    echo "Deploying to $ip ..."
+    timeout 10 ./deployToServer $ip &>>$deploylog
+    result=$?
+    if [[ $result == 124 ]]; then
+	echo "    Failed to deploy to $ip"
+    else
+        echo "    Deploy successfull for $ip"
+    fi
+}
+
+function stop()
+{
+    ip=$1
+    echo "Stopping $ip ..."
+    timeout 3 ./killemAll $ip &>>$stoplog
+    if [[ $result == 124 ]]; then
+	echo "    Failed to stop service for $ip"
+    else
+        echo "    Service stopped for $ip"
+    fi
+}
+
+git commit -m "Much better service.sh script. Uses nmap to determine "
+
+
+echo "DFS Service script"
+echo 
+echo "Checking for servers..."
+echo 
+
+iplist=''
+
 for i in {1..9}; do
    varName=server0$i
    value=${!varName}
@@ -64,15 +96,32 @@ for i in {1..9}; do
       if [[ ! '' == $endr ]]; then
           #it's ip range
           for ip in `./iprange.sh $startr $endr`; do
-             startService $ip
+             iplist="$iplist $ip"
           done
       else
           #it's plain ip
           ip=$startr
-          startService $ip
+          iplist="$iplist $ip"
       fi
    fi
 done
+#got ip addresses
+
+ipWithSSH=`nmap -p22 -oG - $iplist | awk '/open/{print $2}' | tr "\\n" " "`
+
+echo "List of IPs with SSH port open:"
+echo "$ipWithSSH"
+echo
+
+if [[ $1 == 'start' ]]; then
+    echo "----------------------------------" >>$log
+    echo "Start: log for `date`" >>$log
+    echo "----------------------------------" >>$log 
+
+    for ip in $ipWithSSH; do
+        startService $ip
+    done
+    
     echo
     if [[ $uphosts > 1 ]]; then
         echo "Service started succesfully."
@@ -80,4 +129,34 @@ done
         echo "There are $uphosts servers running"
         echo
     fi	
+fi
+
+if [[ $1 == 'deploy' ]]; then
+    echo "----------------------------------" >>$deploylog
+    echo "Deploy: log for `date`" >>$deploylog
+    echo >>$deploylog
+
+    for ip in $ipWithSSH; do
+        deploy $ip
+    done
+fi
+
+if [[ $1 == 'makeall' ]]; then
+    echo "----------------------------------" >>$stoplog
+    echo "Stop: log for `date`" >>$stoplog
+    echo >>$stoplog
+
+    for ip in $ipWithSSH; do
+        stop $ip
+    done
+fi
+
+if [[ $1 == 'stop' ]]; then
+    echo "----------------------------------" >>$stoplog
+    echo "Stop: log for `date`" >>$stoplog
+    echo >>$stoplog
+
+    for ip in $ipWithSSH; do
+        stop $ip
+    done
 fi
