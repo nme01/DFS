@@ -52,6 +52,14 @@ public class DFSServer {
 		me.setIp(InetAddressUtils.getInetAddressAsString());
 		me.setLastConnection(new DateTime());
 		if (ServerRole.getServerRole(args[0]) == ServerRole.MASTER) {
+			
+			if(args.length < 2 )
+			{
+				log.error("Insufficient number of arguments. You should provide IP as a second argument");
+				System.exit(1);
+			}
+			
+			log.info("Master IP is: "+ args[1]);
 			// queue for messages from master to
 			// thread that updates shadows' databases
 
@@ -65,6 +73,8 @@ public class DFSServer {
 
 			me.setMemory(DFSProperties.getProperties().getNamingServerMemory());
 			me.setRole(ServerRole.MASTER);
+			me.setIp(args[1]);
+
 
 			repository.saveServer(me);
 
@@ -73,6 +83,15 @@ public class DFSServer {
 			serviceHandler = new ServerHandler(me, new CoreStatus(me.getIp(), new ArrayList<String>()));
 			storageHandler = new EmptyStorageHandler();
 		} else {
+			
+			if(args.length < 3 )
+			{
+				log.error("Insufficient number of arguments. "
+						+ "You should provide master IP as a second argument "
+						+ "and slave IP as a third argument");
+				System.exit(1);
+			}
+			
 			// create empty object for slave
 			repository = new EmptyRepository();
 
@@ -83,10 +102,10 @@ public class DFSServer {
 			me.setIp(args[2]);
 			log.info("Master IP is " + args[2] + "; Slave ip is " + args[1]);
 
-			// if master is not on the same server, clean db.
-			if (!args[1].equals("127.0.0.1") && !args[1].equals("localhost") && !args[1].equals(args[2])) {
+			// if master is not on the same server, clean db. It was used only to run on same host
+			/*if (!args[1].equals("127.0.0.1") && !args[1].equals("localhost") && !args[1].equals(args[2])) {
 				repository.cleanDB();
-			}
+			}*/
 
 			Server master = new Server();
 			master.setIp(args[1]);

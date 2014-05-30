@@ -103,11 +103,27 @@ public class ServerHandler implements Service.Iface {
 	public List<String> listFileNames() throws TException {
 		log.debug("New LS request.");
 		List<File> files = repository.getAllFiles();
-
+		
+		if(DFSProperties.getProperties().isDebug())
+		{
+			List<String> fileNames = new ArrayList<>();
+			for(Server s: repository.getSlaves())
+			{
+				fileNames.add("Files on slave " + s.getIp() + ":");
+				for(File f: repository.getFilesOnSlave(s))
+				{
+					fileNames.add(f.getId() + ": " + f.getName());
+				}
+			}
+			
+			return fileNames;
+		}
+		
 		List<String> fileNames = new ArrayList<>();
 		for (File f : files) {
 			fileNames.add(f.getName());
 		}
+		
 		return fileNames;
 	}
 
@@ -258,7 +274,7 @@ public class ServerHandler implements Service.Iface {
 				}
 	
 				log.debug(me.getIp() + ": Updating master database.");
-				try (DFSClosingClient ccClient = new DFSClosingClient(repository.getMasterServer().getIp(), DFSProperties.getProperties().getNamingServerPort())) {
+				try (DFSClosingClient ccClient = new DFSClosingClient(coreStatus.getMasterAddress(), DFSProperties.getProperties().getNamingServerPort())) {
 					Service.Client serviceClient = ccClient.getClient();
 					serviceClient.fileUploadSuccess(fileID, me.getIp());
 				} catch (Exception e) {

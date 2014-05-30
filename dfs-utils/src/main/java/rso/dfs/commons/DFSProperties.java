@@ -28,6 +28,7 @@ public class DFSProperties {
 	private Integer deleteCounter;
 	private List<String> servers;
 	private int defaultClientTimeout;
+	private boolean debug;
 	
 	private static DFSProperties dfsproperties;
 	
@@ -99,6 +100,8 @@ public class DFSProperties {
 		dfsproperties.setPingEvery(Long.parseLong(properties.getProperty("pingEvery")));
 		dfsproperties.setStorageServerPort(Integer.parseInt(properties.getProperty("storage_server_port")));
 		dfsproperties.setDefaultClientTimeout(Integer.parseInt(properties.getProperty("defaultClientTimeout")));
+		dfsproperties.setDebug(Boolean.parseBoolean(properties.getProperty("debug")));
+		
 		Enumeration<?> e = properties.propertyNames();
 		while (e.hasMoreElements()) {
 			String key = e.nextElement().toString();
@@ -207,6 +210,14 @@ public class DFSProperties {
 
 	public void setPingEvery(Long pingEvery) {
 		this.pingEvery = pingEvery;
+	}
+
+	public boolean isDebug() {
+		return debug;
+	}
+
+	public void setDebug(boolean debug) {
+		this.debug = debug;
 	}
 	
 }

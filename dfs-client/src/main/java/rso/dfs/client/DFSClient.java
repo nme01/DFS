@@ -13,6 +13,7 @@ import jline.UnsupportedTerminal;
 import jline.console.ConsoleReader;
 import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.StringsCompleter;
+import jline.internal.Log;
 import rso.dfs.client.commands.ClientAction;
 import rso.dfs.client.commands.ExitCommand;
 import rso.dfs.client.commands.GetCommand;
@@ -46,15 +47,20 @@ public class DFSClient {
 		
 		//get master ip address
 		
+		
+		
 		try (DFSClosingClient ccClient = new DFSClosingClient(args[0], 
 				DFSProperties.getProperties().getStorageServerPort())) {
 			Service.Client serviceClient = ccClient.getClient();
 			CoreStatus coreStatus = serviceClient.getCoreStatus();
 			masterIPAddress = coreStatus.getMasterAddress();
+			System.out.println("Master IP is " + masterIPAddress);
 		}catch (Exception e){
 			System.err.println("Service is not available on given ip: " + args[0] + ", exiting...");
 			System.exit(-1);
 		}
+		
+		
 		
 		try(DFSClosingClient cclient = 
 				new DFSClosingClient(masterIPAddress,
@@ -67,8 +73,6 @@ public class DFSClient {
 			System.exit(-1);
 		}
 		
-		
-		masterIPAddress = args[0];
 		clientActionList = new ArrayList<>();
 		clientActionList.add(new HelpCommand(clientActionList));
 		clientActionList.add(new GetCommand());

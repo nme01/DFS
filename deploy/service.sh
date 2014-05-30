@@ -15,7 +15,7 @@ function startService()
     ip=$1
     echo "Trying $ip ..."
     if [[ $uphosts > 0 ]]; then
-        ./runSlave $ip $masterip &>$log &
+        ./runSlave $ip $masterip &>>$log &
         pid=$!
         sleep 2
         ./runCheckServer $ip
@@ -31,7 +31,7 @@ function startService()
         fi
         
     else
-        ./runMaster $ip &>$log &
+        ./runMaster $ip &>>$log &
         pid=$!
         sleep 2
         ./runCheckServer $ip
@@ -52,7 +52,9 @@ function startService()
 
 if [[ $1 == 'start' ]]
 then
-
+echo "----------------------------------" >$log
+echo Log for `date` >$log
+echo "----------------------------------" >$log 
 for i in {1..9}; do
    varName=server0$i
    value=${!varName}

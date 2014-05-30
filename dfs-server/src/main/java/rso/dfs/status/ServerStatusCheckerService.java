@@ -19,6 +19,7 @@ import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.Server;
 import rso.dfs.model.dao.DFSRepository;
+import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.FileStorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
 import rso.dfs.utils.DFSClosingClient;
@@ -55,6 +56,34 @@ public class ServerStatusCheckerService {
 	{
 		exec.shutdown();
 	}
+	
+
+
+	private void checkAllShadowsAndSlaves()
+	{
+		lastCheck = new DateTime();
+		
+		List<Server> slaves = repository.getSlaves();
+		for (Server checkedSlave: slaves)
+		{
+			if(!checkServerAliveTwice(checkedSlave.getIp()))
+			{
+				slaveIsDown(checkedSlave);
+			}
+						
+		}
+		
+		List<Server> shadows = repository.getShadows();
+		for (Server checkedShadow: shadows)
+		{
+			if(!checkServerAliveTwice(checkedShadow.getIp()))
+			{
+				shadowIsDown(checkedShadow);
+			}
+						
+		}
+	}
+
 	
 	/**
 	 * Checks whether server is alive. 
@@ -147,34 +176,13 @@ public class ServerStatusCheckerService {
 		
 	}
 	
-	private void checkAllShadowsAndSlaves()
-	{
-		lastCheck = new DateTime();
-		
-		List<Server> slaves = repository.getSlaves();
-		for (Server checkedSlave: slaves)
-		{
-			if(!checkServerAliveTwice(checkedSlave.getIp()))
-			{
-				slaveIsDown(checkedSlave);
-			}
-						
-		}
-		
-		List<Server> shadows = repository.getShadows();
-		for (Server checkedShadow: shadows)
-		{
-			if(!checkServerAliveTwice(checkedShadow.getIp()))
-			{
-				shadowIsDown(checkedShadow);
-			}
-						
-		}
-	}
-
 	private void shadowIsDown(Server checkedShadow) {
-		//select one server to become shadow
 		
+		//FIXME: too ugly
+		//disconnect shadow from repository
+		((DFSRepositoryImpl)repository).removeShadow(checkedShadow);
+		
+		//select one server to become shadow
 		List<Server> listOfBestStorageServers = null;
 		int filesize = 0;
 		try {

@@ -1,1 +1,1 @@
-ssh ubuntu@$1 "cd /home/ubuntu/rsodist/; ./dfs_naming_server.sh"
+ssh ubuntu@$1 "cd /home/ubuntu/rsodist/; ./dfs_naming_server.sh $1"

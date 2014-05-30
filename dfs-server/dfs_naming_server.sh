@@ -1,1 +1,1 @@
-java -cp "lib/*:conf/" rso.dfs.server.DFSServer M
+java -cp "lib/*:conf/" rso.dfs.server.DFSServer M "$@"
