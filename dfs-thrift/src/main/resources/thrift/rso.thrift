@@ -48,6 +48,7 @@ struct FilePart {
 struct NewSlaveRequest {
     1:required IPType slaveIP;
     2:list<int> fileIds;
+    3:list<long> fileSizes;
 }
 struct GetFileParams
 {
@@ -74,6 +75,9 @@ list<string> listFileNames(),
 //infrastucure building
 //slave sends request to master to register to serve
 CoreStatus registerSlave(1:NewSlaveRequest req),
+
+//with this request master makes slave register again.
+void forceRegister(),
 
 //master updates slaves status
 void updateCoreStatus(1:CoreStatus status),

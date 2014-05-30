@@ -33,6 +33,8 @@ public interface DFSRepository {
 	public List<Server> getSlavesByFile(File file);
 
 	public List<Server> getSlaves();
+
+	public List<Server> getDownServers();
 	
 	public List<File> getFilesOnSlave(Server server);
 	
@@ -41,6 +43,8 @@ public interface DFSRepository {
 	public Integer saveFile(final File file);
 
 	public void updateFile(final File file);
+	
+	public void updateServer(final Server server);
 
 	public void cleanDB();
 

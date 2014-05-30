@@ -1,8 +1,10 @@
 package rso.dfs.server;
 
+import java.io.File;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -170,28 +172,10 @@ public class DFSServer {
 			TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
 			if (me.getRole() == ServerRole.SLAVE) {
-				log.debug("Registering slave server");
-
-				// possible warning: thrift method executed locally
-				String masterIP = serviceHandler.getCoreStatus().getMasterAddress();
-
-				// register new slave
-
-				try (DFSClosingClient cclient = new DFSClosingClient(masterIP, DFSProperties.getProperties().getNamingServerPort())) {
-
-					Client client = cclient.getClient();
-					// possible warning: thrift method executed locally
-					ArrayList<Integer> fileList = new ArrayList<Integer>();
-					String slaveIP = me.getIp();
-					NewSlaveRequest request = new NewSlaveRequest(slaveIP, fileList);
-					log.debug("Slave will register to master");
-					CoreStatus coreStatus = client.registerSlave(request);
-					serviceHandler.updateCoreStatus(coreStatus);
-					log.debug("I, humble slave with IP address " + me.getIp() + ", registered to master at " + masterIP);
-				}
+				serviceHandler.registerToMaster();
 			}
 
-			log.debug("Starting server: serverRole=" + me.toString());
+			log.debug("Starting server: " + me.toString());
 			server.serve();
 		} catch (Exception e) {
 			log.error(e.getMessage());

@@ -279,4 +279,22 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		return masterDAO.fetchAllQueries();
 	}
 
+	@Override
+	public void updateServer(Server server) {
+		log.debug("Updating server,file={}", server);
+		int numberOfAffectedRows = masterDAO.updateServer(server);
+		try {
+			blockingQueue.put(new UpdateServerTask(server, DBModificationType.UPDATE));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public List<Server> getDownServers() {
+		log.debug("Fetching down servers.");
+		return masterDAO.fetchServersByRole(ServerRole.DOWN);
+	}
+
 }

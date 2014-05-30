@@ -1,0 +1,1 @@
+ssh ubuntu@$1 "sudo halt"

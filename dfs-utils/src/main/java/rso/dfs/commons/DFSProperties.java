@@ -29,6 +29,7 @@ public class DFSProperties {
 	private List<String> servers;
 	private int defaultClientTimeout;
 	private boolean debug;
+	private String directory;
 	
 	private static DFSProperties dfsproperties;
 	
@@ -101,6 +102,7 @@ public class DFSProperties {
 		dfsproperties.setStorageServerPort(Integer.parseInt(properties.getProperty("storage_server_port")));
 		dfsproperties.setDefaultClientTimeout(Integer.parseInt(properties.getProperty("defaultClientTimeout")));
 		dfsproperties.setDebug(Boolean.parseBoolean(properties.getProperty("debug")));
+		dfsproperties.setDirectory(properties.getProperty("directory"));
 		
 		Enumeration<?> e = properties.propertyNames();
 		while (e.hasMoreElements()) {
@@ -219,5 +221,13 @@ public class DFSProperties {
 	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
-	
+
+	public String getDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(String directory) {
+		this.directory = directory;
+	}
+
 }

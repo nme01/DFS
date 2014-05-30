@@ -107,6 +107,22 @@ public class ServerHandler implements Service.Iface {
 		if(DFSProperties.getProperties().isDebug())
 		{
 			List<String> fileNames = new ArrayList<>();
+			
+			fileNames.add("All files list: ");
+			for (File f : files) {
+				String suffix = ""; 
+				if(f.getStatus().equals(FileStatus.TO_DELETE))
+				{
+					suffix = " (to delete)"; 
+				}
+				else if (f.getStatus().equals(FileStatus.UPLOAD))
+				{
+					suffix = " (uploaded)";
+				}
+				
+				fileNames.add(f.getId() + ": " + f.getName() + suffix);
+			}
+			
 			for(Server s: repository.getSlaves())
 			{
 				fileNames.add("Files on slave " + s.getIp() + ":");
@@ -115,7 +131,6 @@ public class ServerHandler implements Service.Iface {
 					fileNames.add(f.getId() + ": " + f.getName());
 				}
 			}
-			
 			return fileNames;
 		}
 		
@@ -140,20 +155,32 @@ public class ServerHandler implements Service.Iface {
 		return ss;
 	}
 
+	/**
+	 * TODO: Make some shadows
+	 */
 	@Override
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
 		log.info("Got registerSlave request! Slave IP: " + req.getSlaveIP() + "; list of files {" + req.getFileIds() + "}");
-		Server server = new Server();
-
-		server.setIp(req.getSlaveIP());
-		server.setMemory(DFSProperties.getProperties().getStorageServerMemory()); // FIXME:
-																					// not
-																					// really
-																					// i
-																					// guess
-		server.setRole(ServerRole.SLAVE);
-		server.setLastConnection(new DateTime());
-		repository.saveServer(server);
+		
+		Server server = repository.getServerByIp(req.getSlaveIP());
+		if(server == null)
+		{
+			server = new Server();
+	
+			server.setIp(req.getSlaveIP());
+			server.setMemory(DFSProperties.getProperties().getStorageServerMemory()); 
+			server.setRole(ServerRole.SLAVE);
+			server.setLastConnection(new DateTime());
+			repository.saveServer(server);
+		}
+		else
+		{
+			if(server.getRole() == ServerRole.DOWN)
+			{
+				log.debug("Down server " + server + " registered again");
+			}
+			server.setRole(ServerRole.SLAVE);
+		}
 
 		List<Integer> ids = req.getFileIds();
 		for (int fileId : ids) {
@@ -161,14 +188,12 @@ public class ServerHandler implements Service.Iface {
 				FileOnServer fileOnServer = new FileOnServer();
 				fileOnServer.setFileId(fileId);
 				fileOnServer.setServerId(server.getId());
-				// fileOnServer.setPriority(0);
 				repository.saveFileOnServer(fileOnServer);
-				ids.remove((Integer) fileId); // FIXME: is removing element
-												// legal in java?
+				ids.remove((Integer) fileId);
 			}
-			;
 		}
 
+		//edge case - not visible from master, visible for client - remove file slave will disconnect client..
 		try (DFSClosingClient cclient = new DFSClosingClient(req.getSlaveIP(), DFSProperties.getProperties().getStorageServerPort())) {
 			Client client = cclient.getClient();
 			for (Integer fileId : ids) {
@@ -652,6 +677,71 @@ public class ServerHandler implements Service.Iface {
 
 	public void setStorageHandler(StorageHandler storageHandler) {
 		this.storageHandler = storageHandler;
+	}
+
+	public void registerToMaster()
+	{
+		log.debug("Registering slave server");
+	
+		// possible warning: thrift method executed locally
+		String masterIP = coreStatus.getMasterAddress();
+	
+		// register new slave
+	
+		try (DFSClosingClient cclient = new DFSClosingClient(masterIP, DFSProperties.getProperties().getNamingServerPort())) {
+			Client client = cclient.getClient();
+	
+			//list files!
+			String directory = DFSProperties.getProperties().getDirectory();
+	
+			ArrayList<Integer> fileList = new ArrayList<Integer>();
+			ArrayList<Long> fileSizes = new ArrayList<Long>();
+			
+			java.io.File[] files = new java.io.File(directory).listFiles();
+	
+			for (java.io.File file : files) {
+			    if (file.isFile()) {
+			    	Integer nameasnumber = null;
+			    	try
+			    	{
+			    		nameasnumber = Integer.parseInt(file.getName());
+			    	}
+			    	catch (NumberFormatException e)
+			    	{
+			    		//not an integer
+			    		log.debug("In working directory \"" + directory + 
+			    				"\" there is a file with name not parsable to Integer:" 
+			    				+ file.getName());
+			    		continue;
+			    	}
+			    	
+			    	fileList.add(nameasnumber);
+		    		fileSizes.add(file.length());
+			    }
+			}
+			
+			String slaveIP = me.getIp();
+			NewSlaveRequest request = new NewSlaveRequest(slaveIP, fileList, fileSizes);
+			log.debug("Slave will register to master");
+			CoreStatus coreStatus = client.registerSlave(request);
+	
+			// possible warning: thrift method executed locally
+			updateCoreStatus(coreStatus);
+			
+			log.debug("I, humble slave with IP address " + me.getIp() + ", registered to master at " + masterIP);
+		} catch (TTransportException e1) {
+			e1.printStackTrace();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	/**
+	 * With this request master makes slave register again.
+	 */
+	@Override
+	public void forceRegister() throws TException {
+		registerToMaster();
 	}
 
 	

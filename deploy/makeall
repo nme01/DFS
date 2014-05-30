@@ -13,4 +13,6 @@ else
     mvn install
     cd ../dfs-server
     mvn install
+    cd ../dfs-client
+    mvn install
 fi

@@ -23,7 +23,7 @@ public class EmptyRepository implements DFSRepository {
 
 	@Override
 	public void deleteFileOnServer(FileOnServer fileOnServer) {
-		throw new IllegalStateException("Slave server can not use repository");
+		throw new IllegalStateException(message);
 	}
 
 	@Override
@@ -110,6 +110,16 @@ public class EmptyRepository implements DFSRepository {
 
 	@Override
 	public List<Server> getShadows() {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public void updateServer(Server server) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public List<Server> getDownServers() {
 		throw new IllegalStateException(message);
 	}
 

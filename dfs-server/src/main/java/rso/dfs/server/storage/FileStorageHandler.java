@@ -12,6 +12,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rso.dfs.commons.DFSProperties;
 import rso.dfs.server.ServerHandler;
 
 /**
@@ -20,7 +21,7 @@ import rso.dfs.server.ServerHandler;
  * */
 public class FileStorageHandler implements StorageHandler {
 
-	private static final String prefix = "tmp";
+	private static final String prefix = DFSProperties.getProperties().getDirectory();
 	private final static Logger log = LoggerFactory.getLogger(FileStorageHandler.class);
 
 	@Override

@@ -10,7 +10,7 @@ package rso.dfs.model;
 
 public enum ServerRole {
 
-	MASTER("M"), SHADOW("H"), SLAVE("L");
+	MASTER("M"), SHADOW("H"), SLAVE("L"), DOWN("D");
 
 	private String code;
 

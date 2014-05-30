@@ -18,6 +18,7 @@ import rso.dfs.generated.Service.Client;
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.Server;
+import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.FileStorageHandler;
@@ -34,8 +35,10 @@ public class ServerStatusCheckerService {
 	
 	private DFSRepository repository;
 	private DateTime lastCheck;
+	private Server me;
 	private final static Logger log = LoggerFactory.getLogger(ServerStatusCheckerService.class);
 	ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+	
 	
 	public ServerStatusCheckerService(DFSRepository repository) {
 		this.repository = repository;
@@ -47,6 +50,7 @@ public class ServerStatusCheckerService {
 		exec.scheduleAtFixedRate(new Runnable() {
 		  @Override
 		  public void run() {
+			  log.debug("Run checker service");
 			  checkAllShadowsAndSlaves();
 		  }
 		}, 0, DFSProperties.getProperties().getPingEvery(), TimeUnit.MILLISECONDS);
@@ -54,14 +58,21 @@ public class ServerStatusCheckerService {
 	
 	public void stopService()
 	{
-		exec.shutdown();
+		exec.shutdown(); //TODO: check if it works, maybe shoutdownNOW?
 	}
 	
-
 
 	private void checkAllShadowsAndSlaves()
 	{
 		lastCheck = new DateTime();
+		
+		/**TODO: check input queue from master main thread**/
+		
+		/** TODO: algorithm? For now - if it's not available, delete.
+		 * Maybe: if no answer in 60 seconds or another longer time than ~"now"?
+		 */
+		
+		log.debug("Ping begins. Pinging slaves...");
 		
 		List<Server> slaves = repository.getSlaves();
 		for (Server checkedSlave: slaves)
@@ -70,9 +81,14 @@ public class ServerStatusCheckerService {
 			{
 				slaveIsDown(checkedSlave);
 			}
+			else
+			{
+				checkedSlave.setLastConnection(new DateTime());
+			}
 						
 		}
 		
+		log.debug("Pinging shadows...");
 		List<Server> shadows = repository.getShadows();
 		for (Server checkedShadow: shadows)
 		{
@@ -80,21 +96,54 @@ public class ServerStatusCheckerService {
 			{
 				shadowIsDown(checkedShadow);
 			}
+			else
+			{
+				checkedShadow.setLastConnection(new DateTime());
+			}
+		}
+		
+		log.debug("Pinging down servers...");
+		List<Server> downservers = repository.getDownServers();
+		for (Server downServer: downservers)
+		{
+			if(CheckServerStatus.checkAlive(downServer.getIp()))
+			{
+				reinitServer(downServer);
+			}
 						
 		}
+		log.debug("Ping ends.");
 	}
 
 	
+	private void reinitServer(Server downServer) {
+		log.debug("Trying to reinitialize " + downServer.getIp());
+		
+		try(DFSClosingClient cclient = 
+				new DFSClosingClient(downServer.getIp(),
+						DFSProperties.getProperties().getStorageServerPort()))
+		{
+			Client client = cclient.getClient();
+			client.forceRegister();
+		} catch (Exception e) {
+		    log.debug("Reinitializing " + downServer.getIp() + " failed");
+			return;
+		} 
+		
+	}
+
 	/**
 	 * Checks whether server is alive. 
 	 * If server is not responding it will check again in 1000ms.
-	 * If second request also fails, returns false
+	 * If second request also fails, returns false.
 	 *  
 	 * @param IP server IP
 	 * @return whether server is alive
 	 */
 	private boolean checkServerAliveTwice(String IP)
 	{
+		final long timeout = 1000;
+		
 		boolean alive = CheckServerStatus.checkAlive(IP);
 		if(alive)
 		{
@@ -103,7 +152,7 @@ public class ServerStatusCheckerService {
 		
 		//slave's probably dead, try once again in few seconds
 		try {
-		    Thread.sleep(1000);
+		    Thread.sleep(timeout);
 		} catch(InterruptedException ex) {
 		    Thread.currentThread().interrupt();
 		}	
@@ -114,31 +163,43 @@ public class ServerStatusCheckerService {
 			return true;
 		}
 		
+		//server is really dead.
 		return false;
-		//slave is really dead.
-		
 	}
 	
+	/**
+	 * Procedure taken when slave is down
+	 * @param checkedSlave
+	 */
 	private void slaveIsDown(Server checkedSlave)
 	{
-		//need to
-		//- replicate all files which were on this slave
+		log.debug("Slave " + checkedSlave + " is down. Doing things.");
+		
+		//mark slave as down.
+		checkedSlave.setRole(ServerRole.DOWN);
+		repository.updateServer(checkedSlave);
+		
+		//remove all it's files ASAP - WARNING - probably it's NOT FAULT-RESISTANT.
 		List<File> filesOnSlave = repository.getFilesOnSlave(checkedSlave);
+		
+		for (File file: filesOnSlave)
+		{
+			//TODO: t's ugly. Repository should have a method to get "FileOnServer"
+			repository.deleteFileOnServer(new FileOnServer(file.getId(),checkedSlave.getId(), 0));
+		}
+		
+		//replicate every file
 		for (File file: filesOnSlave)
 		{
 			/*
 			 * check if file needs to be replicated
 			 * FIXME: for now assume it needs to be replicated, 
-			 * no "count file" is implemented
 			 * 
 			 *Long replicationFactor = DFSProperties.getProperties()
 			 *    .getReplicationFactor();
 			 *long filecopies = repository.getFileOfFileCopiesByID() -1;
 			 */
 			//
-			
-			//FIXME: t's ugly. Repository should have a method to get "FileOnServer"
-			repository.deleteFileOnServer(new FileOnServer(file.getId(),checkedSlave.getId(), 0));
 			
 			List<Server> listOfBestStorageServers = null;
 			try {
@@ -177,8 +238,12 @@ public class ServerStatusCheckerService {
 	}
 	
 	private void shadowIsDown(Server checkedShadow) {
+		log.debug("Shadow " + checkedShadow + " is down. Doing things.");
 		
-		//FIXME: too ugly
+		checkedShadow.setRole(ServerRole.DOWN);
+		repository.updateServer(checkedShadow);
+		
+		//TODO: add remove shadow to interface 
 		//disconnect shadow from repository
 		((DFSRepositoryImpl)repository).removeShadow(checkedShadow);
 		

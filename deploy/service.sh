@@ -8,9 +8,9 @@ source ../config.properties
 uphosts=0
 masterip=0
 
-log="servicedebug"
-deploylog="deploydebug"
-stoplog="stopdebug"
+log="debugservice"
+deploylog="debugdeploy"
+stoplog="debugstop"
 
 function startService()
 {
@@ -77,7 +77,17 @@ function stop()
     fi
 }
 
-
+function haltvm()
+{
+    ip=$1
+    echo "Halting vm $ip ..."
+    timeout 3 ./haltvm $ip &>>$stoplog
+    if [[ $result == 124 ]]; then
+	echo "    Failed to halt vm for $ip"
+    else
+        echo "    Halt success for $ip"
+    fi
+}
 
 echo "DFS Service script"
 echo 
@@ -85,7 +95,6 @@ echo "Checking for servers..."
 echo 
 
 iplist=''
-
 for i in {1..9}; do
    varName=server0$i
    value=${!varName}
@@ -140,7 +149,7 @@ if [[ $1 == 'deploy' ]]; then
     done
 fi
 
-if [[ $1 == 'makeall' ]]; then
+if [[ $1 == 'stop' ]]; then
     echo "----------------------------------" >>$stoplog
     echo "Stop: log for `date`" >>$stoplog
     echo >>$stoplog
@@ -150,12 +159,13 @@ if [[ $1 == 'makeall' ]]; then
     done
 fi
 
-if [[ $1 == 'stop' ]]; then
+
+if [[ $1 == 'haltvm' ]]; then
     echo "----------------------------------" >>$stoplog
-    echo "Stop: log for `date`" >>$stoplog
+    echo "Halt: log for `date`" >>$stoplog
     echo >>$stoplog
 
     for ip in $ipWithSSH; do
-        stop $ip
+        haltvm $ip
     done
 fi
