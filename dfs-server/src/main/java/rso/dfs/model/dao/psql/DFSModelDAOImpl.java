@@ -36,7 +36,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	final static Logger log = LoggerFactory.getLogger(DFSModelDAOImpl.class);
 
-	private void insertIntoLogTable(String sqlQuery) {
+	public void insertIntoLogTable(String sqlQuery) {
 		final String query = "insert into log (sql) values(?)";
 		getJdbcTemplate().update(query, new Object[] { sqlQuery });
 	}
@@ -237,5 +237,10 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		final String query = "insert into servers (id, ip, role, memory, last_connection) values(?,?,?,?,?)";
 		getJdbcTemplate().update(query, new Object[] { server.getId(), server.getIp(), server.getRole().getCode(), server.getMemory(), server.getLastConnection() });
 
+	}
+	
+	@Override
+	public void executeQuery(String sql) {
+		getJdbcTemplate().update(sql);
 	}
 }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,9 @@ import rso.dfs.model.dao.DFSRepository;
 public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
-
+	public static final int MAX_THREADS = 1000;
+	public static final Semaphore dbSemaphore = new Semaphore(MAX_THREADS, true);
+	
 	/**
 	 * Information about master server.
 	 * */
@@ -245,8 +248,10 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 					// set dao
 					task.setDao(entry.getValue());
 					// execute command
+					DFSRepositoryImpl.dbSemaphore.acquire();
 					log.debug("Executing change on shadowDAO, task={}",task);
 					task.execute();
+					DFSRepositoryImpl.dbSemaphore.release();
 				}
 
 			} catch (InterruptedException e) {
@@ -295,6 +300,11 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	public List<Server> getDownServers() {
 		log.debug("Fetching down servers.");
 		return masterDAO.fetchServersByRole(ServerRole.DOWN);
+	}
+	
+	@Override
+	public void executeQuery(String sql) {
+		masterDAO.executeQuery(sql);
 	}
 
 }

@@ -77,5 +77,7 @@ public interface DFSModelDAO {
 	public List<Query> fetchQueriesAfter(long version);
 
 	public List<Query> fetchAllQueries();
+	
+	public void executeQuery(String sql);
 
 }

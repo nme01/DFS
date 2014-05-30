@@ -56,4 +56,8 @@ public interface DFSRepository {
 
 	public List<Server> getShadows();
 	
+	public void executeQuery(String sql);
+	
+	public void addShadow(Server shadow);
+	
 }

@@ -36,9 +36,13 @@ import rso.dfs.generated.SystemStatus;
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.FileStatus;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
+import rso.dfs.model.dao.psql.DFSDataSource;
+import rso.dfs.model.dao.psql.DFSModelDAOImpl;
+import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
 import rso.dfs.utils.DFSArrayUtils;
@@ -213,8 +217,8 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void becomeShadow(CoreStatus status) throws TException {
-		// TODO Auto-generated method stub
-
+		me.setRole(ServerRole.SHADOW);
+		log.debug("I am shadow now");
 	}
 
 	@Override
@@ -742,6 +746,48 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public void forceRegister() throws TException {
 		registerToMaster();
+	}
+	
+	public void makaShadow(String slaveIpAddress){
+		final String slaveIp = slaveIpAddress;
+		Thread thread = new Thread(new Runnable() {
+			public void run(){
+				log.debug("Order " + slaveIp + " to become Shadow");
+				// make dump
+				String dbPass = DFSProperties.getProperties().getDbpassword();
+				String dbName = DFSProperties.getProperties().getDbname();
+				String dbUser = DFSProperties.getProperties().getDbuser();
+				String cmd = "PGPASSWORD=" + dbPass + " pg_dump -h 127.0.0.1 -U " + dbUser + 
+						" | PGPASSWORD=" + dbPass + " psql -h " + slaveIp + " -d " + dbName + " -U " + dbUser; 
+				try (DFSTSocket dfstSocket = new DFSTSocket(slaveIp, DFSProperties.getProperties().getStorageServerPort())) {
+					Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd}).waitFor();
+					log.debug("Databse dumped");
+					DFSRepositoryImpl.dbSemaphore.acquire(DFSRepositoryImpl.MAX_THREADS);
+					DFSModelDAOImpl slaveDao = new DFSModelDAOImpl(new DFSDataSource(slaveIp));
+					List<Query> queries = repository.getAllQueries();
+					Long actualVersion = queries.get(queries.size()-1).getId();
+					List<Query> queriesToUpdate = repository.getQueriesAfter(actualVersion);
+					for(Query sql : queriesToUpdate){
+						slaveDao.executeQuery(sql.getSql());
+						slaveDao.insertIntoLogTable(sql.getSql());
+					}
+					Server slave = repository.getServerByIp(slaveIp);
+					slave.setRole(ServerRole.SHADOW);
+					//TODO:
+					//repository.addShadow(slave);
+					//repository.saveServer(slave);
+					dfstSocket.open();
+					TProtocol protocol = new TBinaryProtocol(dfstSocket);
+					Service.Client serviceClient = new Service.Client(protocol);
+					serviceClient.becomeShadow(coreStatus);
+					DFSRepositoryImpl.dbSemaphore.release(DFSRepositoryImpl.MAX_THREADS);
+				} catch (Exception e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		});
+		thread.start();
 	}
 
 	

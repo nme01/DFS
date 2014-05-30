@@ -122,5 +122,15 @@ public class EmptyRepository implements DFSRepository {
 	public List<Server> getDownServers() {
 		throw new IllegalStateException(message);
 	}
+	
+	@Override
+	public void executeQuery(String sql) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public void addShadow(Server shadow) {
+		throw new IllegalStateException(message);
+	}
 
 }
