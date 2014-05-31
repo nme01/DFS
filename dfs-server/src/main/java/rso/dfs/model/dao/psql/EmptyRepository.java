@@ -139,7 +139,7 @@ public class EmptyRepository implements DFSRepository {
 	}
 
 	@Override
-	public FileOnServer getFileOnServer(Integer serverId, Integer fileId) {
+	public FileOnServer getFileOnServer(Long long1, Integer fileId) {
 		throw new IllegalStateException(message);
 	}
 
