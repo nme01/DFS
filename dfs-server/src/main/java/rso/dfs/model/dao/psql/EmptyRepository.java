@@ -133,4 +133,14 @@ public class EmptyRepository implements DFSRepository {
 		throw new IllegalStateException(message);
 	}
 
+	@Override
+	public void updateFileOnServer(FileOnServer fileOnServer) {
+		throw new IllegalStateException(message);
+	}
+
+	@Override
+	public FileOnServer getFileOnServer(Long long1, Integer fileId) {
+		throw new IllegalStateException(message);
+	}
+
 }

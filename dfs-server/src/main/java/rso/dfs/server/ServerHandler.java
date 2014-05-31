@@ -698,9 +698,10 @@ public class ServerHandler implements Service.Iface {
 
 		f.setStatus(FileStatus.HELD);
 		Server s = repository.getServerByIp(slaveIP);
-		FileOnServer fos = new FileOnServer(fileID,s.getId(),0);
+		FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
+		fos.setPriority(Math.abs(fos.getPriority()));
 
-		repository.saveFileOnServer(fos);
+		repository.updateFileOnServer(fos);
 		repository.updateFile(f);
 	}
 
