@@ -68,6 +68,8 @@ public interface DFSModelDAO {
 
 	public int updateFile(File file);
 
+	public int updateFileOnServer(FileOnServer fileOnServer);
+
 	public int updateServer(Server server);
 
 	public void cleanDB();
@@ -79,5 +81,8 @@ public interface DFSModelDAO {
 	public List<Query> fetchAllQueries();
 	
 	public void executeQuery(String sql);
+
+	public FileOnServer fetchFos(Long serverId, Integer fileId);
+
 
 }

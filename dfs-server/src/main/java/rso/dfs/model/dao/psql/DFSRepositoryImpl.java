@@ -307,4 +307,20 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		masterDAO.executeQuery(sql);
 	}
 
+	@Override
+	public void updateFileOnServer(FileOnServer fileOnServer) {
+		log.debug("Updating fileONserver,fileONserver={}", fileOnServer);
+		int numberOfAffectedRows = masterDAO.updateFileOnServer(fileOnServer);
+		try {
+			blockingQueue.put(new UpdateFilesOnServersTask(fileOnServer, DBModificationType.UPDATE));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public FileOnServer getFileOnServer(Long serverId, Integer fileId) {
+		log.debug("Fetching filesOnServers, fileid=", fileId);
+		return masterDAO.fetchFos(serverId, fileId);		
+	}
 }
