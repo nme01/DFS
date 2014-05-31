@@ -181,7 +181,7 @@ public class ServerHandler implements Service.Iface {
 		{
 			if(server.getRole() == ServerRole.DOWN)
 			{
-				log.debug("Down server " + server + " registered again");
+				log.debug("Inactive server " + server + " registered as active again.");
 			}
 			server.setRole(ServerRole.SLAVE);
 		}
@@ -275,32 +275,21 @@ public class ServerHandler implements Service.Iface {
 						if (filePart.getData().length == 0) {
 							break;
 						}
-						offset += filePart.getData().length;
 	
-						fileParts.add(filePart);
+						try {
+							storageHandler.writeFile(fileID, (int)offset, filePart.getData());
+						} catch (Exception e) {
+							log.error("Caught an unexpected exception: " + e.getMessage());
+							e.printStackTrace();
+							return;
+						}
+						
+						offset += filePart.getData().length;
 					}
 				} catch (Exception e) {
 					log.error(me.getIp() + ": Caught an unidentified exception: " + e.getMessage());
 					e.printStackTrace();
-				}
-	
-				log.debug(me.getIp() + ": Writing the file to storage.");
-				byte[] dataBuffer = new byte[0];
-				for (FilePart filePart : fileParts) {
-					dataBuffer = DFSArrayUtils.concat(dataBuffer, filePart.getData());
-				}
-				
-				try {
-					storageHandler.writeFile(fileID, dataBuffer); // TODO: the
-																// entire file
-																// goes through
-																// the memory at
-																// the moment!
-				} catch (Exception e) {
-					log.error("Caught an unexpected exception: " + e.getMessage());
-					e.printStackTrace();
-					return;
-				}
+				}			
 	
 				log.debug(me.getIp() + ": Updating master database.");
 				try (DFSClosingClient ccClient = new DFSClosingClient(coreStatus.getMasterAddress(), DFSProperties.getProperties().getNamingServerPort())) {
@@ -316,6 +305,38 @@ public class ServerHandler implements Service.Iface {
 		});
 		thread.start();
 		return;
+	}
+	
+	@Override
+	public String replicationFailure(int fileID, String slaveIP) {
+		
+		/**
+		 * So who can use this method?
+		 * 	- Secondary replication nodes to inform the master that the primary node has failed;
+		 * 	- ...?
+		 * And what do we have to do here as master?
+		 * 	- ping the server and mark it as 'down' if necessary; this is tricky:
+		 * 		- if the server is down, the master has to mark it as down, delete the database
+		 * 		  entry linking the file to the slave, select a new primary node and redirect
+		 * 		  all the secondary nodes there by simply returning its address so a replication 
+		 * 		  node can reestablish a socket and continue the process;
+		 * 		- if the server is up, the master has to pick a new secondary replication slave
+		 * 		  and instruct the old one to delete the parts he has in possession.
+		 * 	- 
+		 */
+		
+		
+		try (DFSTSocket dfstSocket = new DFSTSocket(slaveIP, 
+				DFSProperties.getProperties().getStorageServerPort())) {
+			dfstSocket.open();
+			TProtocol protocol = new TBinaryProtocol(dfstSocket);
+			Service.Client serviceClient = new Service.Client(protocol);
+			serviceClient.pingServer();
+		} catch (Exception e) {
+			
+		}
+		
+		return "";
 	}
 
 	@Override
@@ -392,7 +413,6 @@ public class ServerHandler implements Service.Iface {
 		log.info("Master received put file request for file " + filepath);
 		String mainReplIP = null;
 		
-		
 		List<Server> keys = SelectStorageServers.getListOfBestStorageServers(repository, size);
 	
 		Iterator i = keys.iterator();
@@ -425,6 +445,8 @@ public class ServerHandler implements Service.Iface {
 	
 		log.debug(me.getIp() + ": Remaining number of replicas: " + (keys.size() - 1));
 		
+		
+		// TODO: what to do when there is not enough slaves to replicate
 		while (i.hasNext() && replDegree-- > 0) {
 			Server secRepl = (Server) i.next();
 			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), 
@@ -436,18 +458,38 @@ public class ServerHandler implements Service.Iface {
 				serviceClient.replicate(putFileParams.getFileId(), mainReplIP, size);
 			} catch (Exception e) {
 				log.error(me.getIp() + ": Replication failed on slave #" + secRepl.getId() + ": " + e.getMessage());
-				e.printStackTrace();
+				replDegree++;
+				// disable slave
 			}
 		}
 		log.debug(me.getIp() + ": returning from putFile");
 		return putFileParams;
 	}
 
-
+	/**
+	 * Invoked on master by client. Report a failure that occurred during uploading of a file.
+	 * 
+	 * @param filepath
+	 * @param size
+	 * @return PutFileParams
+	 */
 
 	@Override
-	public PutFileParams putFileFailure(String filepath, long size) throws TException {
-		// TODO Auto-generated method stub
+	public PutFileParams putFileFailure(PutFileParams pfp) throws TException {
+		/**
+		 * Master has to:
+		 * 	- ping the slave;
+		 * 		- if down, 'down' the slave;
+		 * 		- if up, leave it there (probable transient problems on the link between client and slave);
+		 * 	- pause replication (done by replicationFailure);
+		 * 	- select a new main replicating slave (done by replicationFailure);
+		 * 	- redirect the rest of slaves to the new main replicating slave (done by replicationFailure);
+		 * 	- send updated PutFileParams back to the client.
+		 * Optimistically, replication won't have to begin from the very beginning
+		 * of a file (nor will client's performPut), but realistically, we gotta start there.
+		 */
+		
+		
 		return null;
 	}
 
@@ -552,7 +594,7 @@ public class ServerHandler implements Service.Iface {
 			
 			byte[] dataBuffer = filePart.data.array();
 			log.info("Got a file part of fileId " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
-			storageHandler.writeFile(filePart.fileId, dataBuffer);
+			storageHandler.writeFile(filePart.getFileId(), (int)filePart.getOffset(), dataBuffer);
 			
 			List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePart.getFileId());
 			if (slavesAwaitingFileID != null) {
