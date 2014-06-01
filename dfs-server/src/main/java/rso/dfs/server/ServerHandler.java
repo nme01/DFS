@@ -168,7 +168,15 @@ public class ServerHandler implements Service.Iface {
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
 		log.info("Got registerSlave request! Slave IP: " + req.getSlaveIP() + "; list of files {" + req.getFileIds() + "}");
 		
-		Server server = repository.getServerByIp(req.getSlaveIP());
+		Server server = null;
+		try{
+			server = repository.getServerByIp(req.getSlaveIP());
+		}
+		catch(org.springframework.dao.EmptyResultDataAccessException e)
+		{
+			log.debug("Server not found in repository");
+		}
+		
 		if(server == null)
 		{
 			server = new Server();
@@ -784,10 +792,17 @@ public class ServerHandler implements Service.Iface {
 
 		f.setStatus(FileStatus.HELD);
 		Server s = repository.getServerByIp(slaveIP);
-		FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
-		fos.setPriority(Math.abs(fos.getPriority()));
+		if(s == null)
+		{
+			log.error("FileUploadSuccess - server with that IP is not in repository: " + slaveIP);
+			return;
+		}
+		//FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
+		//fos.setPriority(Math.abs(fos.getPriority())); //FIXME: what is priority used for?
 
-		repository.updateFileOnServer(fos);
+		int priority = 0;
+		FileOnServer fos = new FileOnServer(fileID, s.getId(), priority);
+		repository.saveFileOnServer(fos); //FIXME: for now, see Ogarnianie: FILE ON SERVER
 		repository.updateFile(f);
 	}
 
