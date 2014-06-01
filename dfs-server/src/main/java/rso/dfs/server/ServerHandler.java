@@ -173,15 +173,7 @@ public class ServerHandler implements Service.Iface {
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
 		log.info("Got registerSlave request! Slave IP: " + req.getSlaveIP() + "; list of files {" + req.getFileIds() + "}");
 		
-		Server server = null;
-		try{
-			server = repository.getServerByIp(req.getSlaveIP());
-		}
-		catch(org.springframework.dao.EmptyResultDataAccessException e)
-		{
-			log.debug("Server not found in repository");
-		}
-		
+		Server server = repository.getServerByIp(req.getSlaveIP());
 		if(server == null)
 		{
 			server = new Server();
@@ -222,6 +214,7 @@ public class ServerHandler implements Service.Iface {
 			e.printStackTrace();
 		}
 
+		debugSleep();
 		return coreStatus;
 	}
 
@@ -376,6 +369,7 @@ public class ServerHandler implements Service.Iface {
 		getFileParams.setSize(file.getSize());
 		getFileParams.setSlaveIp(slave.getIp());
 
+		debugSleep();
 		return getFileParams;
 	}
 
@@ -455,6 +449,8 @@ public class ServerHandler implements Service.Iface {
 			}
 		}
 		log.debug(me.getIp() + ": returning from putFile");
+
+		debugSleep();
 		return putFileParams;
 	}
 
@@ -535,6 +531,7 @@ public class ServerHandler implements Service.Iface {
 			}
 		});
 		thread.start();
+		debugSleep();
 		return true;
 	}
 
@@ -671,17 +668,10 @@ public class ServerHandler implements Service.Iface {
 
 		f.setStatus(FileStatus.HELD);
 		Server s = repository.getServerByIp(slaveIP);
-		if(s == null)
-		{
-			log.error("FileUploadSuccess - server with that IP is not in repository: " + slaveIP);
-			return;
-		}
-		//FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
-		//fos.setPriority(Math.abs(fos.getPriority())); //FIXME: what is priority used for?
+		FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
+		fos.setPriority(Math.abs(fos.getPriority()));
 
-		int priority = 0;
-		FileOnServer fos = new FileOnServer(fileID, s.getId(), priority);
-		repository.saveFileOnServer(fos); //FIXME: for now, see Ogarnianie: FILE ON SERVER
+		repository.updateFileOnServer(fos);
 		repository.updateFile(f);
 	}
 
@@ -761,6 +751,7 @@ public class ServerHandler implements Service.Iface {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		debugSleep();
 	}
 	
 	/**
@@ -812,6 +803,13 @@ public class ServerHandler implements Service.Iface {
 		});
 		thread.start();
 	}
-
+	void debugSleep()
+	{
+		try {
+			TimeUnit.SECONDS.sleep(DFSProperties.getProperties().getDebugWaitTime());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }
