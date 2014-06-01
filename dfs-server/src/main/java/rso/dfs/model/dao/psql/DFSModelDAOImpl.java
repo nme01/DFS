@@ -186,7 +186,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public int updateServer(Server server) {
 		final String query = "update servers set role=?, memory=?, last_connection=? where ip=?";
 		insertIntoLogTable("update servers set role='" + server.getRole().getCode() + "', memory=" + server.getMemory() + ", last_connection='" + new Timestamp(server.getLastConnection().getMillis()) + "' where ip='" + server.getIp() + "'");
-		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), server.getLastConnection(), server.getIp() });
+		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), new Timestamp(server.getLastConnection().getMillis()), server.getIp() });
 	}
 
 	@Override
