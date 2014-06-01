@@ -169,3 +169,30 @@ if [[ $1 == 'haltvm' ]]; then
         haltvm $ip
     done
 fi
+
+if [[ $1 == 'make' ]]; then
+    echo "Making client, server, thrift and utils..."
+    ./makeall
+fi
+
+if [[ $1 == 'status' ]]; then
+    for ip in $ipWithSSH; do
+       x=`./runSystemState $ip`
+       result=$?
+       if [[ $result == 0 ]]; then
+           echo "$x"
+           break;
+       fi
+    done;
+fi
+
+if [[ $1 == 'client' ]]; then
+    for ip in $ipWithSSH; do
+       x=`./runCheckServer $ip`
+       result=$?
+       if [[ $result == 0 ]]; then
+            ./runClientHere $ip
+            break;
+       fi
+    done;
+fi
