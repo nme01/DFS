@@ -77,13 +77,19 @@ public class DFSServer {
 			me.setRole(ServerRole.MASTER);
 			me.setIp(args[1]);
 
-
 			repository.saveServer(me);
 
 			// create empty object for storage handler
 
-			serviceHandler = new ServerHandler(me, new CoreStatus(me.getIp(), new ArrayList<String>()));
+			serviceHandler = new ServerHandler(
+					me, 
+					new CoreStatus(me.getIp(), new ArrayList<String>()), 
+					storageHandler, 
+					repository);
 			storageHandler = new EmptyStorageHandler();
+			
+			//Run Server checking service
+			
 		} else {
 			
 			if(args.length < 3 )
@@ -116,11 +122,14 @@ public class DFSServer {
 
 			// repository.saveServer(master);
 
-			serviceHandler = new ServerHandler(me, new CoreStatus(master.getIp(), new ArrayList<String>()));
 			storageHandler = new FileStorageHandler();
+			serviceHandler = new ServerHandler(
+					me, 
+					new CoreStatus(master.getIp(), new ArrayList<String>()), 
+					storageHandler, 
+					repository);
+			
 		}
-		serviceHandler.setRepository(repository);
-		serviceHandler.setStorageHandler(storageHandler);
 		procesor = new Service.Processor(serviceHandler);
 
 	}
