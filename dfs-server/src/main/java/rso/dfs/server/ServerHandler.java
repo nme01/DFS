@@ -113,6 +113,7 @@ public class ServerHandler implements Service.Iface {
 	@Override
 	public List<String> listFileNames() throws TException {
 		log.debug("New LS request.");
+		this.makeShadow("192.168.1.109");
 		List<File> files = repository.getAllFiles();
 		
 		if(DFSProperties.getProperties().isDebug())
@@ -784,7 +785,7 @@ public class ServerHandler implements Service.Iface {
 		registerToMaster();
 	}
 	
-	public void makaShadow(String slaveIpAddress){
+	public void makeShadow(String slaveIpAddress){
 		final String slaveIp = slaveIpAddress;
 		Thread thread = new Thread(new Runnable() {
 			public void run(){
@@ -809,17 +810,17 @@ public class ServerHandler implements Service.Iface {
 					}
 					Server slave = repository.getServerByIp(slaveIp);
 					slave.setRole(ServerRole.SHADOW);
-					//TODO:
-					//repository.addShadow(slave);
-					//repository.saveServer(slave);
+					repository.getShadows().add(slave);
+					repository.updateServer(slave);
 					dfstSocket.open();
 					TProtocol protocol = new TBinaryProtocol(dfstSocket);
 					Service.Client serviceClient = new Service.Client(protocol);
 					serviceClient.becomeShadow(coreStatus);
-					DFSRepositoryImpl.dbSemaphore.release(DFSRepositoryImpl.MAX_THREADS);
 				} catch (Exception e) {
 					log.error(e.getMessage());
 					e.printStackTrace();
+				} finally {
+					DFSRepositoryImpl.dbSemaphore.release(DFSRepositoryImpl.MAX_THREADS);
 				}
 			}
 		});
