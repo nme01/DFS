@@ -81,12 +81,12 @@ public class DFSServer {
 
 			// create empty object for storage handler
 
+			storageHandler = new EmptyStorageHandler();
 			serviceHandler = new ServerHandler(
 					me, 
 					new CoreStatus(me.getIp(), new ArrayList<String>()), 
 					storageHandler, 
 					repository);
-			storageHandler = new EmptyStorageHandler();
 			
 			//Run Server checking service
 			

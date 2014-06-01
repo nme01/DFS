@@ -15,12 +15,12 @@ stoplog="debugstop"
 function startService()
 {
     ip=$1
-    echo "Trying $ip ..."
+    timeoutLength=$2
+    echo "Trying $ip ... (timeout $timeoutLength)"
     if [[ $uphosts > 0 ]]; then
         ./runSlave $ip $masterip &>>$log &
         pid=$!
-        sleep 2
-        ./runCheckServer $ip
+        ./runCheckServer $ip $timeoutLength
         result=$?
         if [[ $result == 0 ]]; then
 	   #we've got a new host
@@ -35,8 +35,7 @@ function startService()
     else
         ./runMaster $ip &>>$log &
         pid=$!
-        sleep 2
-        ./runCheckServer $ip
+        ./runCheckServer $ip $timeoutLength
         result=$?
         if [[ $result == 1 ]]; then
             #it's an error, kill ssh
@@ -125,9 +124,13 @@ if [[ $1 == 'start' ]]; then
     echo "----------------------------------" >>$log
     echo "Start: log for `date`" >>$log
     echo "----------------------------------" >>$log 
-
+    timeoutTime=$2
+    if [[ -z $2 ]]; then
+         timeoutTime=5000
+    fi
+        
     for ip in $ipWithSSH; do
-        startService $ip
+        startService $ip $timeoutTime
     done
     
     echo

@@ -21,9 +21,21 @@ public class CheckServerStatus {
 			System.err.println("You should provide ip address as arg"); 
 			System.exit(-1);
 		}
-		if(checkAlive(args[0]))
+		Integer timeoutInMs = DFSProperties.getProperties().getDefaultClientTimeout();
+		if (args.length > 1)
 		{
-			System.exit(0);
+			try
+			{
+				timeoutInMs = Integer.parseInt(args[1]);
+			}
+			catch (NumberFormatException e)
+			{
+				System.err.println("Wrong number of milliseconds");
+			}
+		} 
+		if(checkAlive(args[0],timeoutInMs))
+		{
+			System.exit(0);	
 		}
 		else
 		{
@@ -31,17 +43,20 @@ public class CheckServerStatus {
 		}
 	}
 
+	public static boolean checkAlive(String IP) {
+		return checkAlive(IP, DFSProperties.getProperties().getDefaultClientTimeout());
+	}
 	/**
-	 * 2000 ms timeout on connection
+	 * 2000 ms timeout on connection	
 	 * @param string IP of the server
+	 * @param timeoutInMs 
 	 * @return 0 on success, not 0 on failure
 	 */
-	public static boolean checkAlive(String string) {
+	public static boolean checkAlive(String IP, Integer timeoutInMs) {
 		int returnvar = 0;
-		int timeoutInMs = 2000; 
 		try{
 			try(DFSClosingClient cclient = 
-					new DFSClosingClient(string,
+					new DFSClosingClient(IP,
 							DFSProperties.getProperties().getStorageServerPort(),timeoutInMs))
 			{
 				Client client = cclient.getClient();
