@@ -176,6 +176,9 @@ public class ServerHandler implements Service.Iface {
 		Server server = null;
 	 	try{
 	 		server = repository.getServerByIp(req.getSlaveIP());
+	 		server.setRole(ServerRole.SLAVE);
+	 		server.setLastConnection(new DateTime());
+	 		repository.updateServer(server);
 		}
 		catch(org.springframework.dao.EmptyResultDataAccessException e)
 		{

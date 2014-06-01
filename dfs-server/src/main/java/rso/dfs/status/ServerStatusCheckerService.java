@@ -109,6 +109,7 @@ public class ServerStatusCheckerService {
 		log.debug("Number of shadows to ping: " + shadows.size());
 		for (Server checkedShadow: shadows)
 		{
+			log.debug("Checking shadow with IP: " + checkedShadow.getIp());
 			if(!checkServerAliveTwice(checkedShadow.getIp()))
 			{
 				shadowIsDown(checkedShadow);
@@ -122,6 +123,7 @@ public class ServerStatusCheckerService {
 		log.debug("Pinging down servers...");
 		List<Server> downservers = repository.getDownServers();
 
+		log.debug("Number of down servers to ping: " + downservers.size());
 		if(downservers == null)
 		{
 			log.error("WAT? Repository returned null on getSlaves() request. "
@@ -130,6 +132,7 @@ public class ServerStatusCheckerService {
 		}
 		for (Server downServer: downservers)
 		{
+			log.debug("Checking downServer with IP: " + downServer.getIp());
 			if(CheckServerStatus.checkAlive(downServer.getIp()))
 			{
 				reinitServer(downServer);
