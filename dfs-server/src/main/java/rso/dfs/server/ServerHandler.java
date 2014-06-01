@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -308,6 +310,8 @@ public class ServerHandler implements Service.Iface {
 	}
 	
 	@Override
+	// TODO: add replFailure handling to the method above and implement an appropriate way to
+	// handle being selected as a new primary node
 	public String replicationFailure(int fileID, String slaveIP) {
 		
 		/**
@@ -315,26 +319,9 @@ public class ServerHandler implements Service.Iface {
 		 * 	- Secondary replication nodes to inform the master that the primary node has failed;
 		 * 	- ...?
 		 * And what do we have to do here as master?
-		 * 	- ping the server and mark it as 'down' if necessary; this is tricky:
-		 * 		- if the server is down, the master has to mark it as down, delete the database
-		 * 		  entry linking the file to the slave, select a new primary node and redirect
-		 * 		  all the secondary nodes there by simply returning its address so a replication 
-		 * 		  node can reestablish a socket and continue the process;
-		 * 		- if the server is up, the master has to pick a new secondary replication slave
-		 * 		  and instruct the old one to delete the parts he has in possession.
-		 * 	- 
+		 * 	- Wait (with a timeout) until putFileFailure selects a new primary node and then return
+		 * 	  with an updated address.
 		 */
-		
-		
-		try (DFSTSocket dfstSocket = new DFSTSocket(slaveIP, 
-				DFSProperties.getProperties().getStorageServerPort())) {
-			dfstSocket.open();
-			TProtocol protocol = new TBinaryProtocol(dfstSocket);
-			Service.Client serviceClient = new Service.Client(protocol);
-			serviceClient.pingServer();
-		} catch (Exception e) {
-			
-		}
 		
 		return "";
 	}
@@ -417,38 +404,55 @@ public class ServerHandler implements Service.Iface {
 	
 		Iterator i = keys.iterator();
 		long replDegree = DFSProperties.getProperties().getReplicationFactor();
+		long totalReplDegree = replDegree;
 		PutFileParams putFileParams = new PutFileParams();
 		putFileParams.setCanPut(true);
 		
-		try {
-			Server mainRepl = (Server) i.next();
-			
-			log.debug(me.getIp() + ": Main replica being saved on " + mainRepl.getIp());
-			
-			mainReplIP = mainRepl.getIp();
-			File file = new File();
-			file.setName(filepath);
-			file.setSize(size);
-			file.setStatus(FileStatus.UPLOAD);
-			Integer fileId = repository.saveFile(file);
-	
-			repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), 0));
-	
-			putFileParams.setCanPut(true);
-			putFileParams.setSlaveIp(mainRepl.getIp());
-			putFileParams.setFileId(fileId);
-			replDegree--;
-		} catch (org.springframework.dao.DuplicateKeyException e) {
-			log.error("File exists!");
-			throw new TException("File with this name already exists!");
+		boolean succeeded = false;
+		while (!succeeded && i.hasNext()) {
+			try {
+				Server mainRepl = (Server) i.next();
+				
+				log.debug(me.getIp() + ": Main replica being saved on " + mainRepl.getIp());
+				
+				mainReplIP = mainRepl.getIp();
+				File file = new File(-1);
+				file.setName(filepath);
+				file.setSize(size);
+				file.setStatus(FileStatus.UPLOAD);
+				Integer fileId = repository.saveFile(file);
+		
+				repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), -1));
+		
+				putFileParams.setCanPut(true);
+				putFileParams.setSlaveIp(mainRepl.getIp());
+				putFileParams.setFileId(fileId);
+				putFileParams.setSize(size);
+				
+				try (DFSTSocket dfstSocket = new DFSTSocket(mainRepl.getIp(), 
+						DFSProperties.getProperties().getStorageServerPort())) {
+					dfstSocket.open();
+					TProtocol protocol = new TBinaryProtocol(dfstSocket);
+					Service.Client serviceClient = new Service.Client(protocol);
+					serviceClient.sendFileToSlaveRequest(fileId);
+					succeeded = true;
+				} catch (TException te) {
+					// Cycle through and select another primary replication node
+				}
+			} catch (org.springframework.dao.DuplicateKeyException e) {
+				log.error("File exists!");
+				throw new TException("File with this name already exists!");
+			}
 		}
 	
 		log.debug(me.getIp() + ": Remaining number of replicas: " + (keys.size() - 1));
 		
 		
 		// TODO: what to do when there is not enough slaves to replicate
-		while (i.hasNext() && replDegree-- > 0) {
+		while (i.hasNext() && --replDegree > 0) {
 			Server secRepl = (Server) i.next();
+			if (secRepl.getRole() == ServerRole.DOWN) continue;
+			
 			try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), 
 					DFSProperties.getProperties().getStorageServerPort())) {
 				dfstSocket.open();
@@ -456,10 +460,20 @@ public class ServerHandler implements Service.Iface {
 				Service.Client serviceClient = new Service.Client(protocol);
 				log.debug(me.getIp() + ": Replicating to " + secRepl.getIp());
 				serviceClient.replicate(putFileParams.getFileId(), mainReplIP, size);
+				repository.saveFileOnServer(new FileOnServer(putFileParams.getFileId(), secRepl.getId(), -(totalReplDegree - replDegree)));
 			} catch (Exception e) {
 				log.error(me.getIp() + ": Replication failed on slave #" + secRepl.getId() + ": " + e.getMessage());
 				replDegree++;
-				// disable slave
+				try (DFSTSocket dfstSocket = new DFSTSocket(secRepl.getIp(), 
+						DFSProperties.getProperties().getStorageServerPort())) {
+					dfstSocket.open();
+					TProtocol protocol = new TBinaryProtocol(dfstSocket);
+					Service.Client serviceClient = new Service.Client(protocol);
+					serviceClient.pingServer();
+				} catch (TException te) {
+					secRepl.setRole(ServerRole.DOWN);
+					repository.updateServer(secRepl);
+				}
 			}
 		}
 		log.debug(me.getIp() + ": returning from putFile");
@@ -489,7 +503,79 @@ public class ServerHandler implements Service.Iface {
 		 * of a file (nor will client's performPut), but realistically, we gotta start there.
 		 */
 		
-		
+		try (DFSTSocket dfstSocket = new DFSTSocket(pfp.getSlaveIp(), 
+				DFSProperties.getProperties().getStorageServerPort())) {
+			dfstSocket.open();
+			TProtocol protocol = new TBinaryProtocol(dfstSocket);
+			Service.Client serviceClient = new Service.Client(protocol);
+			serviceClient.pingServer();
+		} catch (Exception e) {
+
+			// No response
+			// Mark the slave as inactive (will anyone drop him from the database?)
+			Server mainRepl = repository.getServerByIp(pfp.getSlaveIp());
+			mainRepl.setRole(ServerRole.DOWN);
+			repository.updateServer(mainRepl);
+			
+			// Drop the link
+			repository.deleteFileOnServer(new FileOnServer(pfp.getFileId(), repository.getServerByIp(pfp.getSlaveIp()).getId(), 0));
+			
+			// Select a new primary node from the current replication pool
+			// - get a list of secondaries
+			// - pick one!
+			// - set its priority to -1
+			// - set the returning putFileParams' data
+			// Since this method is called by the client, there's no possibility the file has been completed
+			// on any node.
+			
+			List<Server> slavesWithFile = repository.getSlavesByFile(new File(pfp.getFileId()));
+			List<FileOnServer> fosByPrio = new ArrayList<FileOnServer>();
+			for (Server s: slavesWithFile) {
+				fosByPrio.add(repository.getFileOnServer(s.getId(), pfp.getFileId()));
+			}
+			
+			Collections.sort(fosByPrio, new Comparator(){
+				public int compare(Object left, Object right) {
+					int leftVal = ((FileOnServer)left).getPriority().intValue();
+					int rightVal = ((FileOnServer)right).getPriority().intValue();
+					
+					if (leftVal > rightVal) return 1;
+					if (leftVal < rightVal) return -1;
+					return 0;
+				}
+			});
+			
+			// Select a new secondary node
+			try {
+				List<Server> slavesWithoutFile = SelectStorageServers.getListOfBestStorageServers(repository, (int)repository.getFileById(pfp.getFileId()).getSize());
+				slavesWithoutFile.removeAll(slavesWithFile);
+				
+				Iterator i = slavesWithoutFile.iterator();
+				while (i.hasNext()) {
+					Server nextReplSlave = (Server)i.next();
+					try (DFSTSocket dfstSocket = new DFSTSocket(nextReplSlave.getIp(), 
+							DFSProperties.getProperties().getStorageServerPort())) {
+						dfstSocket.open();
+						TProtocol protocol = new TBinaryProtocol(dfstSocket);
+						Service.Client serviceClient = new Service.Client(protocol);
+						serviceClient.replicate(pfp.getFileId(), nextReplSlave.getIp(), pfp.getSize());
+						repository.saveFileOnServer(new FileOnServer(pfp.getFileId(), nextReplSlave.getId(), -1));
+						
+						pfp.setSlaveIp(nextReplSlave.getIp());
+						return pfp;
+					} catch (TException te) {
+						// TODO: handle
+					}
+				}
+			} catch (TException te) {
+				log.error("This shouldn't happen! The repository reports no available servers in the service!");
+				throw new TException("No available servers");
+			}
+			
+
+		}
+
+		// Got a response
 		return null;
 	}
 
