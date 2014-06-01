@@ -1,5 +1,6 @@
 package rso.dfs.status;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,7 +54,9 @@ public class ServerStatusCheckerService {
 			  log.debug("Run checker service");
 			  checkAllShadowsAndSlaves();
 		  }
-		}, 0, DFSProperties.getProperties().getPingEvery(), TimeUnit.MILLISECONDS);
+		}, DFSProperties.getProperties().getPingEvery(), 
+		   DFSProperties.getProperties().getPingEvery(), 
+		   TimeUnit.MILLISECONDS);
 	}
 	
 	public void stopService()
@@ -73,10 +76,17 @@ public class ServerStatusCheckerService {
 		 */
 		
 		log.debug("Ping begins. Pinging slaves...");
-		
 		List<Server> slaves = repository.getSlaves();
+		if(slaves == null)
+		{
+			log.error("WAT? Repository returned null on getSlaves() request. "
+					+ "Expected: list of servers (even empty)");
+			slaves = new ArrayList<Server>();
+		}
+		log.debug("Number of slaves to ping: " + slaves.size());
 		for (Server checkedSlave: slaves)
 		{
+			log.debug("Checking slave with IP: " + checkedSlave.getIp());
 			if(!checkServerAliveTwice(checkedSlave.getIp()))
 			{
 				slaveIsDown(checkedSlave);
@@ -90,6 +100,13 @@ public class ServerStatusCheckerService {
 		
 		log.debug("Pinging shadows...");
 		List<Server> shadows = repository.getShadows();
+		if(shadows == null)
+		{
+			log.error("WAT? Repository returned null on getSlaves() request. "
+					+ "Expected: list of servers (even empty)");
+			shadows = new ArrayList<Server>();
+		}
+		log.debug("Number of shadows to ping: " + shadows.size());
 		for (Server checkedShadow: shadows)
 		{
 			if(!checkServerAliveTwice(checkedShadow.getIp()))
@@ -104,6 +121,13 @@ public class ServerStatusCheckerService {
 		
 		log.debug("Pinging down servers...");
 		List<Server> downservers = repository.getDownServers();
+
+		if(downservers == null)
+		{
+			log.error("WAT? Repository returned null on getSlaves() request. "
+					+ "Expected: list of servers (even empty)");
+			downservers = new ArrayList<Server>();
+		}
 		for (Server downServer: downservers)
 		{
 			if(CheckServerStatus.checkAlive(downServer.getIp()))

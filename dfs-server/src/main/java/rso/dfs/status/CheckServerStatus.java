@@ -32,7 +32,7 @@ public class CheckServerStatus {
 	}
 
 	/**
-	 * 
+	 * 2000 ms timeout on connection
 	 * @param string IP of the server
 	 * @return 0 on success, not 0 on failure
 	 */
