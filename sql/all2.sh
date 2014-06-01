@@ -30,7 +30,7 @@ create table servers (
 	last_connection timestamp not null,
 	primary key (id)
 );
-alter table servers add constraint servers_role_constraint check (role = 'M' or role = 'H' or  role='L');
+alter table servers add constraint servers_role_constraint check (role = 'M' or role = 'H' or role='L' or role = 'D');
 
 create index pk_servers on servers (ip);
 

@@ -47,6 +47,7 @@ import rso.dfs.model.dao.psql.DFSModelDAOImpl;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
+import rso.dfs.status.ServerStatusCheckerService;
 import rso.dfs.utils.DFSArrayUtils;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
@@ -85,7 +86,7 @@ public class ServerHandler implements Service.Iface {
 	private Lock awaitingSlavesLock = new ReentrantLock();
 	private Map<Integer, List<Condition>> awaitingSlaves = new HashMap<Integer, List<Condition>>();
 	private Long syncCounter = 1L;
-
+	private ServerStatusCheckerService serverCheckerService = null;
 	/**
 	 * Contains statuses which files where used;
 	 * key -> fileId;
@@ -93,7 +94,7 @@ public class ServerHandler implements Service.Iface {
 	 * */
 	private HashMap<Integer, Integer> files = new HashMap<>();	
 	
-	public ServerHandler(Server me, CoreStatus cs) {
+	public ServerHandler(Server me, CoreStatus cs, StorageHandler storageHandler, DFSRepository repository) {
 		this.me = me;
 		this.storageHandler = storageHandler;
 		this.repository = repository;
@@ -103,6 +104,12 @@ public class ServerHandler implements Service.Iface {
 																		// not
 																		// to be
 																		// null
+		if(me.getRole() == ServerRole.MASTER)
+		{
+			log.debug("Starting ServerStatusCheckerService form Master");
+			serverCheckerService= new ServerStatusCheckerService(repository);
+			serverCheckerService.runService();
+		}
 	}
 
 	@Override
