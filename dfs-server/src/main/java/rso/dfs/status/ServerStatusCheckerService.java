@@ -75,7 +75,7 @@ public class ServerStatusCheckerService {
 		 * Maybe: if no answer in 60 seconds or another longer time than ~"now"?
 		 */
 		
-		log.debug("Ping begins. Pinging slaves...");
+		//log.debug("Ping begins. Pinging slaves...");
 		List<Server> slaves = repository.getSlaves();
 		if(slaves == null)
 		{
@@ -83,10 +83,10 @@ public class ServerStatusCheckerService {
 					+ "Expected: list of servers (even empty)");
 			slaves = new ArrayList<Server>();
 		}
-		log.debug("Number of slaves to ping: " + slaves.size());
+		//log.debug("Number of slaves to ping: " + slaves.size());
 		for (Server checkedSlave: slaves)
 		{
-			log.debug("Checking slave with IP: " + checkedSlave.getIp());
+			//log.debug("Checking slave with IP: " + checkedSlave.getIp());
 			if(!checkServerAliveTwice(checkedSlave.getIp()))
 			{
 				slaveIsDown(checkedSlave);
@@ -98,7 +98,7 @@ public class ServerStatusCheckerService {
 						
 		}
 		
-		log.debug("Pinging shadows...");
+		//log.debug("Pinging shadows...");
 		List<Server> shadows = repository.getShadows();
 		if(shadows == null)
 		{
@@ -106,7 +106,7 @@ public class ServerStatusCheckerService {
 					+ "Expected: list of servers (even empty)");
 			shadows = new ArrayList<Server>();
 		}
-		log.debug("Number of shadows to ping: " + shadows.size());
+		//log.debug("Number of shadows to ping: " + shadows.size());
 		for (Server checkedShadow: shadows)
 		{
 			if(!checkServerAliveTwice(checkedShadow.getIp()))
@@ -119,7 +119,7 @@ public class ServerStatusCheckerService {
 			}
 		}
 		
-		log.debug("Pinging down servers...");
+		//log.debug("Pinging down servers...");
 		List<Server> downservers = repository.getDownServers();
 
 		if(downservers == null)
@@ -136,7 +136,7 @@ public class ServerStatusCheckerService {
 			}
 						
 		}
-		log.debug("Ping ends.");
+		//log.debug("Ping ends.");
 	}
 
 	

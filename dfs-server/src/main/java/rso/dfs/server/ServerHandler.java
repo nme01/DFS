@@ -545,20 +545,21 @@ public class ServerHandler implements Service.Iface {
 			
 			List<Server> slavesWithFile = repository.getSlavesByFile(new File(pfp.getFileId()));
 			List<FileOnServer> fosByPrio = new ArrayList<FileOnServer>();
+			FileOnServer newMainRepl = repository.getFileOnServer(slavesWithFile.get(0).getId(), pfp.getFileId());
 			for (Server s: slavesWithFile) {
-				fosByPrio.add(repository.getFileOnServer(s.getId(), pfp.getFileId()));
+				FileOnServer x = repository.getFileOnServer(s.getId(), pfp.getFileId()); 
+				if (x.getPriority() > newMainRepl.getPriority())
+					newMainRepl = x;
 			}
-			
-			Collections.sort(fosByPrio, new Comparator(){
-				public int compare(Object left, Object right) {
-					int leftVal = ((FileOnServer)left).getPriority().intValue();
-					int rightVal = ((FileOnServer)right).getPriority().intValue();
-					
-					if (leftVal > rightVal) return 1;
-					if (leftVal < rightVal) return -1;
-					return 0;
+
+			newMainRepl.setPriority(-1L);
+			repository.updateFileOnServer(newMainRepl);
+			for (Server s: slavesWithFile) {
+				if (s.getId() == newMainRepl.getServerId()) {
+					pfp.setSlaveIp(s.getIp());
+					break;
 				}
-			});
+			}
 			
 			// Select a new secondary node
 			try {

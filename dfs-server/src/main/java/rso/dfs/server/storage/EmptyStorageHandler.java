@@ -5,10 +5,10 @@ package rso.dfs.server.storage;
  * */
 public class EmptyStorageHandler implements StorageHandler {
 
-	private String message = "Master or shadow server can not use storage handler.";
+	private String message = "Master or shadow servers do not act as storage.";
 
 	@Override
-	public void writeFile(long fileId, byte[] fileBody) {
+	public void writeFile(long fileId, int offset, byte[] fileBody) {
 		throw new IllegalStateException(message);
 
 	}

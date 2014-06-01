@@ -8,7 +8,7 @@ public interface StorageHandler {
 
 	public byte[] readFile(long fileId, long offset);
 
-	public void writeFile(long fileId, byte[] fileBody);
+	public void writeFile(long fileId, int offset, byte[] fileBody);
 	
 	public void deleteFile(long fileId);
 	

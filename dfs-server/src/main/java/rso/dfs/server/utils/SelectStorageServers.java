@@ -35,7 +35,7 @@ public class SelectStorageServers {
 		}
 		
 		if (freeMemoryMap.size() < 1) {
-			throw new TException("There are no available storage servers to process your request.");
+			throw new TException("There are no storage servers with enough available space needed to process your request.");
 		}
 	
 		List<Server> keys = new ArrayList<Server>(freeMemoryMap.keySet());

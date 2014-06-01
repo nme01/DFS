@@ -169,7 +169,7 @@ public class DFSServer {
 
 	public void simple(Service.Processor processor) {
 		try {
-			log.debug("Starting simple server");
+			log.debug("Starting threaded server");
 			TServerTransport serverTransport;
 			// TODO: fix this because it's ugly and probably not needed.
 			if (me.getRole() == ServerRole.MASTER) {

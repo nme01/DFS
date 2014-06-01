@@ -3,6 +3,7 @@ package rso.dfs.server.storage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,9 +39,9 @@ public class FileStorageHandler implements StorageHandler {
 		byte [] bytes = new byte[0];
 		int fileSize = 0;
 		try {
-			fileSize = (int)(Files.size(path) - offset);
-			bytes = Files.readAllBytes(path);
-			bytes = Arrays.copyOfRange(bytes, (int)offset, (int)Files.size(path));
+			RandomAccessFile raf = new RandomAccessFile(new File(path.toString()), "r");
+			raf.read(bytes, (int)offset, DFSProperties.getProperties().getFilePartSize().intValue());
+			raf.close();
 		} catch (Exception e) {
 			log.error("readFile: error reading file " + assemblePath(fileId) + ", offset " + (int)offset + ", size " + fileSize);
 			e.printStackTrace();
@@ -50,10 +51,12 @@ public class FileStorageHandler implements StorageHandler {
 	}
 
 	@Override
-	public void writeFile(long fileId, byte[] fileBody) {
+	public void writeFile(long fileId, int offset, byte[] fileBody) {
 		Path path = Paths.get(assemblePath(fileId));
 		try {
-			Files.write(path, fileBody);
+			RandomAccessFile raf = new RandomAccessFile(new File(path.toString()), "r");
+			raf.write(fileBody, (int)offset, DFSProperties.getProperties().getFilePartSize().intValue());
+			raf.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
