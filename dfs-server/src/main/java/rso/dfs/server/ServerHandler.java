@@ -210,6 +210,7 @@ public class ServerHandler implements Service.Iface {
 				FileOnServer fileOnServer = new FileOnServer();
 				fileOnServer.setFileId(fileId);
 				fileOnServer.setServerId(server.getId());
+				fileOnServer.setPriority(0l);
 				repository.saveFileOnServer(fileOnServer);
 				ids.remove((Integer) fileId);
 			}
@@ -675,6 +676,9 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void fileUploadSuccess(int fileID, String slaveIP) throws TException {
+		
+		log.debug("fileUploadSuccess: fileID:" + fileID + ";slaveIP: " + slaveIP ); 
+		
 		rso.dfs.model.File f = repository.getFileById(fileID);
 
 		f.setStatus(FileStatus.HELD);

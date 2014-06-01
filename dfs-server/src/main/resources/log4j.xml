@@ -27,6 +27,14 @@
 	<logger name="rso.dfs">
 		<level value="debug" />
 	</logger>
+	
+	<logger name="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<level value="info" />
+	</logger>
+	
+	<logger name="rso.dfs.status.ServerStatusCheckerService">
+		<level value="info" />
+	</logger>
 
 	<root>
 		<priority value="info" />
