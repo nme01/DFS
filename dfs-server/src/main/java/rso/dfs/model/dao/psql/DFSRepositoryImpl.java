@@ -242,20 +242,23 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 		log.debug("Repository started");
 		while (!killRepository) {
+			
 			try {
 				DFSTask task = blockingQueue.take();
 				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
+					DFSRepositoryImpl.dbSemaphore.acquire();
 					// set dao
 					task.setDao(entry.getValue());
 					// execute command
-					DFSRepositoryImpl.dbSemaphore.acquire();
+					
 					log.debug("Executing change on shadowDAO, task={}",task);
 					task.execute();
-					DFSRepositoryImpl.dbSemaphore.release();
 				}
 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			} finally {
+				DFSRepositoryImpl.dbSemaphore.release();
 			}
 		}
 		log.debug("Repository stopped");
