@@ -106,7 +106,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public List<Server> fetchServersByRole(ServerRole role) {
-		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw where role=?";
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw where role=?  ORDER BY ip";
 		return getJdbcTemplate().query(query, new Object[] { role.getCode() }, new ServerRowMapper());
 	}
 
