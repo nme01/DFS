@@ -147,8 +147,12 @@ public class DFSClient {
 	}
 
 	private String readLine(ConsoleReader reader, String promtMessage) throws IOException {
-		String line = reader.readLine(promtMessage + "\ndfs> ");
-		return line.trim();
+		try{
+			String line = reader.readLine(promtMessage + "\ndfs> ");
+			return line.trim();
+		} catch (NullPointerException e){
+			return null;
+		}
 	}
 
 	public static void main(String[] args) throws IOException {
