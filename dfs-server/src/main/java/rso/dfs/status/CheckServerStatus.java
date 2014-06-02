@@ -45,7 +45,7 @@ public class CheckServerStatus {
 	}
 
 	public static boolean checkAlive(String IP) {
-		return checkAlive(IP, DFSProperties.getProperties().getDefaultClientTimeout());
+		return checkAlive(IP, 2000); //TODO: magicvalue
 	}
 	/**
 	 * 2000 ms timeout on connection	

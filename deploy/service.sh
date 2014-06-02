@@ -164,6 +164,7 @@ if [[ $1 == 'stop' ]]; then
 
     for ip in $ipWithSSH; do
         stop $ip
+        ./checkJavaGrep $ip
     done
 fi
 
@@ -175,6 +176,16 @@ if [[ $1 == 'haltvm' ]]; then
 
     for ip in $ipWithSSH; do
         haltvm $ip
+    done
+fi
+
+if [[ $1 == 'grep' ]]; then
+    echo "----------------------------------" >>$stoplog
+
+    for ip in $ipWithSSH; do
+        echo $ip
+        ./checkJavaGrep $ip
+        echo
     done
 fi
 

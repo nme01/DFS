@@ -138,6 +138,7 @@ public class ServerStatusCheckerService {
 			log.debug("Checking downServer with IP: " + downServer.getIp());
 			if(CheckServerStatus.checkAlive(downServer.getIp()))
 			{
+				log.info("DownServer with IP: " + downServer.getIp() + " has risen from dead. Forcing to reregister...");
 				reinitServer(downServer);
 			}
 						
@@ -154,7 +155,7 @@ public class ServerStatusCheckerService {
 						DFSProperties.getProperties().getStorageServerPort()))
 		{
 			Client client = cclient.getClient();
-			client.forceRegister();
+			client.forceRegister(serverHandler.getCoreStatus());
 		} catch (Exception e) {
 		    log.debug("Reinitializing " + downServer.getIp() + " failed");
 			return;
@@ -214,22 +215,27 @@ public class ServerStatusCheckerService {
 		
 		for (File file: filesOnSlave)
 		{
-			//TODO: t's ugly. Repository should have a method to get "FileOnServer"
+			//TODO: it's ugly. Repository should have a method to get "FileOnServer"
 			repository.deleteFileOnServer(new FileOnServer(file.getId(),checkedSlave.getId(), 0));
 		}
 		
 		//replicate every file
 		for (File file: filesOnSlave)
 		{
-			/*
-			 * check if file needs to be replicated
-			 * FIXME: for now assume it needs to be replicated, 
-			 * 
-			 *Long replicationFactor = DFSProperties.getProperties()
-			 *    .getReplicationFactor();
-			 *long filecopies = repository.getFileOfFileCopiesByID() -1;
-			 */
-			//
+			
+			 // check if file needs to be replicated 
+			 
+			 Long replicationFactor = DFSProperties.getProperties()
+			     .getReplicationFactor();
+
+			 List<Server> slavesWithFileCopy = repository.getSlavesByFile(file);
+			 long filecopies = slavesWithFileCopy.size();
+			
+			 if ( replicationFactor <= filecopies)
+			 {
+				 //no need to replicate
+				 continue;
+			 }
 			
 			List<Server> listOfBestStorageServers = null;
 			try {
@@ -238,30 +244,48 @@ public class ServerStatusCheckerService {
 				//no servers available
 				log.error(e.getMessage());
 			}
-			Server serverToPlaceFile = listOfBestStorageServers.get(0);
 			
-			List<Server> slavesWithFileCopy = repository.getSlavesByFile(file);
-			//select one slave to replicate
-			Server serverToGetFileFrom = slavesWithFileCopy.get(0);
-			
-
-			//replicate from one server to another
-			log.debug("Slave " + checkedSlave.getIp() + " is down,"
-					+ "trying to replicate " + file 
-					+ " from " + serverToGetFileFrom + " to " + serverToPlaceFile);
-			try(DFSClosingClient cclient = 
-					new DFSClosingClient(serverToPlaceFile.getIp(),
-							DFSProperties.getProperties().getStorageServerPort()))
+			boolean replicated = false;
+			int i = -1; //for iteration purposes
+			while (!replicated)
 			{
-				Client client = cclient.getClient();
-				client.replicate(file.getId(), serverToGetFileFrom.getIp(), file.getSize());
+				++i;
+				if (i >= listOfBestStorageServers.size())
+				{
+					log.error("Not enough slaves to replicate a file");
+					break;
+				}
+				Server serverToPlaceFile = listOfBestStorageServers.get(i);
+				if(slavesWithFileCopy.contains(serverToPlaceFile))
+				{
+					//do not replicate two times to the same server
+					continue;
+				}
+
+				//select one slave to replicate
+				Server serverToGetFileFrom = slavesWithFileCopy.get(0);
 				
-			} catch (Exception e) {
-				//TODO: and what if it is also down?
-				log.error("Slave " + checkedSlave.getIp() + " is down,"
-						+ "error while trying to replicate " + file 
+				//replicate from one server to another
+				log.debug("Slave " + checkedSlave.getIp() + " is down,"
+						+ "trying to replicate " + file 
 						+ " from " + serverToGetFileFrom + " to " + serverToPlaceFile);
-			} 
+				
+				try(DFSClosingClient cclient = 
+						new DFSClosingClient(serverToPlaceFile.getIp(),
+								DFSProperties.getProperties().getStorageServerPort()))
+				{
+					Client client = cclient.getClient();
+					client.replicate(file.getId(), serverToGetFileFrom.getIp(), file.getSize());
+					//FIXME insert FILEONSERVER
+					replicated = true;
+				} catch (Exception e) {
+					log.info("Slave " + checkedSlave.getIp() + " is down,"
+							+ "error while trying to replicate " + file 
+							+ " from " + serverToGetFileFrom + " to " + serverToPlaceFile);
+				} 
+				
+			}
+			
 		}
 		
 		
@@ -306,6 +330,13 @@ public class ServerStatusCheckerService {
 					+ " a new shadow. " + e.getMessage());
 			e.printStackTrace();
 		} 
+		
+
+		try {
+			serverHandler.massiveUpdateCoreStatus();
+		} catch (TException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

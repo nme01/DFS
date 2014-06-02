@@ -79,7 +79,7 @@ list<string> listFileNames(),
 CoreStatus registerSlave(1:NewSlaveRequest req),
 
 //with this request master makes slave register again.
-void forceRegister(),
+void forceRegister(1:CoreStatus status),
 
 //master updates slaves status
 void updateCoreStatus(1:CoreStatus status),

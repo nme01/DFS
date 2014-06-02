@@ -51,7 +51,6 @@ public class DFSServer {
 	public DFSServer(String[] args) throws UnknownHostException {
 
 		me = new Server();
-		me.setIp(InetAddressUtils.getInetAddressAsString());
 		me.setLastConnection(new DateTime());
 		if (ServerRole.getServerRole(args[0]) == ServerRole.MASTER) {
 			
@@ -62,6 +61,7 @@ public class DFSServer {
 			}
 			
 			log.info("Master IP is: "+ args[1]);
+			me.setIp(args[1]);
 			// queue for messages from master to
 			// thread that updates shadows' databases
 

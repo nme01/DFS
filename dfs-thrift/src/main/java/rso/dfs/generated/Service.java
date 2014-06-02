@@ -45,7 +45,7 @@ public class Service {
 
     public CoreStatus registerSlave(NewSlaveRequest req) throws org.apache.thrift.TException;
 
-    public void forceRegister() throws org.apache.thrift.TException;
+    public void forceRegister(CoreStatus status) throws org.apache.thrift.TException;
 
     public void updateCoreStatus(CoreStatus status) throws org.apache.thrift.TException;
 
@@ -93,7 +93,7 @@ public class Service {
 
     public void registerSlave(NewSlaveRequest req, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void forceRegister(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void forceRegister(CoreStatus status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void updateCoreStatus(CoreStatus status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -220,15 +220,16 @@ public class Service {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "registerSlave failed: unknown result");
     }
 
-    public void forceRegister() throws org.apache.thrift.TException
+    public void forceRegister(CoreStatus status) throws org.apache.thrift.TException
     {
-      send_forceRegister();
+      send_forceRegister(status);
       recv_forceRegister();
     }
 
-    public void send_forceRegister() throws org.apache.thrift.TException
+    public void send_forceRegister(CoreStatus status) throws org.apache.thrift.TException
     {
       forceRegister_args args = new forceRegister_args();
+      args.setStatus(status);
       sendBase("forceRegister", args);
     }
 
@@ -744,21 +745,24 @@ public class Service {
       }
     }
 
-    public void forceRegister(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void forceRegister(CoreStatus status, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      forceRegister_call method_call = new forceRegister_call(resultHandler, this, ___protocolFactory, ___transport);
+      forceRegister_call method_call = new forceRegister_call(status, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class forceRegister_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public forceRegister_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private CoreStatus status;
+      public forceRegister_call(CoreStatus status, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.status = status;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("forceRegister", org.apache.thrift.protocol.TMessageType.CALL, 0));
         forceRegister_args args = new forceRegister_args();
+        args.setStatus(status);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1474,7 +1478,7 @@ public class Service {
 
       public forceRegister_result getResult(I iface, forceRegister_args args) throws org.apache.thrift.TException {
         forceRegister_result result = new forceRegister_result();
-        iface.forceRegister();
+        iface.forceRegister(args.status);
         return result;
       }
     }
@@ -2078,7 +2082,7 @@ public class Service {
       }
 
       public void start(I iface, forceRegister_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.forceRegister(resultHandler);
+        iface.forceRegister(args.status,resultHandler);
       }
     }
 
@@ -5004,6 +5008,7 @@ public class Service {
   public static class forceRegister_args implements org.apache.thrift.TBase<forceRegister_args, forceRegister_args._Fields>, java.io.Serializable, Cloneable, Comparable<forceRegister_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("forceRegister_args");
 
+    private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -5011,10 +5016,11 @@ public class Service {
       schemes.put(TupleScheme.class, new forceRegister_argsTupleSchemeFactory());
     }
 
+    public CoreStatus status; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+      STATUS((short)1, "status");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5029,6 +5035,8 @@ public class Service {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 1: // STATUS
+            return STATUS;
           default:
             return null;
         }
@@ -5067,9 +5075,13 @@ public class Service {
         return _fieldName;
       }
     }
+
+    // isset id assignments
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.STATUS, new org.apache.thrift.meta_data.FieldMetaData("status", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CoreStatus.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(forceRegister_args.class, metaDataMap);
     }
@@ -5077,10 +5089,20 @@ public class Service {
     public forceRegister_args() {
     }
 
+    public forceRegister_args(
+      CoreStatus status)
+    {
+      this();
+      this.status = status;
+    }
+
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public forceRegister_args(forceRegister_args other) {
+      if (other.isSetStatus()) {
+        this.status = new CoreStatus(other.status);
+      }
     }
 
     public forceRegister_args deepCopy() {
@@ -5089,15 +5111,51 @@ public class Service {
 
     @Override
     public void clear() {
+      this.status = null;
+    }
+
+    public CoreStatus getStatus() {
+      return this.status;
+    }
+
+    public forceRegister_args setStatus(CoreStatus status) {
+      this.status = status;
+      return this;
+    }
+
+    public void unsetStatus() {
+      this.status = null;
+    }
+
+    /** Returns true if field status is set (has been assigned a value) and false otherwise */
+    public boolean isSetStatus() {
+      return this.status != null;
+    }
+
+    public void setStatusIsSet(boolean value) {
+      if (!value) {
+        this.status = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case STATUS:
+        if (value == null) {
+          unsetStatus();
+        } else {
+          setStatus((CoreStatus)value);
+        }
+        break;
+
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case STATUS:
+        return getStatus();
+
       }
       throw new IllegalStateException();
     }
@@ -5109,6 +5167,8 @@ public class Service {
       }
 
       switch (field) {
+      case STATUS:
+        return isSetStatus();
       }
       throw new IllegalStateException();
     }
@@ -5125,6 +5185,15 @@ public class Service {
     public boolean equals(forceRegister_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_status = true && this.isSetStatus();
+      boolean that_present_status = true && that.isSetStatus();
+      if (this_present_status || that_present_status) {
+        if (!(this_present_status && that_present_status))
+          return false;
+        if (!this.status.equals(that.status))
+          return false;
+      }
 
       return true;
     }
@@ -5144,6 +5213,16 @@ public class Service {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetStatus()).compareTo(other.isSetStatus());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetStatus()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.status, other.status);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -5164,6 +5243,13 @@ public class Service {
       StringBuilder sb = new StringBuilder("forceRegister_args(");
       boolean first = true;
 
+      sb.append("status:");
+      if (this.status == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.status);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -5171,6 +5257,9 @@ public class Service {
     public void validate() throws org.apache.thrift.TException {
       // check for required fields
       // check for sub-struct validity
+      if (status != null) {
+        status.validate();
+      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -5207,6 +5296,15 @@ public class Service {
             break;
           }
           switch (schemeField.id) {
+            case 1: // STATUS
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.status = new CoreStatus();
+                struct.status.read(iprot);
+                struct.setStatusIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -5222,6 +5320,11 @@ public class Service {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.status != null) {
+          oprot.writeFieldBegin(STATUS_FIELD_DESC);
+          struct.status.write(oprot);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -5239,11 +5342,25 @@ public class Service {
       @Override
       public void write(org.apache.thrift.protocol.TProtocol prot, forceRegister_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetStatus()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetStatus()) {
+          struct.status.write(oprot);
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, forceRegister_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.status = new CoreStatus();
+          struct.status.read(iprot);
+          struct.setStatusIsSet(true);
+        }
       }
     }
 

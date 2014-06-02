@@ -36,14 +36,17 @@ public class FileStorageHandler implements StorageHandler {
 //		}
 		
 		Path path = Paths.get(assemblePath(fileId));
+		int chunkSize = 0;
 		byte [] bytes = new byte[0];
-		int fileSize = 0;
 		try {
+			chunkSize = (int)Math.min(Files.size(path) - offset, DFSProperties.getProperties().getFilePartSize().intValue());
+			bytes = new byte[chunkSize];
 			RandomAccessFile raf = new RandomAccessFile(new File(path.toString()), "r");
-			raf.read(bytes, (int)offset, DFSProperties.getProperties().getFilePartSize().intValue());
+			raf.seek(offset);
+			raf.read(bytes, 0, chunkSize);
 			raf.close();
 		} catch (Exception e) {
-			log.error("readFile: error reading file " + assemblePath(fileId) + ", offset " + (int)offset + ", size " + fileSize);
+			log.error("readFile: error reading file " + assemblePath(fileId) + ", offset " + (int)offset + ", size " + chunkSize);
 			e.printStackTrace();
 			// ...
 		}
@@ -54,8 +57,9 @@ public class FileStorageHandler implements StorageHandler {
 	public void writeFile(long fileId, int offset, byte[] fileBody) {
 		Path path = Paths.get(assemblePath(fileId));
 		try {
-			RandomAccessFile raf = new RandomAccessFile(new File(path.toString()), "r");
-			raf.write(fileBody, (int)offset, DFSProperties.getProperties().getFilePartSize().intValue());
+			RandomAccessFile raf = new RandomAccessFile(new File(path.toString()), "rws");
+			raf.seek(offset);
+			raf.write(fileBody, 0, fileBody.length);
 			raf.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

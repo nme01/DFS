@@ -1,0 +1,1 @@
+ssh ubuntu@$1 "rm rsodist/rso.dfs.log"

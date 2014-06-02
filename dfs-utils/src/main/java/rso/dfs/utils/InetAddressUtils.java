@@ -6,13 +6,15 @@ import java.net.UnknownHostException;
 public class InetAddressUtils {
 
 	public static InetAddress getInetAddress() throws UnknownHostException {
-		// TODO: fix this
-		return InetAddress.getByName("localhost");
+		// FIXME: fix this
+		throw new IllegalStateException("Nie, nie, nie. Adresem nie jest localhost");
+		//return InetAddress.getByName("localhost");
 	}
 
 	public static String getInetAddressAsString() throws UnknownHostException {
-		// TODO: fix this
-		return InetAddress.getByName("localhost").getHostAddress();
+		// FIXME: fix this
+		throw new IllegalStateException("Nie, nie, nie. Adresem nie jest localhost ");
+		//return InetAddress.getByName("localhost").getHostAddress();
 	}
 
 }
