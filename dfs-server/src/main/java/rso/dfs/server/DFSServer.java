@@ -77,13 +77,19 @@ public class DFSServer {
 			me.setRole(ServerRole.MASTER);
 			me.setIp(args[1]);
 
-
 			repository.saveServer(me);
 
 			// create empty object for storage handler
 
-			serviceHandler = new ServerHandler(me, new CoreStatus(me.getIp(), new ArrayList<String>()));
 			storageHandler = new EmptyStorageHandler();
+			serviceHandler = new ServerHandler(
+					me, 
+					new CoreStatus(me.getIp(), new ArrayList<String>()), 
+					storageHandler, 
+					repository);
+			
+			//Run Server checking service
+			
 		} else {
 			
 			if(args.length < 3 )
@@ -102,7 +108,7 @@ public class DFSServer {
 			// FIXME: simplifying assumption: IP will be given by user who runs
 			// slave as 3rd arg.
 			me.setIp(args[2]);
-			log.info("Master IP is " + args[2] + "; Slave ip is " + args[1]);
+			log.info("Master IP is " + args[1] + "; Slave ip is " + args[2]);
 
 			// if master is not on the same server, clean db. It was used only to run on same host
 			/*if (!args[1].equals("127.0.0.1") && !args[1].equals("localhost") && !args[1].equals(args[2])) {
@@ -116,11 +122,14 @@ public class DFSServer {
 
 			// repository.saveServer(master);
 
-			serviceHandler = new ServerHandler(me, new CoreStatus(master.getIp(), new ArrayList<String>()));
 			storageHandler = new FileStorageHandler();
+			serviceHandler = new ServerHandler(
+					me, 
+					new CoreStatus(master.getIp(), new ArrayList<String>()), 
+					storageHandler, 
+					repository);
+			
 		}
-		serviceHandler.setRepository(repository);
-		serviceHandler.setStorageHandler(storageHandler);
 		procesor = new Service.Processor(serviceHandler);
 
 	}

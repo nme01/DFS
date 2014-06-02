@@ -30,6 +30,8 @@ public class DFSProperties {
 	private int defaultClientTimeout;
 	private boolean debug;
 	private String directory;
+	private Integer debugWaitTime;
+	private Integer shadowCount;
 	
 	private static DFSProperties dfsproperties;
 	
@@ -103,6 +105,8 @@ public class DFSProperties {
 		dfsproperties.setDefaultClientTimeout(Integer.parseInt(properties.getProperty("defaultClientTimeout")));
 		dfsproperties.setDebug(Boolean.parseBoolean(properties.getProperty("debug")));
 		dfsproperties.setDirectory(properties.getProperty("directory"));
+		dfsproperties.setDebugWaitTime(Integer.parseInt(properties.getProperty("debugWaitTime")));
+		dfsproperties.setShadowCount(Integer.parseInt(properties.getProperty("shadows")));
 		
 		Enumeration<?> e = properties.propertyNames();
 		while (e.hasMoreElements()) {
@@ -228,6 +232,22 @@ public class DFSProperties {
 
 	public void setDirectory(String directory) {
 		this.directory = directory;
+	}
+	
+	public void setDebugWaitTime(Integer debugWaitTime) {
+		this.debugWaitTime=debugWaitTime;
+	}
+	
+	public Integer getDebugWaitTime() {
+		return debugWaitTime;
+	}
+
+	public Integer getShadowCount() {
+		return shadowCount;
+	}
+
+	public void setShadowCount(Integer shadowCount) {
+		this.shadowCount = shadowCount;
 	}
 
 }

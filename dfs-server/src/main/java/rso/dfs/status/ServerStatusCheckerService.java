@@ -1,5 +1,6 @@
 package rso.dfs.status;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,6 +22,7 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
+import rso.dfs.server.ServerHandler;
 import rso.dfs.server.storage.FileStorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
 import rso.dfs.utils.DFSClosingClient;
@@ -38,10 +40,12 @@ public class ServerStatusCheckerService {
 	private Server me;
 	private final static Logger log = LoggerFactory.getLogger(ServerStatusCheckerService.class);
 	ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+	private ServerHandler serverHandler;
 	
 	
-	public ServerStatusCheckerService(DFSRepository repository) {
-		this.repository = repository;
+	public ServerStatusCheckerService(ServerHandler serverHandler) {
+		this.serverHandler = serverHandler;
+		this.repository = serverHandler.getRepository();
 		this.lastCheck = new DateTime();
 	}
 	
@@ -53,7 +57,9 @@ public class ServerStatusCheckerService {
 			  log.debug("Run checker service");
 			  checkAllShadowsAndSlaves();
 		  }
-		}, 0, DFSProperties.getProperties().getPingEvery(), TimeUnit.MILLISECONDS);
+		}, DFSProperties.getProperties().getPingEvery(), 
+		   DFSProperties.getProperties().getPingEvery(), 
+		   TimeUnit.MILLISECONDS);
 	}
 	
 	public void stopService()
@@ -73,10 +79,17 @@ public class ServerStatusCheckerService {
 		 */
 		
 		log.debug("Ping begins. Pinging slaves...");
-		
 		List<Server> slaves = repository.getSlaves();
+		if(slaves == null)
+		{
+			log.error("WAT? Repository returned null on getSlaves() request. "
+					+ "Expected: list of servers (even empty)");
+			slaves = new ArrayList<Server>();
+		}
+		log.debug("Number of slaves to ping: " + slaves.size());
 		for (Server checkedSlave: slaves)
 		{
+			log.debug("Checking slave with IP: " + checkedSlave.getIp());
 			if(!checkServerAliveTwice(checkedSlave.getIp()))
 			{
 				slaveIsDown(checkedSlave);
@@ -90,8 +103,16 @@ public class ServerStatusCheckerService {
 		
 		log.debug("Pinging shadows...");
 		List<Server> shadows = repository.getShadows();
+		if(shadows == null)
+		{
+			log.error("WAT? Repository returned null on getSlaves() request. "
+					+ "Expected: list of servers (even empty)");
+			shadows = new ArrayList<Server>();
+		}
+		log.debug("Number of shadows to ping: " + shadows.size());
 		for (Server checkedShadow: shadows)
 		{
+			log.debug("Checking shadow with IP: " + checkedShadow.getIp());
 			if(!checkServerAliveTwice(checkedShadow.getIp()))
 			{
 				shadowIsDown(checkedShadow);
@@ -104,8 +125,17 @@ public class ServerStatusCheckerService {
 		
 		log.debug("Pinging down servers...");
 		List<Server> downservers = repository.getDownServers();
+
+		log.debug("Number of down servers to ping: " + downservers.size());
+		if(downservers == null)
+		{
+			log.error("WAT? Repository returned null on getSlaves() request. "
+					+ "Expected: list of servers (even empty)");
+			downservers = new ArrayList<Server>();
+		}
 		for (Server downServer: downservers)
 		{
+			log.debug("Checking downServer with IP: " + downServer.getIp());
 			if(CheckServerStatus.checkAlive(downServer.getIp()))
 			{
 				reinitServer(downServer);
@@ -173,7 +203,7 @@ public class ServerStatusCheckerService {
 	 */
 	private void slaveIsDown(Server checkedSlave)
 	{
-		log.debug("Slave " + checkedSlave + " is down. Doing things.");
+		log.info("Slave " + checkedSlave + " is down.");
 		
 		//mark slave as down.
 		checkedSlave.setRole(ServerRole.DOWN);
@@ -238,7 +268,8 @@ public class ServerStatusCheckerService {
 	}
 	
 	private void shadowIsDown(Server checkedShadow) {
-		log.debug("Shadow " + checkedShadow + " is down. Doing things.");
+		log.info("Shadow " + checkedShadow + " is down. Setting role to down "
+				+ "and selecting new slave to become a shadow");
 		
 		checkedShadow.setRole(ServerRole.DOWN);
 		repository.updateServer(checkedShadow);
@@ -259,25 +290,21 @@ public class ServerStatusCheckerService {
 		}
 		Server serverToBecomeShadow = listOfBestStorageServers.get(0);
 		
-		log.debug("Shadow" + checkedShadow + " is down."
+		log.info("Shadow" + checkedShadow + " is down."
 				+ " Making " + serverToBecomeShadow + " a new shadow..");
 
 		//when new shadow is born, slave is dead.
 		slaveIsDown(serverToBecomeShadow);
 		
 		//become shadow.
-		try(DFSClosingClient cclient = 
-				new DFSClosingClient(serverToBecomeShadow.getIp(),
-						DFSProperties.getProperties().getStorageServerPort()))
-		{
-			Client client = cclient.getClient();
-			client.becomeShadow(null); //FIXME: why there is corestatus here?
-			
-		} catch (Exception e) {
+		try{
+			serverHandler.makeShadow(serverToBecomeShadow.getIp());
+		}
+		catch (Exception e) {
 			//TODO: and what if it is also down?
-			log.debug("Shadow" + checkedShadow + " is down."
-					+ " Error while trying to make" + serverToBecomeShadow 
+			log.error(" Error while trying to make" + serverToBecomeShadow 
 					+ " a new shadow. " + e.getMessage());
+			e.printStackTrace();
 		} 
 	}
 	

@@ -44,6 +44,8 @@ public interface DFSRepository {
 
 	public void updateFile(final File file);
 	
+	public void updateFileOnServer(final FileOnServer fileOnServer);
+	
 	public void updateServer(final Server server);
 
 	public void cleanDB();
@@ -55,5 +57,11 @@ public interface DFSRepository {
 	public List<Query> getAllQueries();
 
 	public List<Server> getShadows();
+	
+	public void executeQuery(String sql);
+	
+	public void addShadow(Server shadow);
+
+	public FileOnServer getFileOnServer(Long long1, Integer fileId);
 	
 }

@@ -15,12 +15,12 @@ stoplog="debugstop"
 function startService()
 {
     ip=$1
-    echo "Trying $ip ..."
+    timeoutLength=$2
+    echo "Trying $ip ... (timeout $timeoutLength)"
     if [[ $uphosts > 0 ]]; then
         ./runSlave $ip $masterip &>>$log &
         pid=$!
-        sleep 2
-        ./runCheckServer $ip
+        ./runCheckServer $ip $timeoutLength
         result=$?
         if [[ $result == 0 ]]; then
 	   #we've got a new host
@@ -35,8 +35,7 @@ function startService()
     else
         ./runMaster $ip &>>$log &
         pid=$!
-        sleep 2
-        ./runCheckServer $ip
+        ./runCheckServer $ip $timeoutLength
         result=$?
         if [[ $result == 1 ]]; then
             #it's an error, kill ssh
@@ -56,7 +55,7 @@ function deploy()
 {
     ip=$1
     echo "Deploying to $ip ..."
-    timeout 10 ./deployToServer $ip &>>$deploylog
+    timeout 60 ./deployToServer $ip &>>$deploylog
     result=$?
     if [[ $result == 124 ]]; then
 	echo "    Failed to deploy to $ip"
@@ -69,7 +68,7 @@ function stop()
 {
     ip=$1
     echo "Stopping $ip ..."
-    timeout 3 ./killemAll $ip &>>$stoplog
+    timeout 10 ./killemAll $ip #&>>$stoplog
     if [[ $result == 124 ]]; then
 	echo "    Failed to stop service for $ip"
     else
@@ -115,7 +114,7 @@ for i in {1..9}; do
 done
 #got ip addresses
 
-ipWithSSH=`nmap -p22 -oG - $iplist | awk '/open/{print $2}' | tr "\\n" " "`
+ipWithSSH=`nmap -p22 -sT -oG - $iplist --exclude $exclude | awk '/open/{print $2}' | tr "\\n" " "`
 
 echo "List of IPs with SSH port open:"
 echo "$ipWithSSH"
@@ -125,9 +124,18 @@ if [[ $1 == 'start' ]]; then
     echo "----------------------------------" >>$log
     echo "Start: log for `date`" >>$log
     echo "----------------------------------" >>$log 
-
+    timeoutTime=$2
+    if [[ -z $2 ]]; then
+         timeoutTime=5000
+    fi
+    
+    if [[ -n $3 ]]; then
+         masterip=$3
+         uphosts=1
+    fi
+        
     for ip in $ipWithSSH; do
-        startService $ip
+        startService $ip $timeoutTime
     done
     
     echo
@@ -168,4 +176,31 @@ if [[ $1 == 'haltvm' ]]; then
     for ip in $ipWithSSH; do
         haltvm $ip
     done
+fi
+
+if [[ $1 == 'make' ]]; then
+    echo "Making client, server, thrift and utils..."
+    ./makeall
+fi
+
+if [[ $1 == 'status' ]]; then
+    for ip in $ipWithSSH; do
+       x=`./runSystemState $ip`
+       result=$?
+       if [[ $result == 0 ]]; then
+           echo "$x"
+           break;
+       fi
+    done;
+fi
+
+if [[ $1 == 'client' ]]; then
+    for ip in $ipWithSSH; do
+       x=`./runCheckServer $ip`
+       result=$?
+       if [[ $result == 0 ]]; then
+            ./runClientHere $ip
+            break;
+       fi
+    done;
 fi

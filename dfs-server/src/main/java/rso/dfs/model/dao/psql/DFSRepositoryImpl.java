@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,9 @@ import rso.dfs.model.dao.DFSRepository;
 public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	final static Logger log = LoggerFactory.getLogger(DFSRepository.class);
-
+	public static final int MAX_THREADS = 1000;
+	public static final Semaphore dbSemaphore = new Semaphore(MAX_THREADS, true);
+	
 	/**
 	 * Information about master server.
 	 * */
@@ -65,12 +68,13 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		// add shadow to map
 		shadowsMap.put(shadow, new DFSModelDAOImpl(new DFSDataSource(shadow.getIp())));
 		// insert data to master's database
-		Long shadowId = masterDAO.saveServer(shadow);
-		// update object
-		shadow.setId(shadowId);
+		
+		shadow.setRole(ServerRole.SHADOW);
+		masterDAO.updateServer(shadow);
+		
 		try {
 			// replicate data to daos
-			blockingQueue.put(new UpdateServerTask(shadow, DBModificationType.SAVE));
+			blockingQueue.put(new UpdateServerTask(shadow, DBModificationType.UPDATE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -239,18 +243,23 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 		log.debug("Repository started");
 		while (!killRepository) {
+			
 			try {
 				DFSTask task = blockingQueue.take();
 				for (Entry<Server, DFSModelDAO> entry : shadowsMap.entrySet()) {
+					DFSRepositoryImpl.dbSemaphore.acquire();
 					// set dao
 					task.setDao(entry.getValue());
 					// execute command
+					
 					log.debug("Executing change on shadowDAO, task={}",task);
 					task.execute();
 				}
 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			} finally {
+				DFSRepositoryImpl.dbSemaphore.release();
 			}
 		}
 		log.debug("Repository stopped");
@@ -296,5 +305,26 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		log.debug("Fetching down servers.");
 		return masterDAO.fetchServersByRole(ServerRole.DOWN);
 	}
+	
+	@Override
+	public void executeQuery(String sql) {
+		masterDAO.executeQuery(sql);
+	}
 
+	@Override
+	public void updateFileOnServer(FileOnServer fileOnServer) {
+		log.debug("Updating fileONserver,fileONserver={}", fileOnServer);
+		int numberOfAffectedRows = masterDAO.updateFileOnServer(fileOnServer);
+		try {
+			blockingQueue.put(new UpdateFilesOnServersTask(fileOnServer, DBModificationType.UPDATE));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public FileOnServer getFileOnServer(Long serverId, Integer fileId) {
+		log.debug("Fetching filesOnServers, fileid=", fileId);
+		return masterDAO.fetchFos(serverId, fileId);		
+	}
 }

@@ -23,6 +23,7 @@ import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSModelDAO;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.mapper.FileRowMapper;
+import rso.dfs.model.dao.psql.mapper.FilesOnServersRowMapper;
 import rso.dfs.model.dao.psql.mapper.QueryRowMapper;
 import rso.dfs.model.dao.psql.mapper.ServerRowMapper;
 
@@ -36,7 +37,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	final static Logger log = LoggerFactory.getLogger(DFSModelDAOImpl.class);
 
-	private void insertIntoLogTable(String sqlQuery) {
+	public void insertIntoLogTable(String sqlQuery) {
 		final String query = "insert into log (sql) values(?)";
 		getJdbcTemplate().update(query, new Object[] { sqlQuery });
 	}
@@ -185,7 +186,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	public int updateServer(Server server) {
 		final String query = "update servers set role=?, memory=?, last_connection=? where ip=?";
 		insertIntoLogTable("update servers set role='" + server.getRole().getCode() + "', memory=" + server.getMemory() + ", last_connection='" + new Timestamp(server.getLastConnection().getMillis()) + "' where ip='" + server.getIp() + "'");
-		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), server.getLastConnection(), server.getIp() });
+		return getJdbcTemplate().update(query, new Object[] { server.getRole().getCode(), server.getMemory(), new Timestamp(server.getLastConnection().getMillis()), server.getIp() });
 	}
 
 	@Override
@@ -226,7 +227,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		}
 		final String query = "insert into files (id, name, size, status) values(?, ?, ?, ?)";
 		getJdbcTemplate().update(query, new Object[] { file.getId(), file.getName(), file.getSize(), file.getStatus().getCode() });
-
+		insertIntoLogTable("insert into files (id, name, size, status) values("+file.getId()+",'"+file.getName()+"',"+file.getSize()+",'"+file.getStatus().getCode()+"')");
 	}
 
 	@Override
@@ -235,7 +236,35 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 			throw new IllegalArgumentException("serverId should be set.");
 		}
 		final String query = "insert into servers (id, ip, role, memory, last_connection) values(?,?,?,?,?)";
-		getJdbcTemplate().update(query, new Object[] { server.getId(), server.getIp(), server.getRole().getCode(), server.getMemory(), server.getLastConnection() });
-
+		getJdbcTemplate().update(query, new Object[] { server.getId(), server.getIp(), server.getRole().getCode(), server.getMemory(), new Timestamp(server.getLastConnection().getMillis()) });
+		insertIntoLogTable("insert into servers (id, ip, role, memory, last_connection) values("+server.getId()+",'"+server.getIp()+"','"+server.getRole().getCode()+"',"+server.getMemory()+","+new Timestamp(server.getLastConnection().getMillis())+")");
 	}
+	
+	@Override
+	public void executeQuery(String sql) {
+		getJdbcTemplate().update(sql);
+		insertIntoLogTable(sql);
+	}
+
+	@Override
+	public int updateFileOnServer(FileOnServer fileOnServer) {
+		final String query = "update files_on_servers set priority= ? where file_id= ? and server_id= ?";
+		int arows = getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId(), fileOnServer.getPriority() });
+		insertIntoLogTable("update files_on_servers set priority="+fileOnServer.getPriority()+" where file_id="+fileOnServer.getFileId()+ " and server_id=" + fileOnServer.getServerId());
+		return arows;
+	}
+	
+	@Override
+	public FileOnServer fetchFos(Long serverid, Integer fileId) {
+		final String query = "select file_id, server_id, priority from files_on_servers where file_id= ? and server_id= ?";
+		FileOnServer result = null;
+		try {
+			result = getJdbcTemplate().queryForObject(query, new Object[] { fileId,serverid }, new FilesOnServersRowMapper());
+		} catch (EmptyResultDataAccessException e) {
+			// null file
+			logger.info("FileOnServer (fid=" + fileId + ",sid="+serverid+") not found on server.");
+		}
+		return result;
+	}
+
 }

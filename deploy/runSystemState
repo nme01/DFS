@@ -1,0 +1,1 @@
+java -cp "../dfs-server/dist/lib/*:../dfs-server/dist/conf/" rso.dfs.status.CheckSystemStatus "$@"

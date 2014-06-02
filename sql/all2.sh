@@ -12,7 +12,7 @@ psql -d rsodfs -c "
 SET ROLE rsodfs;
 create table files (
 	id bigserial not null,
-	name text not null,
+	name text,
 	size bigint,
 	status char(1),
 	primary key (id)
@@ -30,7 +30,7 @@ create table servers (
 	last_connection timestamp not null,
 	primary key (id)
 );
-alter table servers add constraint servers_role_constraint check (role = 'M' or role = 'H' or  role='L');
+alter table servers add constraint servers_role_constraint check (role = 'M' or role = 'H' or role='L' or role = 'D');
 
 create index pk_servers on servers (ip);
 

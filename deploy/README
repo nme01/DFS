@@ -20,6 +20,17 @@ ubuntu ALL=(ALL) NOPASSWD: ALL
 5. Zainstalować zależności (postgres itd) 
 ./installDependencies <ip servera>
 
+6. Ten krok jest potrzebny aby pg_dump działał:
+W pliku /etc/postgres/9.1/main/postgresql.conf linijkę
+#listen_addressess = 'localhost' 
+zamieniamy na
+listen_addressess = '*'
+
+oraz w pliku /etc/postgres/9.1/main/pg_hba.conf dopisujemy linijkę:
+host		all			all			0.0.0.0/0			md5
+
+i restartujemy postgresa:
+
 Kroki deploymentu aplikacji
 
 1. Lokalne skomplilowanie wszystkiego co trzeba mavenem:

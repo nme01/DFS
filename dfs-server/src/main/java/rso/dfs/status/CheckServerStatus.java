@@ -1,6 +1,7 @@
 package rso.dfs.status;
 
 import org.apache.thrift.transport.TTransportException;
+import org.joda.time.DateTime;
 
 import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.Service.Client;
@@ -21,9 +22,21 @@ public class CheckServerStatus {
 			System.err.println("You should provide ip address as arg"); 
 			System.exit(-1);
 		}
-		if(checkAlive(args[0]))
+		Integer timeoutInMs = DFSProperties.getProperties().getDefaultClientTimeout();
+		if (args.length > 1)
 		{
-			System.exit(0);
+			try
+			{
+				timeoutInMs = Integer.parseInt(args[1]);
+			}
+			catch (NumberFormatException e)
+			{
+				System.err.println("Wrong number of milliseconds");
+			}
+		} 
+		if(checkAlive(args[0],timeoutInMs))
+		{
+			System.exit(0);	
 		}
 		else
 		{
@@ -31,29 +44,41 @@ public class CheckServerStatus {
 		}
 	}
 
+	public static boolean checkAlive(String IP) {
+		return checkAlive(IP, DFSProperties.getProperties().getDefaultClientTimeout());
+	}
 	/**
-	 * 
+	 * 2000 ms timeout on connection	
 	 * @param string IP of the server
+	 * @param timeoutInMs 
 	 * @return 0 on success, not 0 on failure
 	 */
-	public static boolean checkAlive(String string) {
-		int returnvar = 0;
-		int timeoutInMs = 2000; 
-		try{
-			try(DFSClosingClient cclient = 
-					new DFSClosingClient(string,
-							DFSProperties.getProperties().getStorageServerPort(),timeoutInMs))
-			{
-				Client client = cclient.getClient();
-				client.pingServer();
+	public static boolean checkAlive(String IP, Integer timeoutInMs) {
+		DateTime dt = new DateTime();
+		while((new DateTime().getMillis()) - dt.getMillis() < timeoutInMs)
+		{
+			try{
+				try(DFSClosingClient cclient = 
+						new DFSClosingClient(IP,
+								DFSProperties.getProperties().getStorageServerPort(),timeoutInMs))
+				{
+					Client client = cclient.getClient();
+					client.pingServer();
+					return true;
+				}
+			}
+			catch (Exception e) {
+				//something wrong happens, try again
+			}
+			
+			try {
+				Thread.sleep(100l);
+			} catch (InterruptedException e) {
+				//do nothing
 			}
 		}
-		catch (Exception e) {
-			//something wrong happens, return failure
-			returnvar = 1;
-		} 
-		//everything is fine, return true
-		return (returnvar==0);
+		
+		return false;
 	}
 
 }

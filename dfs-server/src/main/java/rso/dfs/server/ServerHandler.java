@@ -2,8 +2,6 @@ package rso.dfs.server;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,11 +34,16 @@ import rso.dfs.generated.SystemStatus;
 import rso.dfs.model.File;
 import rso.dfs.model.FileOnServer;
 import rso.dfs.model.FileStatus;
+import rso.dfs.model.Query;
 import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
+import rso.dfs.model.dao.psql.DFSDataSource;
+import rso.dfs.model.dao.psql.DFSModelDAOImpl;
+import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
+import rso.dfs.status.ServerStatusCheckerService;
 import rso.dfs.utils.DFSArrayUtils;
 import rso.dfs.utils.DFSClosingClient;
 import rso.dfs.utils.DFSTSocket;
@@ -79,7 +82,7 @@ public class ServerHandler implements Service.Iface {
 	private Lock awaitingSlavesLock = new ReentrantLock();
 	private Map<Integer, List<Condition>> awaitingSlaves = new HashMap<Integer, List<Condition>>();
 	private Long syncCounter = 1L;
-
+	private ServerStatusCheckerService serverCheckerService = null;
 	/**
 	 * Contains statuses which files where used;
 	 * key -> fileId;
@@ -87,7 +90,7 @@ public class ServerHandler implements Service.Iface {
 	 * */
 	private HashMap<Integer, Integer> files = new HashMap<>();	
 	
-	public ServerHandler(Server me, CoreStatus cs) {
+	public ServerHandler(Server me, CoreStatus cs, StorageHandler storageHandler, DFSRepository repository) {
 		this.me = me;
 		this.storageHandler = storageHandler;
 		this.repository = repository;
@@ -97,6 +100,12 @@ public class ServerHandler implements Service.Iface {
 																		// not
 																		// to be
 																		// null
+		if(me.getRole() == ServerRole.MASTER)
+		{
+			log.debug("Starting ServerStatusCheckerService form Master");
+			serverCheckerService= new ServerStatusCheckerService(this);
+			serverCheckerService.runService();
+		}
 	}
 
 	@Override
@@ -147,11 +156,29 @@ public class ServerHandler implements Service.Iface {
 		SystemStatus ss = new SystemStatus();
 		ss.setFilesNumber(repository.getAllFiles().size());		
 		Server master = repository.getMasterServer();
-		ss.addToServersStatuses(new ServerStatus(ServerType.Master,master.getFilesNumber(), master.getFreeMemory(), master.getMemory()-master.getFreeMemory()));
+		ss.addToServersStatuses(
+				new ServerStatus(
+						ServerType.Master,master.getFilesNumber(), 
+						master.getFreeMemory(), 
+						master.getMemory()-master.getFreeMemory(), 
+						master.getIp()));
+		
 		for (Server server : repository.getShadows())
-			ss.addToServersStatuses(new ServerStatus(ServerType.Shadow, server.getFilesNumber(), server.getFreeMemory(), server.getMemory()-server.getFreeMemory()));
+			ss.addToServersStatuses(
+					new ServerStatus(
+							ServerType.Shadow, 
+							server.getFilesNumber(),
+							server.getFreeMemory(), 
+							server.getMemory()-server.getFreeMemory(), 
+							server.getIp()));
 		for (Server server : repository.getSlaves())
-			ss.addToServersStatuses(new ServerStatus(ServerType.Slave, server.getFilesNumber(), server.getFreeMemory(), server.getMemory()-server.getFreeMemory()));
+			ss.addToServersStatuses(
+					new ServerStatus(
+							ServerType.Slave, 
+							server.getFilesNumber(), 
+							server.getFreeMemory(), 
+							server.getMemory()-server.getFreeMemory(), 
+							server.getIp()));
 		return ss;
 	}
 
@@ -162,7 +189,28 @@ public class ServerHandler implements Service.Iface {
 	public CoreStatus registerSlave(NewSlaveRequest req) throws TException {
 		log.info("Got registerSlave request! Slave IP: " + req.getSlaveIP() + "; list of files {" + req.getFileIds() + "}");
 		
-		Server server = repository.getServerByIp(req.getSlaveIP());
+		Server server = null;
+	 	try{
+	 		server = repository.getServerByIp(req.getSlaveIP());
+	 		server.setRole(ServerRole.SLAVE);
+	 		server.setLastConnection(new DateTime());
+	 		repository.updateServer(server);
+		}
+		catch(org.springframework.dao.EmptyResultDataAccessException e)
+		{
+			log.debug("Server not found in repository");
+		}
+		
+	 	List<Server> shadows = null;
+	 	try
+	 	{
+	 		 shadows= repository.getShadows();
+	 	}
+	 	catch(Exception e)
+	 	{
+	 		log.error(e.getMessage());
+	 	}
+	 		 	
 		if(server == null)
 		{
 			server = new Server();
@@ -181,13 +229,21 @@ public class ServerHandler implements Service.Iface {
 			}
 			server.setRole(ServerRole.SLAVE);
 		}
+		
 
+	 	if(shadows == null || shadows.size() < DFSProperties.getProperties().getShadowCount()) 
+	 	{
+	 		makeShadow(server.getIp());
+	 	}
+
+	 	
 		List<Integer> ids = req.getFileIds();
 		for (int fileId : ids) {
 			if (repository.getFileById(fileId) != null) {
 				FileOnServer fileOnServer = new FileOnServer();
 				fileOnServer.setFileId(fileId);
 				fileOnServer.setServerId(server.getId());
+				fileOnServer.setPriority(0l);
 				repository.saveFileOnServer(fileOnServer);
 				ids.remove((Integer) fileId);
 			}
@@ -203,6 +259,7 @@ public class ServerHandler implements Service.Iface {
 			e.printStackTrace();
 		}
 
+		debugSleep();
 		return coreStatus;
 	}
 
@@ -210,11 +267,51 @@ public class ServerHandler implements Service.Iface {
 	public void updateCoreStatus(CoreStatus status) throws TException {
 		coreStatus = status;
 	}
+	
+	/**
+	 * Updates slaves core status
+	 * @throws TException
+	 */
+	public void massiveUpdateCoreStatus() throws TException {
+		//get core status from DB
+		Server masterServer = repository.getMasterServer();
+		List<Server> shadows = repository.getShadows();
+		List<String> shadowsAddresses = new ArrayList<String>();
+		for(Server shadow: shadows)
+		{
+			shadowsAddresses.add(shadow.getIp());
+		}
+		coreStatus = new CoreStatus(masterServer.getIp(), shadowsAddresses);
+		
+		for(Server shadow: shadows)
+		{
+			try (DFSClosingClient cclient = new DFSClosingClient(
+					shadow.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
+				Client client = cclient.getClient();
+				client.updateCoreStatus(coreStatus);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		List<Server> slaves = repository.getSlaves();
+		for(Server slave: slaves)
+		{
+			try (DFSClosingClient cclient = new DFSClosingClient(
+					slave.getIp(), DFSProperties.getProperties().getStorageServerPort())) {
+				Client client = cclient.getClient();
+				client.updateCoreStatus(coreStatus);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
 
 	@Override
 	public void becomeShadow(CoreStatus status) throws TException {
-		// TODO Auto-generated method stub
-
+		me.setRole(ServerRole.SHADOW);
+		log.debug("I am shadow now");
 	}
 
 	@Override
@@ -357,6 +454,7 @@ public class ServerHandler implements Service.Iface {
 		getFileParams.setSize(file.getSize());
 		getFileParams.setSlaveIp(slave.getIp());
 
+		debugSleep();
 		return getFileParams;
 	}
 
@@ -436,6 +534,8 @@ public class ServerHandler implements Service.Iface {
 			}
 		}
 		log.debug(me.getIp() + ": returning from putFile");
+
+		debugSleep();
 		return putFileParams;
 	}
 
@@ -464,6 +564,7 @@ public class ServerHandler implements Service.Iface {
 			return false;
 		}
 
+		file.setName(null);
 		file.setStatus(FileStatus.TO_DELETE);
 		repository.updateFile(file);
 
@@ -516,6 +617,7 @@ public class ServerHandler implements Service.Iface {
 			}
 		});
 		thread.start();
+		debugSleep();
 		return true;
 	}
 
@@ -648,13 +750,24 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public void fileUploadSuccess(int fileID, String slaveIP) throws TException {
+		
+		log.debug("fileUploadSuccess: fileID:" + fileID + ";slaveIP: " + slaveIP ); 
+		
 		rso.dfs.model.File f = repository.getFileById(fileID);
 
 		f.setStatus(FileStatus.HELD);
 		Server s = repository.getServerByIp(slaveIP);
-		FileOnServer fos = new FileOnServer(fileID,s.getId(),0);
-
-		repository.saveFileOnServer(fos);
+		if(s == null)
+		{
+			log.error("FileUploadSuccess - server with that IP is not in repository: " + slaveIP);
+			return;
+		}
+		//FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
+		//fos.setPriority(Math.abs(fos.getPriority())); //FIXME: what is priority used for?
+		
+		int priority = 0;
+		FileOnServer fos = new FileOnServer(fileID, s.getId(), priority);
+		repository.saveFileOnServer(fos); //FIXME: for now, see Ogarnianie: FILE ON SERVER
 		repository.updateFile(f);
 	}
 
@@ -734,6 +847,7 @@ public class ServerHandler implements Service.Iface {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		debugSleep();
 	}
 	
 	/**
@@ -743,6 +857,59 @@ public class ServerHandler implements Service.Iface {
 	public void forceRegister() throws TException {
 		registerToMaster();
 	}
-
+	
+	public void makeShadow(String slaveIpAddress){
+		final String slaveIp = slaveIpAddress;
+		Thread thread = new Thread(new Runnable() {
+			public void run(){
+				log.debug("Order " + slaveIp + " to become Shadow");
+				// make dump
+				String dbPass = DFSProperties.getProperties().getDbpassword();
+				String dbName = DFSProperties.getProperties().getDbname();
+				String dbUser = DFSProperties.getProperties().getDbuser();
+				
+				DFSModelDAOImpl slaveDao = new DFSModelDAOImpl(new DFSDataSource(slaveIp));
+				slaveDao.cleanDB();
+				
+				String cmd = "PGPASSWORD=" + dbPass + " pg_dump -h 127.0.0.1 -U " + dbUser + 
+						" | PGPASSWORD=" + dbPass + " psql -h " + slaveIp + " -d " + dbName + " -U " + dbUser; 
+				try (DFSTSocket dfstSocket = new DFSTSocket(slaveIp, DFSProperties.getProperties().getStorageServerPort())) {
+					Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd}).waitFor();
+					log.debug("Database dumped");
+					DFSRepositoryImpl.dbSemaphore.acquire(DFSRepositoryImpl.MAX_THREADS);
+					
+					List<Query> queries = slaveDao.fetchAllQueries();
+					Long actualVersion = queries.get(queries.size()-1).getId();
+					List<Query> queriesToUpdate = repository.getQueriesAfter(actualVersion);
+					for(Query sql : queriesToUpdate){
+						slaveDao.executeQuery(sql.getSql());
+					}
+					Server slave = repository.getServerByIp(slaveIp);
+					repository.addShadow(slave);
+					dfstSocket.open();
+					TProtocol protocol = new TBinaryProtocol(dfstSocket);
+					Service.Client serviceClient = new Service.Client(protocol);
+					serviceClient.becomeShadow(coreStatus);
+					
+					massiveUpdateCoreStatus();
+				} catch (Exception e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				} finally {
+					DFSRepositoryImpl.dbSemaphore.release(DFSRepositoryImpl.MAX_THREADS);
+				}
+			}
+		});
+		thread.start();
+	}
+	
+	void debugSleep()
+	{
+		try {
+			TimeUnit.SECONDS.sleep(DFSProperties.getProperties().getDebugWaitTime());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }
