@@ -44,6 +44,7 @@ public class GetCommand extends ClientActionBase {
 			GetHandler handler = new GetHandler(masterIP);
 			try {
 				handler.performGet(filePathSrc, filePathDst);
+				break;
 			} catch (SlaveNotAlive slaveNotAlive) {
 				// increment counter
 				++counter;

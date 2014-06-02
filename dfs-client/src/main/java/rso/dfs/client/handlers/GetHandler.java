@@ -64,12 +64,18 @@ public class GetHandler extends HandlerBase {
 			FilePart filePart = null;
 			long offset = 0;
 			while (offset < getFileParams.getSize()) {
+				System.err.println("Requesting offset: " + offset);
 				filePartDescription.setOffset(offset);
 				filePart = serviceClient.getFileFromSlave(filePartDescription);
+				offset += filePart.getData().length;
+				
 				if (filePart.getData().length == 0) {
+					if(filePart.getFileId() == -2) {
+						System.err.println("Requested an offset beyond the scope of the file!");
+						return;
+					}
 					break;
 				}
-				offset += filePart.getData().length;
 
 				fileParts.add(filePart);
 			}
