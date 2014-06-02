@@ -95,13 +95,14 @@ public class PutHandler extends HandlerBase {
 					remainingSize = (int)Math.min(Files.size(path) - offset, DFSProperties.getProperties().getFilePartSize().intValue());
 					
 					System.err.println("[PUT] Got an offset of " + offset + " bytes in response.");
-					Thread.sleep(10000);
+					//Thread.sleep(DFSProperties.getProperties().getDebugWaitTime());
 				}
 				
 				chunk = new FilePart();
 				chunk.setFileId(putFileParams.getFileId());
 				chunk.setOffset(offset);
 				chunk.setData(new byte[0]);
+				fileDesc = serviceClient.sendFilePartToSlave(chunk);
 				succeeded = true;
 				
 			} catch (TTransportException tte) {
