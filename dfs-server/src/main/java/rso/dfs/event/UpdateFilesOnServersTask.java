@@ -35,5 +35,10 @@ public class UpdateFilesOnServersTask extends DFSTask {
 		}
 
 	}
+	
+	@Override
+	public String toString() {
+		return "UpdateFilesOnServersTask [dao=" + dao + ", modificationType=" + modificationType + "]";
+	}
 
 }

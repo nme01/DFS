@@ -249,7 +249,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public int updateFileOnServer(FileOnServer fileOnServer) {
 		final String query = "update files_on_servers set priority= ? where file_id= ? and server_id= ?";
-		int arows = getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId(), fileOnServer.getPriority() });
+		int arows = getJdbcTemplate().update(query, new Object[] { fileOnServer.getPriority(), fileOnServer.getFileId(), fileOnServer.getServerId() });
 		insertIntoLogTable("update files_on_servers set priority="+fileOnServer.getPriority()+" where file_id="+fileOnServer.getFileId()+ " and server_id=" + fileOnServer.getServerId());
 		return arows;
 	}

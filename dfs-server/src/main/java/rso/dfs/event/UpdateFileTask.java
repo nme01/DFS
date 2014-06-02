@@ -22,23 +22,27 @@ public class UpdateFileTask extends DFSTask {
 	@Override
 	public void execute() {
 		switch (modificationType) {
-		case SAVE: {
-			dao.saveFileWithId(fileToUpdate);
-			return;
+			case SAVE: {
+				dao.saveFileWithId(fileToUpdate);
+				return;
+			}
+			case UPDATE: {
+				dao.updateFile(fileToUpdate);
+				return;
+			}
+			case DELETE: {
+				dao.deleteFile(fileToUpdate);
+				return;
+			}
+			default: {
+				throw new IllegalStateException("");
+			}
 		}
-		case UPDATE: {
-			dao.updateFile(fileToUpdate);
-			return;
-		}
-		case DELETE: {
-			dao.deleteFile(fileToUpdate);
-			return;
-		}
-		default: {
-			throw new IllegalStateException("");
-		}
-		}
-
+	}
+	
+	@Override
+	public String toString() {
+		return "UpdateFileTask [dao=" + dao + ", modificationType=" + modificationType + "]";
 	}
 
 }
