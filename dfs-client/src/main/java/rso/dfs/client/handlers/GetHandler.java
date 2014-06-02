@@ -11,6 +11,7 @@ import org.apache.thrift.protocol.TProtocol;
 
 import rso.dfs.client.handlers.error.FileNotFoundError;
 import rso.dfs.client.handlers.error.FileOperationError;
+import rso.dfs.client.handlers.error.SlaveNotAlive;
 import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.FilePart;
 import rso.dfs.generated.FilePartDescription;
@@ -73,10 +74,9 @@ public class GetHandler extends HandlerBase {
 				fileParts.add(filePart);
 			}
 		} catch (Exception e) {
-			// TODO : probably this place is good for checking slave or shit connection
-			
-			
-			e.printStackTrace();
+			// map error and try again
+			throw new SlaveNotAlive();
+
 		}
 
 		byte[] fileBody = createFileBody(fileParts);
