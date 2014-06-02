@@ -68,12 +68,13 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		// add shadow to map
 		shadowsMap.put(shadow, new DFSModelDAOImpl(new DFSDataSource(shadow.getIp())));
 		// insert data to master's database
-		Long shadowId = masterDAO.saveServer(shadow);
-		// update object
-		shadow.setId(shadowId);
+		
+		shadow.setRole(ServerRole.SHADOW);
+		masterDAO.updateServer(shadow);
+		
 		try {
 			// replicate data to daos
-			blockingQueue.put(new UpdateServerTask(shadow, DBModificationType.SAVE));
+			blockingQueue.put(new UpdateServerTask(shadow, DBModificationType.UPDATE));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

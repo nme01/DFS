@@ -22,6 +22,7 @@ import rso.dfs.model.Server;
 import rso.dfs.model.ServerRole;
 import rso.dfs.model.dao.DFSRepository;
 import rso.dfs.model.dao.psql.DFSRepositoryImpl;
+import rso.dfs.server.ServerHandler;
 import rso.dfs.server.storage.FileStorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
 import rso.dfs.utils.DFSClosingClient;
@@ -39,10 +40,12 @@ public class ServerStatusCheckerService {
 	private Server me;
 	private final static Logger log = LoggerFactory.getLogger(ServerStatusCheckerService.class);
 	ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+	private ServerHandler serverHandler;
 	
 	
-	public ServerStatusCheckerService(DFSRepository repository) {
-		this.repository = repository;
+	public ServerStatusCheckerService(ServerHandler serverHandler) {
+		this.serverHandler = serverHandler;
+		this.repository = serverHandler.getRepository();
 		this.lastCheck = new DateTime();
 	}
 	
@@ -200,7 +203,7 @@ public class ServerStatusCheckerService {
 	 */
 	private void slaveIsDown(Server checkedSlave)
 	{
-		log.debug("Slave " + checkedSlave + " is down. Doing things.");
+		log.info("Slave " + checkedSlave + " is down.");
 		
 		//mark slave as down.
 		checkedSlave.setRole(ServerRole.DOWN);
@@ -265,7 +268,8 @@ public class ServerStatusCheckerService {
 	}
 	
 	private void shadowIsDown(Server checkedShadow) {
-		log.debug("Shadow " + checkedShadow + " is down. Doing things.");
+		log.info("Shadow " + checkedShadow + " is down. Setting role to down "
+				+ "and selecting new slave to become a shadow");
 		
 		checkedShadow.setRole(ServerRole.DOWN);
 		repository.updateServer(checkedShadow);
@@ -286,25 +290,21 @@ public class ServerStatusCheckerService {
 		}
 		Server serverToBecomeShadow = listOfBestStorageServers.get(0);
 		
-		log.debug("Shadow" + checkedShadow + " is down."
+		log.info("Shadow" + checkedShadow + " is down."
 				+ " Making " + serverToBecomeShadow + " a new shadow..");
 
 		//when new shadow is born, slave is dead.
 		slaveIsDown(serverToBecomeShadow);
 		
 		//become shadow.
-		try(DFSClosingClient cclient = 
-				new DFSClosingClient(serverToBecomeShadow.getIp(),
-						DFSProperties.getProperties().getStorageServerPort()))
-		{
-			Client client = cclient.getClient();
-			client.becomeShadow(null); //FIXME: why there is corestatus here?
-			
-		} catch (Exception e) {
+		try{
+			serverHandler.makeShadow(serverToBecomeShadow.getIp());
+		}
+		catch (Exception e) {
 			//TODO: and what if it is also down?
-			log.debug("Shadow" + checkedShadow + " is down."
-					+ " Error while trying to make" + serverToBecomeShadow 
+			log.error(" Error while trying to make" + serverToBecomeShadow 
 					+ " a new shadow. " + e.getMessage());
+			e.printStackTrace();
 		} 
 	}
 	

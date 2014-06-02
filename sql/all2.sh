@@ -12,7 +12,7 @@ psql -d rsodfs -c "
 SET ROLE rsodfs;
 create table files (
 	id bigserial not null,
-	name text not null,
+	name text,
 	size bigint,
 	status char(1),
 	primary key (id)

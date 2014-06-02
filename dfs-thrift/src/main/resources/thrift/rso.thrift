@@ -16,6 +16,7 @@ struct ServerStatus
     2: required i32 filesNumber;
     3: required i64 freeSpace;
     4: required i64 usedSpace;
+    5: required IPType serverIP;
 }
 
 struct SystemStatus {

@@ -39,6 +39,7 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
   private static final org.apache.thrift.protocol.TField FILES_NUMBER_FIELD_DESC = new org.apache.thrift.protocol.TField("filesNumber", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField FREE_SPACE_FIELD_DESC = new org.apache.thrift.protocol.TField("freeSpace", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField USED_SPACE_FIELD_DESC = new org.apache.thrift.protocol.TField("usedSpace", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField SERVER_IP_FIELD_DESC = new org.apache.thrift.protocol.TField("serverIP", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -54,6 +55,7 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
   public int filesNumber; // required
   public long freeSpace; // required
   public long usedSpace; // required
+  public String serverIP; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -64,7 +66,8 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     TYPE((short)1, "type"),
     FILES_NUMBER((short)2, "filesNumber"),
     FREE_SPACE((short)3, "freeSpace"),
-    USED_SPACE((short)4, "usedSpace");
+    USED_SPACE((short)4, "usedSpace"),
+    SERVER_IP((short)5, "serverIP");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
           return FREE_SPACE;
         case 4: // USED_SPACE
           return USED_SPACE;
+        case 5: // SERVER_IP
+          return SERVER_IP;
         default:
           return null;
       }
@@ -142,6 +147,8 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.USED_SPACE, new org.apache.thrift.meta_data.FieldMetaData("usedSpace", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.SERVER_IP, new org.apache.thrift.meta_data.FieldMetaData("serverIP", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , "IPType")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ServerStatus.class, metaDataMap);
   }
@@ -153,7 +160,8 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     ServerType type,
     int filesNumber,
     long freeSpace,
-    long usedSpace)
+    long usedSpace,
+    String serverIP)
   {
     this();
     this.type = type;
@@ -163,6 +171,7 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     setFreeSpaceIsSet(true);
     this.usedSpace = usedSpace;
     setUsedSpaceIsSet(true);
+    this.serverIP = serverIP;
   }
 
   /**
@@ -176,6 +185,9 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     this.filesNumber = other.filesNumber;
     this.freeSpace = other.freeSpace;
     this.usedSpace = other.usedSpace;
+    if (other.isSetServerIP()) {
+      this.serverIP = other.serverIP;
+    }
   }
 
   public ServerStatus deepCopy() {
@@ -191,6 +203,7 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     this.freeSpace = 0;
     setUsedSpaceIsSet(false);
     this.usedSpace = 0;
+    this.serverIP = null;
   }
 
   /**
@@ -294,6 +307,30 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __USEDSPACE_ISSET_ID, value);
   }
 
+  public String getServerIP() {
+    return this.serverIP;
+  }
+
+  public ServerStatus setServerIP(String serverIP) {
+    this.serverIP = serverIP;
+    return this;
+  }
+
+  public void unsetServerIP() {
+    this.serverIP = null;
+  }
+
+  /** Returns true if field serverIP is set (has been assigned a value) and false otherwise */
+  public boolean isSetServerIP() {
+    return this.serverIP != null;
+  }
+
+  public void setServerIPIsSet(boolean value) {
+    if (!value) {
+      this.serverIP = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TYPE:
@@ -328,6 +365,14 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
       }
       break;
 
+    case SERVER_IP:
+      if (value == null) {
+        unsetServerIP();
+      } else {
+        setServerIP((String)value);
+      }
+      break;
+
     }
   }
 
@@ -344,6 +389,9 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
 
     case USED_SPACE:
       return Long.valueOf(getUsedSpace());
+
+    case SERVER_IP:
+      return getServerIP();
 
     }
     throw new IllegalStateException();
@@ -364,6 +412,8 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
       return isSetFreeSpace();
     case USED_SPACE:
       return isSetUsedSpace();
+    case SERVER_IP:
+      return isSetServerIP();
     }
     throw new IllegalStateException();
   }
@@ -414,6 +464,15 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
       if (!(this_present_usedSpace && that_present_usedSpace))
         return false;
       if (this.usedSpace != that.usedSpace)
+        return false;
+    }
+
+    boolean this_present_serverIP = true && this.isSetServerIP();
+    boolean that_present_serverIP = true && that.isSetServerIP();
+    if (this_present_serverIP || that_present_serverIP) {
+      if (!(this_present_serverIP && that_present_serverIP))
+        return false;
+      if (!this.serverIP.equals(that.serverIP))
         return false;
     }
 
@@ -473,6 +532,16 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetServerIP()).compareTo(other.isSetServerIP());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetServerIP()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.serverIP, other.serverIP);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -512,6 +581,14 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     sb.append("usedSpace:");
     sb.append(this.usedSpace);
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("serverIP:");
+    if (this.serverIP == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.serverIP);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -524,6 +601,9 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
     // alas, we cannot check 'filesNumber' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'freeSpace' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'usedSpace' because it's a primitive and you chose the non-beans generator.
+    if (serverIP == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'serverIP' was not present! Struct: " + toString());
+    }
     // check for sub-struct validity
   }
 
@@ -595,6 +675,14 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // SERVER_IP
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.serverIP = iprot.readString();
+              struct.setServerIPIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -633,6 +721,11 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
       oprot.writeFieldBegin(USED_SPACE_FIELD_DESC);
       oprot.writeI64(struct.usedSpace);
       oprot.writeFieldEnd();
+      if (struct.serverIP != null) {
+        oprot.writeFieldBegin(SERVER_IP_FIELD_DESC);
+        oprot.writeString(struct.serverIP);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -654,6 +747,7 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
       oprot.writeI32(struct.filesNumber);
       oprot.writeI64(struct.freeSpace);
       oprot.writeI64(struct.usedSpace);
+      oprot.writeString(struct.serverIP);
     }
 
     @Override
@@ -667,6 +761,8 @@ public class ServerStatus implements org.apache.thrift.TBase<ServerStatus, Serve
       struct.setFreeSpaceIsSet(true);
       struct.usedSpace = iprot.readI64();
       struct.setUsedSpaceIsSet(true);
+      struct.serverIP = iprot.readString();
+      struct.setServerIPIsSet(true);
     }
   }
 

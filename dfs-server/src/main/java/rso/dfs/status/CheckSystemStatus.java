@@ -56,6 +56,7 @@ public class CheckSystemStatus {
 		}
 		
 		System.out.println("Status.filesNumber: " + status.getFilesNumber());
+		System.out.println();
 		for(ServerStatus ss: status.getServersStatuses())
 		{
 			System.out.println(ss);
