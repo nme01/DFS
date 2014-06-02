@@ -1,0 +1,88 @@
+\chapter[Scenariusze testowe][Scenariusze testowe]{Scenariusze testowe}
+Testowanie oprogramowania będzie polegało na~wywoływaniu szeregu scenariuszy
+powiązanych z~możliwymi usterkami występującymi podczas działania systemu
+zarówno z~powodu wystąpienia sytuacji nadzwyczajnych, jak~i~z~powodów
+zewnętrznych, nie~związanych z błędami w~samym oprogramowaniu. Scenariusze będą
+polegały na~wywoływaniu operacji po~stronie klienta, a~następnie symulacji
+objawów usterek związanych z~zadanym scenariuszem testowym; weryfikacja testu
+odbywać się~będzie na~podstawie porównania reakcji systemu z~oczekiwanymi
+poprawnymi reakcjami na~wysłanie żądania. Potencjalne błędy, które testy będą
+musiały sprawdzić, obejmują w~szczególności problemy synchronizacyjne:
+opóźnienia oraz desynchronizację, ale~również najczęściej spotykane usterki
+nie~powiązane z~zagadnieniami rozproszonymi.
+
+\begin{table}[h]
+\begin{center}
+	\begin{tabular}{|p{4cm} | p{4cm} | p{6cm} |}
+		\hline
+		\textbf{Scenariusz} & \textbf{Możliwe powody} &	\textbf{Rozwiązanie}	\\	\hline
+		Timeout             & Podany serwer jest niedostępny &	Ponowne przeszukanie
+		puli dostępnych serwerów \\ \hline
+		Odpowiedź: IP serwerów typu Master i Shadow & Klient podłączył się~do~innego
+		serwera niż~master & Nawiązanie połączenia z~masterem na~podstawie otrzymanych
+		danych \\ \hline
+		Klient otrzymuje niewłaściwe adresy - próbuje połączyć się~do~serwera
+		o~niepoprawnym~typie & Opóźnienie propagacji, zmiana serwera master.
+		& Ponowne odpytanie serwerów ze~znanej puli shadow. \\ \hline
+	\end{tabular}
+\end{center}
+\caption{Scenariusze dla operacji \emph{connect (Client -> Server)}}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+	\begin{tabular}{|p{4cm} | p{4cm} | p{6cm} |}
+		\hline
+		\textbf{Scenariusz} & \textbf{Możliwe powody} &	\textbf{Rozwiązanie}	\\	\hline
+		File not found      & Master nie może znaleźć pliku w~bazie lub plik ma
+		ustawiony tryb do~usunięcia &	(Klient) Sprawdzić poprawność ścieżki oraz
+		sprawdzić listing plików \\ \hline
+		Slave down (timeout) & Podany serwer jest niedostępny & Wykonanie zwrotnego
+		zapytania do mastera w celu wybrania nowego slave’a \\ \hline
+		Not enough space (u klienta) & Brak miejsca u~klienta & Zwrócenie błędu \\
+		\hline
+		
+	\end{tabular}
+\end{center}
+\caption{Scenariusze dla operacji \emph{get}}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+	\begin{tabular}{|p{4cm} | p{4cm} | p{6cm} |}
+		\hline
+		\textbf{Scenariusz} & \textbf{Możliwe powody} &	\textbf{Rozwiązanie}	\\	\hline
+		Not enough space & Zapełniona przestrzeń dyskowa slave’ów & Usunąć pliki
+		z~systemu \\ \hline
+		(M-S) Timeout & Wybrany serwer jest niedostępny & Master wybiera nowego
+		slave’a do~puli replikacyjnej i~deaktywuje niedostępnego \\ \hline
+		(C-S) Timeout & Wybrany slave jest niedostępny & Klient ponawia próbę wysłania
+		pliku za~pośrednictwem mastera. Dodatkowo: master wybiera dodatkowy slave
+		do~replikacji i~informuje całą resztę o~zmianie lokalizacji repliki głównej.
+		\\ \hline
+		(S-S) Timeout & Połączenie replikacyjne nie~może zostać ustabilizowane. &
+		Master zostaje poinformowany o~zaburzeniu procesu replikacyjnego i~wybiera
+		nowe brakujące slave’y do~replikacji. \\ \hline
+	\end{tabular}
+\end{center}
+\caption{Scenariusze dla operacji \emph{put}}
+\end{table}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+\begin{table}[h]
+	\begin{tabular}{|p{4cm} | p{4cm} | p{6cm} |}
+		\hline
+		\textbf{Scenariusz} & \textbf{Możliwe powody} &	\textbf{Rozwiązanie}	\\	\hline
+		File not found. & Plik nie istnieje w systemie. & Zwrócenie błędu \\ \hline
+		(M-SM) Timeout & Serwer poboczny jest niedostępny. & Master wywołuje proces
+		elekcji serwera pobocznego. \\ \hline
+		(M-S) Timeout & Serwer magazynujący jest niedostępny. & Master zamyka
+		połączenie; plik zostanie usunięty z~serwera magazynującego podczas kolejnego
+		połączenia. \\ \hline
+		Master ulega awarii w~trakcie oczekiwania na~slave’y & & Serwer poboczny
+		wykonuje zapytanie o pliki do usunięcia z bazy i wznawia proces. \\ \hline
+	\end{tabular}
+\caption{Scenariusze dla operacji \emph{rm}}
+\end{table}

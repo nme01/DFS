@@ -1,0 +1,215 @@
+\pdfoutput=1
+\pdfcompresslevel=9
+\pdfinfo
+{
+    /Title (Rozproszony system plików)
+    /Subject (Rozproszone systemy operacyjne)
+    /Keywords (dfs rozproszony hdfs gfs system plików)
+}
+%\documentclass[a4paper,polish,onecolumn,oneside,floatssmall,11pt,titleauthor,wide,openright]{mwrep}
+%\usepackage[scale={0.7,0.8},paper=a4paper,twoside]{geometry}
+\documentclass[a4paper,onecolumn,oneside,11pt,wide,floatssmall]{mwrep}
+% \usepackage{polish}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bookman}
+%dodane przez nme
+\usepackage{float}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+
+\usepackage{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+% \usepackage{t1enc}
+% \usepackage[pdftex, bookmarks]{hyperref}
+\usepackage[pdftex, bookmarks=false]{hyperref}
+\def\url#1{{ \tt #1}}
+
+\usepackage{listings}
+
+% marginesy
+\textwidth\paperwidth
+\advance\textwidth -55mm
+\oddsidemargin-0.9in
+\advance\oddsidemargin 33mm
+\evensidemargin-0.9in
+\advance\evensidemargin 33mm
+\topmargin -1in
+\advance\topmargin 25mm
+\setlength\textheight{48\baselineskip}
+\addtolength\textheight{\topskip}
+\marginparwidth15mm
+
+\clubpenalty=10000 % to kara za sierotki
+\widowpenalty=10000 % nie pozostawia wdów
+\brokenpenalty=10000 % nie dzieli wyrazów pomiędzy stronami
+\sloppy
+
+\tolerance4500
+\pretolerance250
+\hfuzz=1.5pt
+\hbadness1450
+
+% ŻYWA PAGINA
+\renewcommand{\chaptermark}[1]{\markboth{\scshape\small\bfseries \
+#1}{\small\bfseries \ #1}}
+\renewcommand{\sectionmark}[1]{\markboth{\scshape\small\bfseries\thesection.\
+#1}{\small\bfseries\thesection.\ #1}}
+\newcommand{\headrulewidth}{0.5pt}
+\newcommand{\footrulewidth}{0.pt}
+\pagestyle{uheadings}
+
+\renewcommand{\labelitemi}{$\bullet$}
+
+\usepackage[pdftex]{color,graphicx}
+\usepackage[polish]{babel}
+\usepackage[none]{hyphenat}%%%%
+\usepackage{setspace}
+% \textheight232mm
+% \setlength{\textwidth}{\textwidth}
+% \setlength{\oddsidemargin}{\evensidemargin}
+% \setlength{\evensidemargin}{0.3cm}
+\usepackage[sort, compress]{cite}
+
+%\usepackage{multibib}
+%\newcites{bk,st,doc,web}{Książki i~artykuły,Standardy i~zalecenia,Dokumentacja produktów,Publikacje i~serwisy internetowe}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definicja}[section]
+\newtheorem{conj}{Teza}[section]
+\newtheorem{conjmain}{Teza}
+\newtheorem{exmp}{Przykład}[section]
+
+\theoremstyle{plain}% default
+\newtheorem{thm}{Twierdzenie}[section]
+\newtheorem{lem}[thm]{Lemat}
+\newtheorem{prop}[thm]{Hipoteza}
+\newtheorem*{cor}{Wniosek}
+
+\theoremstyle{remark}
+\newtheorem*{rem}{Uwaga}
+\newtheorem*{note}{Uwaga}
+\newtheorem{case}{Przypadek}
+
+\definecolor{ListingBackground}{rgb}{0.95,0.95,0.95}
+
+\begin{document}
+
+% kody źródłowe wplatane w tekst
+\lstdefinestyle{incode}
+{
+basicstyle={\small},
+keywordstyle={\bf\color{black}},
+commentstyle={\em\color{black}},
+numbers=left,
+stepnumber=1,
+firstnumber=1,
+numberfirstline=true,
+numberblanklines=true,
+numberstyle={\sf\tiny},
+numbersep=10pt,
+tabsize=2,
+xleftmargin=17pt,
+framexleftmargin=3pt,
+framexbottommargin=2pt,
+framextopmargin=5pt,
+framexrightmargin=0pt,
+showstringspaces=true,
+backgroundcolor={\color{ListingBackground}},
+extendedchars=true,
+% title=\lstname,
+captionpos=b,
+% abovecaptionskip=1pt,
+% belowcaptionskip=1pt,
+frame=tb,
+framerule=0pt
+}
+
+% kody źródłowe z podpisem
+\lstdefinestyle{outcode}
+{
+basicstyle={\footnotesize},
+keywordstyle={\bf\footnotesize\color{blue}},
+commentstyle={\em\footnotesize\color{magenta}},
+numbers=left,
+stepnumber=5,
+firstnumber=1,
+numberfirstline=true,
+numberblanklines=true,
+numberstyle={\sf\tiny},
+numbersep=10pt,
+tabsize=2,
+xleftmargin=17pt,
+framexleftmargin=3pt,
+framexbottommargin=2pt,
+framextopmargin=2pt,
+framexrightmargin=0pt,
+showstringspaces=true,
+backgroundcolor={\color{ListingBackground}},
+extendedchars=true,
+% title=\lstname,
+captionpos=b,
+% abovecaptionskip=1pt,
+% belowcaptionskip=1pt,
+frame=tb,
+framerule=0.1pt,
+}
+
+\renewcommand*\lstlistingname{Wydruk}
+\renewcommand*\lstlistlistingname{Spis wydruków}
+\renewcommand*\tablename{Tabela}
+
+\pagenumbering{roman}
+\renewcommand{\baselinestretch}{1.0}
+\raggedbottom
+
+\setstretch{1.2}
+\input {tex/title}
+
+\tableofcontents
+% \addcontentsline{toc}{chapter}{{Przedmowa1}{vii}}{vii}
+
+% \chapter*{Spis tablic, rysunków i~wydruków}
+% \listoftables
+% \listoffigures
+% \lstlistoflistings
+
+%\setlength{\baselineskip}{7mm}
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input {tex/opis_thrift}
+\input {tex/uruchomienie_przykladow}
+\input {tex/przeglad_rozwiazan}
+\input {tex/koncepcja_rozwiazania}
+\input {tex/implementacja}
+\input {tex/scenariusze_testowe}
+\input {tex/harmonogram_przydzial_rol}
+\input {tex/srodowisko}
+\input {tex/raporty_ze_spotkan}
+\appendix
+
+% tutaj załączniki
+
+%\chapter*{Bibliografia}
+%\nocite{*}
+%\bibliographystyle{plplain}
+%\bibliographystylebk{plplain}
+%\bibliographystylest{plplain}
+%\bibliographystyledoc{plplain}
+% \bibliographystyleweb{plplain}
+%\bibliographybk{BIB/books}
+%\bibliographyst{BIB/books}
+%\bibliographydoc{BIB/books}
+% \bibliographyweb{BIB/books}
+
+% \bibliography{bib/verificard,bib/jml,bib/daikon}
+%\bibliography{bib/daikon,bib/statistics,bib/other}
+
+\end{document}
+
+% ex: set tabstop=4 shiftwidth=4 softtabstop=4 noexpandtab fileformat=unix filetype=tex spelllang=pl,en spell:
+

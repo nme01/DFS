@@ -1,0 +1,582 @@
+\chapter[Raporty ze spotkań][Raporty ze spotkań]{Raporty ze spotkań}
+\section[Spotkanie nr 1][Spotkanie nr 1]{Spotkanie nr 1}
+
+\noindent
+\textbf{data}: 2014-03-04 \\
+\textbf{czas}: 18:00-18:30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Jacek Witkowski
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Piotr Kalinowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}:
+\begin{itemize}
+  \item Organizacja:
+  \begin{itemize}
+    \item wymiana danych kontaktowych,
+    \item określenie swoich preferencji co~do~ról istniejących w~projekcie,
+    \item ustalenie możliwych terminów i formy spotkań.
+  \end{itemize}
+  \item Wstępna analiza wymagań dotyczących realizacji projektu.
+  \item Przegląd i~ewentualny wybór narzędzi używanych podczas realizacji
+  projektu.
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+Każdy z członków zespołu określił role projektowe, które chciałby wykonywać.
+Wstępnie przyjęto następujący podział ról:
+\begin{itemize}
+  \item architekt: Marcin Swend,
+  \item zarządca repozytorium: Jacek Witkowski,
+  \item dokumentalista: Jacek Witkowski,
+  \item tester: Mateusz Statkiewicz,
+  \item handlowiec: Jacek Witkowski.
+\end{itemize}
+
+\vspace{5mm}
+Ponadto, każdy z członków zespołu (poza kierownikiem projektu) przyjmuje rolę
+programisty.
+
+\vspace{5mm}
+Ustalono, że możliwe terminy spotkań to wtorki o godzinie 18.00 oraz piątki
+o godzinie 18.00. Istnieje również możliwość odbywania telekonferencji
+w weekendy.
+
+\vspace{5mm}
+Dokumentacja będzie prowadzona przy użyciu Google Docs, ponieważ każdy
+z członków projektu już teraz posiada konto w serwisie Google. Stąd, korzystanie
+z narzędzia nie niesie ze sobą konieczności dodatkowego rejestrowania się.
+Do~zarządzania projektem zostanie użyty system Redmine, który zostanie
+uruchomiony na serwerze Michała Statkiewicza. Jako narzędzie kontroli wersji
+zostanie wykorzystany git. Repozytorium zostanie utworzone w serwisie GitHub.
+
+\section[Spotkanie nr 2][Spotkanie nr 2]{Spotkanie nr 2}
+
+\noindent
+\textbf{data}: 2014-03-11 \\
+\textbf{czas}: 18:00-18:30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Jacek Witkowski
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Adam Papros
+	\item Marcin Dzieżyc
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}:
+\begin{itemize}
+  \item ustalenie wymagań funkcjonalnych projektu,
+  \item ustalenie założeń dotyczących środowiska uruchomieniowego,
+  \item ustalenie zawartości pliku konfiguracyjnego,
+  \item ustalenie wstępnej architektury systemu.
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+Założenia dotyczące projektu:
+\begin{itemize}
+	\item aplikacja kliencka będzie programem konsolowym,
+	\item będą możliwe do użycia następujące komendy:
+	\begin{itemize}
+		\item ls - wylistowanie zawartości folderu,
+		\item cd - zmiana bieżącego katalogu,
+		\item rm - usunięcie wskazanego pliku lub folderu,
+		\item cp - kopiowanie pliku/folderu z~miejsca źródłowego do~docelowego,
+		\item mv - przemieszczenie pliku/folderu z miejsca źródłowego do~docelowego.
+   \end{itemize}
+\end{itemize}
+
+\vspace{5mm}
+Środowisko uruchomieniowe: 4 laptopy działające w~jednej podsieci. 
+Laptopy będą połączone za~pomocą routera oferującego możliwość
+bezprzewodowego połączenia. Na~laptopach uruchomione będą maszyny wirtualne,
+na~których uruchomione będą aplikacje klienckie lub serwerowe.
+
+\vspace{5mm}
+\noindent
+Spis rzeczy, które muszą znaleźć się w pliku konfiguracyjnym:
+\begin{itemize}
+  \item lista reprezentująca adresy ip dozwolone dla urządzeń stanowiących
+  część serwerową w systemie,
+  \item stopień redundancji danych.
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+Wstępna architektura systemu:
+\begin{itemize}
+  \item urządzenia stanowiące część usługową będą podzielone na dwie klasy:
+część lokalizacyjno-nazewniczą oraz cześć przechowawczą,
+  \item wśród urządzeń klasy lokalizacyjno-nazewniczej wyróżnione będzie jedno
+  urządzenie typu master, które będzie przechowywać informacje o~rozmieszczeniu
+  plików w~katalogach oraz o~ich~lokalizacji na~poszczególnych urządzeniach
+  przechowawczych.
+  \item urządzenia z~klasy lokalizacyjno-nazewniczej nie~będące masterem, będą
+  tzw.~\emph{shadow masterami} stanowiącymi dokładną kopię mastera i~będącymi 
+  w~stanie go~zastąpić w~razie jego awarii.
+\end{itemize}
+
+\section[Spotkanie nr 3][Spotkanie nr 3]{Spotkanie nr 3}
+
+\noindent
+\textbf{data}: 2014-03-14 \\
+\textbf{czas}: 16:00-18:30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Ustalenie scenariuszy dla następujących działań:
+\begin{itemize}
+  \item wysyłanie pliku,
+  \item pobieranie pliku.
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+Scenariusz pobierania pliku:
+\begin{enumerate}
+	\item Klient łączy się do dowolnego serwera.
+	\item Klient otrzymuje adres mastera.
+	\item Klient łączy się z masterem.
+	\item Klient wydaje polecenie pobrania pliku o określonej ścieżce.
+	\item Master wyszukuje plik w hierarchii plików.
+	\item Master odsyła do klienta listę slave'ów przechowujących pliki wraz
+	z~identyfikatorem pliku.
+	\item Klient nawiązuje połączenie z~pierwszym z~listy slave'ów i~wysyła żądanie
+	pobrania pliku o~wskazanym identyfikatorze od~zerowego bajta.
+	\item Slave rozpoczyna wysyłanie pliku.
+	\item Klient odbiera plik.
+\end{enumerate}
+
+\vspace{5mm}
+Scenariusz wysyłania pliku:
+\begin{enumerate}
+	\item Klient łączy się do dowolnego serwera.
+	\item Klient otrzymuje adres mastera.
+	\item Klient łączy się z masterem.
+	\item Klient informuje mastera o~chęci wysłania pliku o~określonej ścieżce
+	i~rozmiarze.
+	\item Master sprawdza czy plik już~istnieje oraz wysyła do~wybranych slave'ów
+	informację o~identyfikatorze pliku, który ma~zostać odebrany wraz z~listą
+	wszystkich slave'ów, do~których została wysłana ta~lista (każdy z~wybranej
+	grupy slave'ów otrzymuje tę~samą listę).
+	\item Master wysyła identyfikator pliku i~listę która była rozsyłana w~p.~5
+	do~klienta.
+	\item Klient łączy się z pierwszym slave'em z listy i~podaje identyfikator
+	pliku.
+	\item Klient rozpoczyna wysyłanie pliku do slave'a.
+	\item Slave odbiera fragmenty pliku i~przesyła je~do~kolejnego slave'a
+	z~otrzymanej od~mastera listy. Slave'y rozsyłają między sobą odbierane fragmenty.
+	\item Klient kończy wysyłanie.
+\end{enumerate}
+
+\section[Spotkanie nr 4][Spotkanie nr 4]{Spotkanie nr 4}
+
+\noindent
+\textbf{data}: 2014-03-18 \\
+\textbf{czas}: 18:00-21:15
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Ustalenie scenariuszy dla następujących działań:
+\begin{itemize}
+  \item uruchomienie systemu,
+  \item usuwanie pliku z systemu,
+  \item kopiowanie pliku do systemu,
+  \item kopiowanie pliku z systemu,
+  \item otrzymanie informacji o stanie systemu (jako całości oraz poszczególnych
+  węzłów).
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+W warstwie lokalizacyjno-nazewniczej istnieje tylko jedno aktywne urządzenie
+obsługujące wszystkie żądania trafiające do tej warstwy. Urządzenie to będziemy
+nazywać masterem. Pozostałe urządzenia z tej warstwy będą jedynie kopiami
+mastera. Będziemy je nazywać Shadow Masterami.
+
+\vspace{5mm}
+Master oraz Shadow Mastery wykorzystują synchronizację on-line. Utrzymują
+lokalnie tablicę trwających procesów, która jest między nimi synchronizowana
+w~ten sposób, by~awaria mastera w~dowolnym momencie nie spowodowała awarii
+całego systemu.
+
+\vspace{5mm}
+Warunkiem koniecznym uznania dowolnego żądania klienta za zakończone, jest
+zsynchronizowanie informacji dotyczących tego żądania na masterze oraz shadow
+masterach.
+
+\vspace{5mm}
+W pliku konfiguracyjnym będzie zawarta lista urządzeń, które mają być
+pierwotnymi urządzeniami istniejącymi w systemie. Informacja ta będzie
+wykorzystywana w skrypcie uruchamiającym cały system. Zakładamy, że podczas
+działania skryptu urządzenie, które udało się uruchomić nie ulegnie awarii.
+
+\vspace{5mm}
+Na spotkaniu opracowano również kolejne wersję scenariuszy wysyłania pliku
+do~systemu oraz jego odbierania, a także usuwania. Scenariusze te zostały
+umieszczone w dokumentacji projektu.
+
+\section[Spotkanie nr 5][Spotkanie nr 5]{Spotkanie nr 5}
+
+\noindent
+\textbf{data}: 2014-03-21 \\
+\textbf{czas}: 16:00-16:30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Mateusz Statkiewicz
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Weryfikacja scenariuszy opracowanych przez zespół dla następujących czynności:
+\begin{itemize}
+  \item wysyłanie pliku do systemu,
+  \item pobieranie pliku z systemu,
+  \item usuwanie pliku z systemu.
+\end{itemize}
+
+\vspace{5mm}
+Zaplanowanie czynności do wykonania w~ciągu najbliższych 2 tygodni.
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+W ciągu najbliższych dwóch tygodni należy:
+\begin{itemize}
+  \item ustalić metody udostępniane przez aplikację serwerową oraz aplikację kliencką,
+  \item ustalić struktury komunikatów wymienianych między urządzeniami
+  działającymi w systemie (komuniakcja wewnątrzsystemowa oraz komunikacja z klientami).
+\end{itemize}
+
+\section[Spotkanie nr 6][Spotkanie nr 6]{Spotkanie nr 6}
+
+\noindent
+\textbf{data}: 2014-03-25 \\
+\textbf{czas}: 16:00-16:30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Ustalenie artefaktów jakie mają powstać w drugim etapie projektu. Podział zadań
+dotyczących implementacji podstawowych funkcjonalności.
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+Ustalono, że~w~ramach drugiego etapu wykonany zostanie system realizujący
+funkcjonalności: wysyłania/pobierania danych do/z~systemu, usuwania plików,
+pobierania informacji o~urządzeniach działających w~systemie (operacja status),
+uruchamianie/zatrzymywanie systemu, przyłączanie nowych urządzeń do~systemu.
+
+\vspace{5mm}
+W pierwszej kolejności należy ustalić interfejsy jakie mają oferować aplikacje
+klienta, mastera oraz slave'a oraz komunikaty wymieniane między nimi.
+Podzielono zadania w następujący sposób:
+\begin{itemize}
+	\item komunikacja Master-Klient: Piotr Kalinowski, Jacek Witkowski,
+	\item komunikacja Master-Slave: Marcin Dzieżyc, Adam Papros,
+	\item komunikacja Klient-Slave: Mateusz Statkiewicz, Marcin Swend.
+\end{itemize}
+
+\vspace{5mm}
+Zadania należy wykonać do 4~kwietnia.
+
+
+\section[Spotkanie nr 7][Spotkanie nr 7]{Spotkanie nr 7}
+
+\noindent
+\textbf{data}: 2014-04-04 \\
+\textbf{czas}: 16:00-16:30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Zebranie i uspójnienie przygotowanych interfejsów i wiadomości koniecznych
+do komunikacji pomiędzy klientem, masterem i slave'em.
+
+\vspace{5mm}
+\noindent
+\textbf{ustalenia}: \\
+Po ujednoliceniu stworzonych interfejsów oraz postaci komunikatów
+przydzielono zadania implementacji poszczególnych funkcjonalności
+członków zespołu.
+
+\section[Spotkanie nr 8][Spotkanie nr 8]{Spotkanie nr 8}
+
+\noindent
+\textbf{data}: 2014-03-18 \\
+\textbf{czas}: 16.00-17.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Dopracowanie serwisów jakie mają powstać w~systemie oraz wstępne ustalenie
+podziału zadań pomiędzy członkami zespołu.
+
+\section[Spotkanie nr 9][Spotkanie nr 9]{Spotkanie nr 9}
+
+\noindent
+\textbf{data}: 2014-04-22 \\
+\textbf{czas}: 18.00-19.30
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Ustalenie postępu prac. Identyfikacja problemów jakie powstały podczas
+implementowania serwisów oraz próba ich~rozwiązania.
+
+\section[Spotkanie nr 10][Spotkanie nr 10]{Spotkanie nr 10}
+
+\noindent
+\textbf{data}: 2014-05-05 \\
+\textbf{czas}: 19.00-22.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Finalizacja prac nad~implementacją funkcjonalności zaplanowanych do~wykonania
+w~ramach drugiej fazy projektu.
+
+\section[Spotkanie nr 11][Spotkanie nr 11]{Spotkanie nr 11}
+
+\noindent
+\textbf{data}: 2014-13-05 \\
+\textbf{czas}: 18.00-19.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Określenie postępu prac nad~implementacją replikacji plików.
+
+\section[Spotkanie nr 12][Spotkanie nr 12]{Spotkanie nr 12}
+
+\noindent
+\textbf{data}: 2014-05-20 \\
+\textbf{czas}: 18.00-19.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Określenie postępu prac nad~implementacją replikacji plików. Przydział zadań
+implementacji obsługi sytuacji awaryjnych występujących w~systemie.
+
+\section[Spotkanie nr 13][Spotkanie nr 13]{Spotkanie nr 13}
+
+\noindent
+\textbf{data}: 2014-05-23 \\
+\textbf{czas}: 16.00-17.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Mateusz Statkiewicz
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Ustalenie postępu prac nad~projektem. Identyfikacja powstałych problemów oraz
+próba ich~rozwiązania.
+
+\section[Spotkanie nr 14][Spotkanie nr 14]{Spotkanie nr 14}
+
+\noindent
+\textbf{data}: 2014-05-24 \\
+\textbf{czas}: 9.00-13.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Ustalenie postępu prac nad~projektem. Wspólna implementacja obsługi sytuacji
+błędnych. Dopracowywanie replikacji plików oraz masterów.
+
+\section[Spotkanie nr 15][Spotkanie nr 15]{Spotkanie nr 15}
+
+\noindent
+\textbf{data}: 2014-06-01 \\
+\textbf{czas}: 18.30-22.00
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Przeprowadzenie pełnych testów aplikacji.
+
+\section[Spotkanie nr 16][Spotkanie nr 16]{Spotkanie nr 16}
+
+\noindent
+\textbf{data}: 2014-06-02 \\
+\textbf{czas}: 19.30-23.50
+
+\vspace{5mm}
+\noindent
+\textbf{uczestnicy}:
+\begin{itemize}
+	\item Marcin Dzieżyc
+	\item Piotr Kalinowski
+	\item Adam Papros
+	\item Mateusz Statkiewicz
+	\item Marcin Swend
+	\item Jacek Witkowski
+\end{itemize}
+
+\vspace{5mm}
+\noindent
+\textbf{cele}: \\
+Finalizacja prac nad~projektem.
