@@ -236,7 +236,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 			throw new IllegalArgumentException("serverId should be set.");
 		}
 		final String query = "insert into servers (id, ip, role, memory, last_connection) values(?,?,?,?,?)";
-		getJdbcTemplate().update(query, new Object[] { server.getId(), server.getIp(), server.getRole().getCode(), server.getMemory(), server.getLastConnection() });
+		getJdbcTemplate().update(query, new Object[] { server.getId(), server.getIp(), server.getRole().getCode(), server.getMemory(), new Timestamp(server.getLastConnection().getMillis()) });
 		insertIntoLogTable("insert into servers (id, ip, role, memory, last_connection) values("+server.getId()+",'"+server.getIp()+"','"+server.getRole().getCode()+"',"+server.getMemory()+","+new Timestamp(server.getLastConnection().getMillis())+")");
 	}
 	

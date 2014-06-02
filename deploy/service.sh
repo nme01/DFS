@@ -55,7 +55,7 @@ function deploy()
 {
     ip=$1
     echo "Deploying to $ip ..."
-    timeout 60 ./deployToServer $ip #&>>$deploylog
+    timeout 60 ./deployToServer $ip &>>$deploylog
     result=$?
     if [[ $result == 124 ]]; then
 	echo "    Failed to deploy to $ip"
@@ -114,7 +114,7 @@ for i in {1..9}; do
 done
 #got ip addresses
 
-ipWithSSH=`nmap -p22 -sT -oG - $iplist | awk '/open/{print $2}' | tr "\\n" " "`
+ipWithSSH=`nmap -p22 -sT -oG - $iplist --exclude $exclude | awk '/open/{print $2}' | tr "\\n" " "`
 
 echo "List of IPs with SSH port open:"
 echo "$ipWithSSH"

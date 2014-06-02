@@ -5,5 +5,8 @@ source ../config.properties
 ssh ubuntu@$1 "rm -rf /home/ubuntu/rsodist"
 scp -r ../dfs-server/dist/ ubuntu@$1:/home/ubuntu/rsodist
 scp -r ../sql/ ubuntu@$1:/home/ubuntu/rsodist/
-ssh ubuntu@$1 "cd /home/ubuntu/rsodist/; mkdir $directory; cd /home/ubuntu/rsodist/sql/; chmod +x all2.sh; sudo pg_createcluster 9.3 main --start; sudo -u postgres ./all2.sh; cd ..; chmod +x dfs_*"
+scp -r pg_hba.conf ubuntu@$1:/home/ubuntu/rsodist/
+scp -r postgresql.conf ubuntu@$1:/home/ubuntu/rsodist/
+
+ssh ubuntu@$1 "cd /home/ubuntu/rsodist/; mkdir $directory; cd /home/ubuntu/rsodist/sql/; chmod +x all2.sh; sudo pg_createcluster 9.3 main --start; sudo -u postgres ./all2.sh; cd ..; chmod +x dfs_*; sudo cp pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf; sudo cp postgresql.conf /etc/postgresql/9.3/main/postgresql.conf;sudo /etc/init.d/postgresql restart"
 
