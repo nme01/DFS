@@ -62,7 +62,8 @@ struct PutFileParams
 {
     1:required bool canPut;
     2:required i32 fileId;
-    3:required IPType slaveIp;
+    3:required i64 size;
+    4:required IPType slaveIp;
 }
 
 service Service
@@ -97,6 +98,7 @@ void pingServer(),
 void prepareForReceiving(1: int fileID, 2:long size),
 //file id, slave ip
 void replicate(1:int fileID, 2:IPType slaveIP, 3:long size),
+IPType replicationFailure(1:int fileID, 2:IPType slaveIP),
 //master - slave
 bool isFileUsed(1:int fileID),
 void removeFileSlave(1:int fileID),
@@ -105,7 +107,7 @@ void removeFileSlave(1:int fileID),
 GetFileParams getFile(1:string filepath),
 GetFileParams getFileFailure(1:string filepath),
 PutFileParams putFile(1:string filepath, 2:long size),
-PutFileParams putFileFailure(1:string filepath, 2:long size),
+PutFileParams putFileFailure(1:PutFileParams pfp),
 bool removeFile(1:string filepath),
 
 // Input: file ID (should be a structure? I think it’s too simple)

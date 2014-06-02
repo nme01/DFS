@@ -491,10 +491,16 @@ public class ServerHandler implements Service.Iface {
 			retval.slaveIp = "";
 			return retval;
 		}
-		log.info("Master received put file request for file " + filepath);
+		log.info("Master has received a file upload request for file " + filepath);
 		String mainReplIP = null;
 		
-		List<Server> keys = SelectStorageServers.getListOfBestStorageServers(repository, size);
+		List<Server> keys;
+		try { 
+			keys = SelectStorageServers.getListOfBestStorageServers(repository, size);
+		} catch (TException e) {
+			log.error("No available storage servers registered on the master.");
+			throw e;
+		}
 	
 		Iterator i = keys.iterator();
 		long replDegree = DFSProperties.getProperties().getReplicationFactor();
@@ -510,11 +516,12 @@ public class ServerHandler implements Service.Iface {
 				log.debug(me.getIp() + ": Main replica being saved on " + mainRepl.getIp());
 				
 				mainReplIP = mainRepl.getIp();
-				File file = new File(-1);
+				File file = new File();
 				file.setName(filepath);
 				file.setSize(size);
 				file.setStatus(FileStatus.UPLOAD);
 				Integer fileId = repository.saveFile(file);
+				
 		
 				repository.saveFileOnServer(new FileOnServer(fileId, mainRepl.getId(), -1));
 		
@@ -624,7 +631,9 @@ public class ServerHandler implements Service.Iface {
 			// Since this method is called by the client, there's no possibility the file has been completed
 			// on any node.
 			
-			List<Server> slavesWithFile = repository.getSlavesByFile(new File(pfp.getFileId()));
+			File tmp = new File();
+			tmp.setId(pfp.getFileId());
+			List<Server> slavesWithFile = repository.getSlavesByFile(tmp);
 			List<FileOnServer> fosByPrio = new ArrayList<FileOnServer>();
 			FileOnServer newMainRepl = repository.getFileOnServer(slavesWithFile.get(0).getId(), pfp.getFileId());
 			for (Server s: slavesWithFile) {
@@ -780,6 +789,7 @@ public class ServerHandler implements Service.Iface {
 			byte[] dataBuffer = filePart.data.array();
 			log.info("Got a file part of fileId " + filePart.fileId + " of size " + filePart.data.array().length + " bytes.");
 			storageHandler.writeFile(filePart.getFileId(), (int)filePart.getOffset(), dataBuffer);
+			log.info("Written to storage.");
 			
 			List<Condition> slavesAwaitingFileID = awaitingSlaves.get(filePart.getFileId());
 			if (slavesAwaitingFileID != null) {
@@ -792,10 +802,12 @@ public class ServerHandler implements Service.Iface {
 			awaitingSlavesLock.unlock();
 			log.debug(me.getIp() + ": sendFilePartToSlave: released lock (#" + syncCounter++ + ")");
 			
+			log.debug(me.getIp() + ": sendFilePartToSlave: returning with FPD(" + filePart.fileId + "," + filePart.offset + "), dataBuffer.length: " + dataBuffer.length); 
 			return new FilePartDescription(filePart.fileId, filePart.offset + dataBuffer.length);
 
 		} catch (Exception e) {
-			log.error("Caught an exception while receiving the file from client: (" + e.getClass().getName() + ") " + e.getMessage());
+			log.error("sendFilePartToSlave: Caught an exception while receiving the file from client: (" + e.getClass().getName() + ") " + e.getMessage());
+			awaitingSlavesLock.unlock();
 		}
 
 		return new FilePartDescription(-1, 0);
@@ -819,6 +831,13 @@ public class ServerHandler implements Service.Iface {
 		if (me.getRole() == rso.dfs.model.ServerRole.MASTER) { 
 			// TODO: make sure you aren't requesting an offset beyond the scope of the file 
 			return new FilePart(-1, 0, ByteBuffer.allocate(0));
+		}
+		if (filePartDescription.getOffset() >= storageHandler.getFileSize(filePartDescription.getFileId())) {
+			FilePart filePart = new FilePart();
+			filePart.setFileId(-2);
+			filePart.setData(new byte[0]);
+			log.debug(me.getIp() + ": Client requested an offset beyond the file's scope.");
+			return filePart;
 		}
 
 		log.debug(me.getIp() + ": Requested offset: " + filePartDescription.getOffset() + ", file size: " + storageHandler.getFileSize(filePartDescription.getFileId()));
@@ -854,18 +873,11 @@ public class ServerHandler implements Service.Iface {
 		
 		try {
 			dataToSend = storageHandler.readFile(filePartDescription.getFileId(), filePartDescription.getOffset());
-			if (filePartDescription.getOffset() >= dataToSend.length) {
-				FilePart filePart = new FilePart();
-				filePart.setFileId(filePartDescription.getFileId());
-				filePart.setData(new byte[0]);
-				log.debug(me.getIp() + ": Something's wrong :|");
-				return filePart;
-			}
 		} catch (Exception e) {
 			log.error("Caught an unexpected exception: " + e.getMessage());
 			e.printStackTrace();
 			FilePart filePart = new FilePart();
-			filePart.setFileId(filePartDescription.getFileId());
+			filePart.setFileId(-1);
 			filePart.setData(new byte[0]);
 			return filePart;
 		}
@@ -891,12 +903,9 @@ public class ServerHandler implements Service.Iface {
 			log.error("FileUploadSuccess - server with that IP is not in repository: " + slaveIP);
 			return;
 		}
-		//FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
-		//fos.setPriority(Math.abs(fos.getPriority())); //FIXME: what is priority used for?
-		
-		int priority = 0;
-		FileOnServer fos = new FileOnServer(fileID, s.getId(), priority);
-		repository.saveFileOnServer(fos); //FIXME: for now, see Ogarnianie: FILE ON SERVER
+		FileOnServer fos = repository.getFileOnServer(s.getId(), fileID);
+		fos.setPriority(Math.abs(fos.getPriority()));
+		repository.updateFileOnServer(fos); 
 		repository.updateFile(f);
 	}
 
