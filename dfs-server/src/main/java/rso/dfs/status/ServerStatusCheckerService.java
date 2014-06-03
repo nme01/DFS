@@ -1,6 +1,7 @@
 package rso.dfs.status;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,24 +42,25 @@ public class ServerStatusCheckerService {
 	private final static Logger log = LoggerFactory.getLogger(ServerStatusCheckerService.class);
 	ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 	private ServerHandler serverHandler;
-	
+	private LinkedList<InfrastructureModificationCommand> taskQueue;
 	
 	public ServerStatusCheckerService(ServerHandler serverHandler) {
 		this.serverHandler = serverHandler;
 		this.repository = serverHandler.getRepository();
 		this.lastCheck = new DateTime();
+		this.taskQueue = new LinkedList<>();
 	}
 	
 	public void runService()
 	{
-		exec.scheduleAtFixedRate(new Runnable() {
+		exec.scheduleWithFixedDelay(new Runnable() {
 		  @Override
 		  public void run() {
 			  log.debug("Run checker service");
 			  checkAllShadowsAndSlaves();
 		  }
 		}, DFSProperties.getProperties().getPingEvery(), 
-		   DFSProperties.getProperties().getPingEvery(), 
+		   DFSProperties.getProperties().getPingEvery()/2, //TODO: quite arbitrary.. 
 		   TimeUnit.MILLISECONDS);
 	}
 	
@@ -77,6 +79,8 @@ public class ServerStatusCheckerService {
 		/** TODO: algorithm? For now - if it's not available, delete.
 		 * Maybe: if no answer in 60 seconds or another longer time than ~"now"?
 		 */
+		
+		int connectedServers = 0;
 		
 		//log.debug("Ping begins. Pinging slaves...");
 		List<Server> slaves = repository.getSlaves();
@@ -97,6 +101,7 @@ public class ServerStatusCheckerService {
 			else
 			{
 				checkedSlave.setLastConnection(new DateTime());
+				connectedServers++;
 			}
 						
 		}
@@ -120,6 +125,7 @@ public class ServerStatusCheckerService {
 			else
 			{
 				checkedShadow.setLastConnection(new DateTime());
+				connectedServers++;
 			}
 		}
 		
@@ -133,19 +139,94 @@ public class ServerStatusCheckerService {
 					+ "Expected: list of servers (even empty)");
 			downservers = new ArrayList<Server>();
 		}
+		
+		if(connectedServers  == 0 )
+		{
+			//wait a while
+			try {
+				Thread.sleep(DFSProperties.getProperties().getPingEvery());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		for (Server downServer: downservers)
 		{
 			log.debug("Checking downServer with IP: " + downServer.getIp());
 			if(CheckServerStatus.checkAlive(downServer.getIp()))
 			{
-				log.info("DownServer with IP: " + downServer.getIp() + " has risen from dead. Forcing to reregister...");
-				reinitServer(downServer);
+				if(connectedServers > 0)
+				{
+					log.info("DownServer with IP: " + downServer.getIp() + " has risen from dead. Forcing to reregister...");
+					reinitServer(downServer);
+				}
+				else
+				{
+					log.info("DownServer with IP: " + downServer.getIp() + " has risen from dead. "
+							+ "It means I have reasen from dead. Waiting for old shadow electing me..");
+				}
 			}
 						
 		}
-		//log.debug("Ping ends.");
+		
+		//get servers and remove shadows
+		while( repository.getShadows().size() < DFSProperties.getProperties().getShadowCount())
+		{
+			//try making a new shadow
+			boolean success = makenewshadow();
+			if(!success)
+			{
+				break;
+			}
+		}
 	}
 
+	private boolean makenewshadow()
+	{
+
+		boolean shadowMade = false;
+		
+		//select one server to become shadow
+		List<Server> listOfBestStorageServers = null;
+		int filesize = 0;
+		try {
+			listOfBestStorageServers = SelectStorageServers.getListOfBestStorageServers
+					(repository, filesize);
+		} catch (TException e) {
+			//no servers available
+			log.error(e.getMessage());
+			return shadowMade;
+		}
+		
+		int i = 0;	
+		while(!shadowMade)
+		{
+			if(i>=listOfBestStorageServers.size())
+			{
+				break;
+			}
+			Server serverToBecomeShadow = listOfBestStorageServers.get(i++);
+			
+			log.info(" Making " + serverToBecomeShadow + " a new shadow..");
+	
+			//when new shadow is born, slave is dead.
+			slaveIsDown(serverToBecomeShadow);
+			
+			//become shadow.
+			try{
+				serverHandler.makeShadow(serverToBecomeShadow.getIp());
+				shadowMade = true;
+			}
+			catch (Exception e) {
+				//TODO: and what if it is also down?
+				log.error(" Error while trying to make" + serverToBecomeShadow 
+						+ " a new shadow. " + e.getMessage());
+				e.printStackTrace();
+				continue;
+			} 
+		}
+		return shadowMade;
+	}
 	
 	private void reinitServer(Server downServer) {
 		log.debug("Trying to reinitialize " + downServer.getIp());
@@ -302,41 +383,14 @@ public class ServerStatusCheckerService {
 		//disconnect shadow from repository
 		((DFSRepositoryImpl)repository).removeShadow(checkedShadow);
 		
-		//select one server to become shadow
-		List<Server> listOfBestStorageServers = null;
-		int filesize = 0;
-		try {
-			listOfBestStorageServers = SelectStorageServers.getListOfBestStorageServers
-					(repository, filesize);
-		} catch (TException e) {
-			//no servers available
-			log.error(e.getMessage());
-		}
-		Server serverToBecomeShadow = listOfBestStorageServers.get(0);
-		
-		log.info("Shadow" + checkedShadow + " is down."
-				+ " Making " + serverToBecomeShadow + " a new shadow..");
+	}
 
-		//when new shadow is born, slave is dead.
-		slaveIsDown(serverToBecomeShadow);
-		
-		//become shadow.
-		try{
-			serverHandler.makeShadow(serverToBecomeShadow.getIp());
-		}
-		catch (Exception e) {
-			//TODO: and what if it is also down?
-			log.error(" Error while trying to make" + serverToBecomeShadow 
-					+ " a new shadow. " + e.getMessage());
-			e.printStackTrace();
-		} 
-		
+	public LinkedList<InfrastructureModificationCommand> getTaskQueue() {
+		return taskQueue;
+	}
 
-		try {
-			serverHandler.massiveUpdateCoreStatus();
-		} catch (TException e) {
-			e.printStackTrace();
-		}
+	public void setTaskQueue(LinkedList<InfrastructureModificationCommand> taskQueue) {
+		this.taskQueue = taskQueue;
 	}
 	
 }
