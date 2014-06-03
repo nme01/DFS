@@ -66,4 +66,6 @@ public interface DFSRepository {
 
 	public Server getServerById(Long serverId);
 	
+	public DFSModelDAO getDAO();
+	
 }

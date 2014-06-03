@@ -56,7 +56,6 @@ import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.EmptyStorageHandler;
 import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
-import rso.dfs.status.InfrastructureModificationCommand;
 import rso.dfs.status.MasterChecker;
 import rso.dfs.status.ServerStatusCheckerService;
 import rso.dfs.utils.DFSArrayUtils;
@@ -102,13 +101,7 @@ public class ServerHandler implements Service.Iface {
 	 * Core status checking services.
 	 */
 	private ServerStatusCheckerService serverCheckerService = null;
-	private MasterChecker masterCheckerService= null;
-	
-	/**
-	 * Outstanding shadow requests.
-	 */
-	private Lock awaitingShadowsLock = new ReentrantLock();
-	private int awaitingShadowsCounter = 0;
+	private MasterChecker masterCheckerService = null;
 	
 	/**
 	 * Contains statuses which files where used;
@@ -1226,7 +1219,7 @@ public class ServerHandler implements Service.Iface {
 					
 					String seqnames[] = {"servers_id_seq", "files_id_seq", "log_id_sec"};
 					for(String seq: seqnames) {
-						slaveDao.setSeqVals(seq, repository.getDAO().getSeqVals(seq));
+						slaveDao.setSeqVals(seq, repository.getDAO().fetchSeqVals(seq));
 					}
 					
 					List<Query> queries = slaveDao.fetchAllQueries();
@@ -1236,9 +1229,9 @@ public class ServerHandler implements Service.Iface {
 						slaveDao.executeQuery(sql.getSql());
 					}
 					Server slave = repository.getServerByIp(slaveIp);
+					
 					repository.addShadow(slave);
 					
-					awaitingShadowsLock.unlock();
 					Service.Client serviceClient = dfscClient.getClient();
 					
 					log.debug("Executing becomeShadow on " + slaveIp + ".");

@@ -334,8 +334,8 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		return masterDAO.fetchServerById(serverId);		
 	}
 	
-	public DFSModelDAO getDAO ()
-	{
+	@Override
+	public DFSModelDAO getDAO (){
 		return masterDAO;
 	}
 }
