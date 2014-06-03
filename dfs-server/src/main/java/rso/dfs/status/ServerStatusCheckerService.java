@@ -264,6 +264,7 @@ public class ServerStatusCheckerService {
 
 				//select one slave to replicate
 				Server serverToGetFileFrom = slavesWithFileCopy.get(0);
+				repository.saveFileOnServer(new FileOnServer(file.getId(), serverToGetFileFrom.getId(), -(slavesWithFileCopy.size() + 1)));
 				
 				//replicate from one server to another
 				log.debug("Slave " + checkedSlave.getIp() + " is down,"
@@ -282,6 +283,7 @@ public class ServerStatusCheckerService {
 					log.info("Slave " + checkedSlave.getIp() + " is down,"
 							+ "error while trying to replicate " + file 
 							+ " from " + serverToGetFileFrom + " to " + serverToPlaceFile);
+					repository.deleteFileOnServer(new FileOnServer(file.getId(), serverToGetFileFrom.getId(), 0));
 				} 
 				
 			}

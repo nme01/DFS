@@ -105,7 +105,7 @@ void removeFileSlave(1:int fileID),
 
 
 GetFileParams getFile(1:string filepath),
-GetFileParams getFileFailure(1:string filepath),
+GetFileParams getFileFailure(1:GetFileParams gfp),
 PutFileParams putFile(1:string filepath, 2:long size),
 PutFileParams putFileFailure(1:PutFileParams pfp),
 bool removeFile(1:string filepath),

@@ -3,6 +3,8 @@ package rso.dfs.server;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -93,8 +95,19 @@ public class ServerHandler implements Service.Iface {
 	private Lock awaitingSlavesLock = new ReentrantLock();
 	private Map<Integer, List<Condition>> awaitingSlaves = new HashMap<Integer, List<Condition>>();
 	private Long syncCounter = 1L;
+	
+	/**
+	 * Core status checking services.
+	 */
 	private ServerStatusCheckerService serverCheckerService = null;
 	private MasterChecker masterCheckerService= null;
+	
+	/**
+	 * Outstanding shadow requests.
+	 */
+	private Lock awaitingShadowsLock = new ReentrantLock();
+	private int awaitingShadowsCounter = 0;
+	
 	/**
 	 * Contains statuses which files where used;
 	 * key -> fileId;
@@ -115,7 +128,7 @@ public class ServerHandler implements Service.Iface {
 		if(me.getRole() == ServerRole.MASTER)
 		{
 			log.debug("Starting ServerStatusCheckerService form Master");
-			serverCheckerService= new ServerStatusCheckerService(this);
+			serverCheckerService = new ServerStatusCheckerService(this);
 			serverCheckerService.runService();
 		}
 	}
@@ -216,7 +229,7 @@ public class ServerHandler implements Service.Iface {
 	 	List<Server> shadows = null;
 	 	try
 	 	{
-	 		 shadows= repository.getShadows();
+	 		 shadows = repository.getShadows();
 	 	}
 	 	catch(Exception e)
 	 	{
@@ -243,8 +256,12 @@ public class ServerHandler implements Service.Iface {
 		}
 		
 
-	 	if(shadows == null || shadows.size() < DFSProperties.getProperties().getShadowCount()) 
+	 	if(shadows == null || shadows.size() + awaitingShadowsCounter < DFSProperties.getProperties().getShadowCount()) 
 	 	{
+	 		awaitingShadowsLock.lock();
+	 		awaitingShadowsCounter++;
+	 		awaitingShadowsLock.unlock();
+	 		
 	 		makeShadow(server.getIp());
 	 	}
 
@@ -270,6 +287,7 @@ public class ServerHandler implements Service.Iface {
 				fileOnServer.setFileId(fileId);
 				fileOnServer.setServerId(server.getId());
 				fileOnServer.setPriority(0l);
+				log.debug("registerSlave: registering fileid " + fileId);
 				repository.saveFileOnServer(fileOnServer);
 				idsToRemove.add(fileId);
 			}
@@ -280,7 +298,8 @@ public class ServerHandler implements Service.Iface {
 		{
 			log.debug(ids.size() + " files to remove from server");
 		}
-		//edge case - not visible from master, visible for client - remove file slave will disconnect client..
+		
+		//edge case - not visible from master, visible for client - removeFileSlave will disconnect the client...
 		try (DFSClosingClient cclient = new DFSClosingClient(req.getSlaveIP(), DFSProperties.getProperties().getStorageServerPort())) {
 			Client client = cclient.getClient();
 			for (Integer fileId : ids) {
@@ -288,6 +307,42 @@ public class ServerHandler implements Service.Iface {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		//Now that we have a clean storage unit, let's fill it with files with insufficient replication factor.
+		List<File> allFiles = repository.getAllFiles();
+		for (File f: allFiles) {
+			List<Server> slavesWithF = repository.getSlavesByFile(f); 
+			if (slavesWithF.size() < DFSProperties.getProperties().getReplicationFactor() && !slavesWithF.contains(server)) {
+		
+				//Replicate!
+				//1. Pick a slave,
+				//2. Take a copy.
+				final File replFile = f;
+				final NewSlaveRequest r = req;
+				
+				Thread thread = new Thread(new Runnable() {
+					File f = replFile;
+					NewSlaveRequest req = r;
+					
+					public void run() {
+						List<Server> slaves = repository.getSlavesByFile(f);
+						Server mainRepl = slaves.get(0);
+						repository.saveFileOnServer(new FileOnServer(f.getId(), repository.getServerByIp(req.getSlaveIP()).getId(), -(repository.getFileOnServer(slaves.get(slaves.size() - 1).getId(), f.getId()).getPriority() + 1)));
+						try (DFSClosingClient cclient = new DFSClosingClient(req.getSlaveIP(), DFSProperties.getProperties().getStorageServerPort())) {
+							Client client = cclient.getClient();
+							client.replicate(f.getId(), mainRepl.getIp(), f.getSize());
+						} catch (Exception e) {
+							//Lost connection to the slave... Unfortunate?
+							//Not sure if return here is the correct way, but
+							//walking around loops is even less productive.
+							repository.deleteFileOnServer(new FileOnServer(f.getId(), repository.getServerByIp(req.getSlaveIP()).getId(), 0));
+						}
+					}
+				});
+				thread.start();
+				
+			}
 		}
 
 		debugSleep();
@@ -558,9 +613,23 @@ public class ServerHandler implements Service.Iface {
 	}
 
 	@Override
-	public GetFileParams getFileFailure(String filepath) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+	public GetFileParams getFileFailure(GetFileParams gfp) throws TException {
+		// redirect the client to another slave
+		
+		File f = new File(); f.setId(gfp.getFileId());
+		List<Server> slaves = repository.getSlavesByFile(f);
+		List<FileOnServer> slavesWithFile = new ArrayList<FileOnServer>();
+		for (Server s: slaves) {
+			slavesWithFile.add(repository.getFileOnServer(s.getId(), gfp.getFileId()));
+		}
+		
+		int ind = (slavesWithFile.lastIndexOf(new FileOnServer(gfp.getFileId(), repository.getServerByIp(gfp.getSlaveIp()).getId(), 0)) + 1);
+		if (ind >= slavesWithFile.size())
+			gfp.setSlaveIp("0.0.0.0");
+		else
+			gfp.setSlaveIp(repository.getServerById(slavesWithFile.get(ind).getServerId()).getIp());
+		
+		return gfp;
 	}
 
 	/**
@@ -755,8 +824,8 @@ public class ServerHandler implements Service.Iface {
 						dfstSocket.open();
 						TProtocol protocol = new TBinaryProtocol(dfstSocket);
 						Service.Client serviceClient = new Service.Client(protocol);
-						serviceClient.replicate(pfp.getFileId(), nextReplSlave.getIp(), pfp.getSize());
-						repository.saveFileOnServer(new FileOnServer(pfp.getFileId(), nextReplSlave.getId(), -1));
+						serviceClient.replicate(pfp.getFileId(), pfp.getSlaveIp(), pfp.getSize());
+						repository.saveFileOnServer(new FileOnServer(pfp.getFileId(), nextReplSlave.getId(), -(slavesWithFile.size() + 1)));
 						return pfp;
 					} catch (TException te) {
 						// TODO: handle
@@ -1129,9 +1198,8 @@ public class ServerHandler implements Service.Iface {
 	
 	public void makeShadow(String slaveIpAddress){
 		final String slaveIp = slaveIpAddress;
-		//FOR NOW IT'S RUN FROM CHECKER THREAD
-		/*Thread thread = new Thread(new Runnable() {
-			public void run(){*/
+		Thread thread = new Thread(new Runnable() {
+			public void run(){
 				log.info("Order " + slaveIp + " to become Shadow");
 				// make dump
 				String dbPass = DFSProperties.getProperties().getDbpassword();
@@ -1155,23 +1223,31 @@ public class ServerHandler implements Service.Iface {
 						slaveDao.executeQuery(sql.getSql());
 					}
 					Server slave = repository.getServerByIp(slaveIp);
+					
+					awaitingShadowsLock.lock();
+					awaitingShadowsCounter--;
 					repository.addShadow(slave);
+					awaitingShadowsLock.unlock();
+					
 					dfstSocket.open();
 					TProtocol protocol = new TBinaryProtocol(dfstSocket);
 					Service.Client serviceClient = new Service.Client(protocol);
+					
 					log.debug("Executing becomeShadow on " + slaveIp + ".");
 					serviceClient.becomeShadow(coreStatus);
+					
 					log.debug("Performing system-wide core status update.");
 					massiveUpdateCoreStatus();
+					
 				} catch (Exception e) {
 					log.error(e.getMessage());
 					e.printStackTrace();
 				} finally {
 					DFSRepositoryImpl.dbSemaphore.release(DFSRepositoryImpl.MAX_THREADS);
 				}
-				/*}
+				}
 		});
-		thread.start();*/
+		thread.start();
 	}
 	
 	void debugSleep()
