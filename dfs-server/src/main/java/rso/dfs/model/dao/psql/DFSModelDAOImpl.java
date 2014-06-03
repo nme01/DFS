@@ -116,7 +116,14 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
 	}
+	
+	@Override
+	public Server fetchServerById(Long serverId) {
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw where servers_vw.server_id = ?";
+		return getJdbcTemplate().queryForObject(query, new Object[] { serverId }, new ServerRowMapper());
 
+	}
+	
 	@Override
 	public List<File> fetchFilesOnServer(Server server) {
 		final String query = "select id, name, size, status from files join files_on_servers on id=files_on_servers.file_id where files_on_servers.server_id=?";

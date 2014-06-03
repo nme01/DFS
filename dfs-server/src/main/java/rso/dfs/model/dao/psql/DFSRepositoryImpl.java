@@ -327,4 +327,10 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		log.debug("Fetching filesOnServers, fileid=", fileId);
 		return masterDAO.fetchFos(serverId, fileId);		
 	}
+	
+	@Override
+	public Server getServerById(Long serverId) {
+		log.debug("Fetching server, serverid=", serverId);
+		return masterDAO.fetchServerById(serverId);		
+	}
 }

@@ -1,5 +1,6 @@
 package rso.dfs.client.commands;
 
+import jline.internal.Log;
 import rso.dfs.client.handlers.RemoveHandler;
 
 /**
@@ -28,7 +29,8 @@ public class RemoveCommand extends ClientActionBase {
 		try {
 			handler.performRemove(filePath);
 		} catch (Exception e) {
-
+			Log.error(e);
+			
 		}
 
 	}
