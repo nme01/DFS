@@ -125,7 +125,8 @@ public class DFSClient {
 						clientAction.performCommand(line,masterIPAddress);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Log.error(e);
+						//e.printStackTrace();
 					}
 					commandPerformed = true;
 				}
@@ -147,8 +148,12 @@ public class DFSClient {
 	}
 
 	private String readLine(ConsoleReader reader, String promtMessage) throws IOException {
-		String line = reader.readLine(promtMessage + "\ndfs> ");
-		return line.trim();
+		try{
+			String line = reader.readLine(promtMessage + "\ndfs> ");
+			return line.trim();
+		} catch (NullPointerException e){
+			return null;
+		}
 	}
 
 	public static void main(String[] args) throws IOException {

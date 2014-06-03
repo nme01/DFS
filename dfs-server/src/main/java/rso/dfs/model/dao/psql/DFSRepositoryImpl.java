@@ -149,13 +149,13 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public List<Server> getSlaves() {
-		log.debug("Fetching slaves.");
+		//log.debug("Fetching slaves.");
 		return masterDAO.fetchServersByRole(ServerRole.SLAVE);
 	}
 
 	@Override
 	public List<Server> getShadows() {
-		log.debug("Fetching shadows.");
+		//log.debug("Fetching shadows.");
 		return masterDAO.fetchServersByRole(ServerRole.SHADOW);
 	}
 
@@ -302,7 +302,7 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public List<Server> getDownServers() {
-		log.debug("Fetching down servers.");
+		//log.debug("Fetching down servers.");
 		return masterDAO.fetchServersByRole(ServerRole.DOWN);
 	}
 	
@@ -326,5 +326,11 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 	public FileOnServer getFileOnServer(Long serverId, Integer fileId) {
 		log.debug("Fetching filesOnServers, fileid=", fileId);
 		return masterDAO.fetchFos(serverId, fileId);		
+	}
+	
+	@Override
+	public Server getServerById(Long serverId) {
+		log.debug("Fetching server, serverid=", serverId);
+		return masterDAO.fetchServerById(serverId);		
 	}
 }

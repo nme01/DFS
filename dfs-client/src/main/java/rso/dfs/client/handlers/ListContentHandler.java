@@ -3,6 +3,7 @@ package rso.dfs.client.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import jline.internal.Log;
 import rso.dfs.commons.DFSProperties;
 import rso.dfs.generated.Service;
 import rso.dfs.utils.DFSClosingClient;
@@ -21,7 +22,8 @@ public class ListContentHandler extends HandlerBase {
 			Service.Client client = closingClient.getClient();
 			fileList = client.listFileNames();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.error(e);
+			//e.printStackTrace();
 		}
 
 		for (String fileName : fileList) {

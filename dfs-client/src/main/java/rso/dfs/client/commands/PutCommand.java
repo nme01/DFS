@@ -2,6 +2,7 @@ package rso.dfs.client.commands;
 
 import java.io.File;
 
+import jline.internal.Log;
 import rso.dfs.client.handlers.PutHandler;
 
 /**
@@ -37,7 +38,8 @@ public class PutCommand extends ClientActionBase {
 		try {
 			handler.performPut(filePathSrc,filePathDst, fileSize);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.error(e);
+			//e.printStackTrace();
 		}
 	}
 	

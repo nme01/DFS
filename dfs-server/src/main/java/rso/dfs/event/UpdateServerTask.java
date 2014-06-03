@@ -35,5 +35,10 @@ public class UpdateServerTask extends DFSTask {
 			throw new IllegalStateException();
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return "UpdateServerTask [dao=" + dao + ", modificationType=" + modificationType + "]";
+	}
 
 }

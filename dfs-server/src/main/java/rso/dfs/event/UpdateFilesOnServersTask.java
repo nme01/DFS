@@ -27,13 +27,18 @@ public class UpdateFilesOnServersTask extends DFSTask {
 			return;
 		}
 		case UPDATE: {
-			dao.deleteFileOnServer(fileOnServerToUpdate);
+			dao.updateFileOnServer(fileOnServerToUpdate);
 			return;
 		}
 		default:
 			throw new IllegalStateException();
 		}
 
+	}
+	
+	@Override
+	public String toString() {
+		return "UpdateFilesOnServersTask [dao=" + dao + ", modificationType=" + modificationType + "]";
 	}
 
 }

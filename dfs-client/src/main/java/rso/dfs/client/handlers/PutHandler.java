@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import jline.internal.Log;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -57,7 +59,8 @@ public class PutHandler extends HandlerBase {
 			if (!putFileParams.isCanPut()) // excuse me?
 				throw new Exception("Can't insert another new file into the system.");
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.error(e);
+			//e.printStackTrace();
 			return;
 		}
 			
@@ -95,13 +98,14 @@ public class PutHandler extends HandlerBase {
 					remainingSize = (int)Math.min(Files.size(path) - offset, DFSProperties.getProperties().getFilePartSize().intValue());
 					
 					System.err.println("[PUT] Got an offset of " + offset + " bytes in response.");
-					Thread.sleep(10000);
+					//Thread.sleep(10000);
 				}
 				
 				chunk = new FilePart();
 				chunk.setFileId(putFileParams.getFileId());
 				chunk.setOffset(offset);
 				chunk.setData(new byte[0]);
+				fileDesc = serviceClient.sendFilePartToSlave(chunk);
 				succeeded = true;
 				
 			} catch (TTransportException tte) {
@@ -122,7 +126,8 @@ public class PutHandler extends HandlerBase {
 				return;
 			} catch (TException te) {
 				System.err.println("[ERROR] Caught an exception from the remote end: " + te.getMessage());
-				te.printStackTrace();
+				Log.error(te);
+				//te.printStackTrace();
 				return;
 			}
 		}

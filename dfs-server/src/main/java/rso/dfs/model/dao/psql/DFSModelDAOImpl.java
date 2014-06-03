@@ -112,11 +112,18 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 
 	@Override
 	public List<Server> fetchServersByFileId(Integer fileId) {
-		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw , files_on_servers where files_on_servers.server_id=servers_vw.id and files_on_servers.file_id = ?";
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw , files_on_servers where files_on_servers.server_id=servers_vw.id and files_on_servers.file_id = ? order by files_on_servers.priority";
 		return getJdbcTemplate().query(query, new Object[] { fileId }, new ServerRowMapper());
 
 	}
+	
+	@Override
+	public Server fetchServerById(Long serverId) {
+		final String query = "select id, ip, role, memory, last_connection, filesNumber, freeMemory from servers_vw where servers_vw.id = ?";
+		return getJdbcTemplate().queryForObject(query, new Object[] { serverId }, new ServerRowMapper());
 
+	}
+	
 	@Override
 	public List<File> fetchFilesOnServer(Server server) {
 		final String query = "select id, name, size, status from files join files_on_servers on id=files_on_servers.file_id where files_on_servers.server_id=?";
@@ -249,7 +256,7 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 	@Override
 	public int updateFileOnServer(FileOnServer fileOnServer) {
 		final String query = "update files_on_servers set priority= ? where file_id= ? and server_id= ?";
-		int arows = getJdbcTemplate().update(query, new Object[] { fileOnServer.getFileId(), fileOnServer.getServerId(), fileOnServer.getPriority() });
+		int arows = getJdbcTemplate().update(query, new Object[] { fileOnServer.getPriority(), fileOnServer.getFileId(), fileOnServer.getServerId() });
 		insertIntoLogTable("update files_on_servers set priority="+fileOnServer.getPriority()+" where file_id="+fileOnServer.getFileId()+ " and server_id=" + fileOnServer.getServerId());
 		return arows;
 	}

@@ -143,4 +143,9 @@ public class EmptyRepository implements DFSRepository {
 		throw new IllegalStateException(message);
 	}
 
+	@Override
+	public Server getServerById(Long serverId) {
+		throw new IllegalStateException(message);
+	}
+
 }

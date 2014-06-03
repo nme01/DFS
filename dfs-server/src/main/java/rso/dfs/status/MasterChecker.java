@@ -61,7 +61,7 @@ public class MasterChecker {
 		exec.scheduleAtFixedRate(new Runnable() {
 		  @Override
 		  public void run() {
-			  log.debug("Run MasterChecker service");
+			  //log.debug("Run MasterChecker service");
 			  checkMasterAndMaybeBecomeOne();
 		  }
 		}, DFSProperties.getProperties().getPingEvery(), 
@@ -88,14 +88,14 @@ public class MasterChecker {
 			return;
 		}
 		
-		log.debug(serverHandler.getServer().getIp() + " is checking master alive..");
+		//log.debug(serverHandler.getServer().getIp() + " is checking master alive..");
 		
 		if(!checkServerAliveTwice(masterAddress))
 		{
 			masterIsDown();
 		}
 		
-		log.debug("Ping ends.");
+		//log.debug("Ping ends.");
 	}
 
 	
