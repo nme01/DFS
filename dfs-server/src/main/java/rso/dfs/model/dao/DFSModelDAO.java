@@ -84,5 +84,7 @@ public interface DFSModelDAO {
 
 	public FileOnServer fetchFos(Long serverId, Integer fileId);
 
+	public Server fetchServerById(Long serverId);
+
 
 }
