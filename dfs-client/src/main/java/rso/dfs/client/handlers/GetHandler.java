@@ -48,7 +48,8 @@ public class GetHandler extends HandlerBase {
 			getFileParams = serviceClient.getFile(filePathSrc);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.error(e);
+			//e.printStackTrace();
 		}
 
 		// TODO: it's temporary handling of 'file not found case'

@@ -27,7 +27,7 @@ public class UpdateFilesOnServersTask extends DFSTask {
 			return;
 		}
 		case UPDATE: {
-			dao.deleteFileOnServer(fileOnServerToUpdate);
+			dao.updateFileOnServer(fileOnServerToUpdate);
 			return;
 		}
 		default:
