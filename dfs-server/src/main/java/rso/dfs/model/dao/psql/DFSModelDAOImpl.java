@@ -274,4 +274,16 @@ public class DFSModelDAOImpl extends JdbcDaoSupport implements DFSModelDAO {
 		return result;
 	}
 
+	@Override
+	public Integer fetchSeqVals(String seq_name) {
+		final String query = "select curval(?);";
+		return getJdbcTemplate().queryForInt(query, new Object[] { seq_name});
+	}
+
+	@Override
+	public void setSeqVals(String seq_name, Integer value) {
+			final String query = "select setval(?,?);";
+			getJdbcTemplate().update(query, new Object[] { seq_name, value });
+	}
+
 }

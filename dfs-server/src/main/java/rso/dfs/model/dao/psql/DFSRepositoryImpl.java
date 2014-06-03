@@ -333,4 +333,9 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 		log.debug("Fetching server, serverid=", serverId);
 		return masterDAO.fetchServerById(serverId);		
 	}
+	
+	public DFSModelDAO getDAO ()
+	{
+		return masterDAO;
+	}
 }
