@@ -272,13 +272,13 @@ public class DFSRepositoryImpl extends Thread implements DFSRepository {
 
 	@Override
 	public Server getServerByIp(String serverIp) {
-		log.debug("Fetching server by ip,serverIp=", serverIp);
+		log.debug("Fetching server by ip,serverIp={}", serverIp);
 		return masterDAO.fetchServerByIp(serverIp);
 	}
 
 	@Override
 	public List<Query> getQueriesAfter(long version) {
-		log.debug("Fetching queries after,version=", version);
+		log.debug("Fetching queries after,version={}", version);
 		return masterDAO.fetchQueriesAfter(version);
 	}
 
