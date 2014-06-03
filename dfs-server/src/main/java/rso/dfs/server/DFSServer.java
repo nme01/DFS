@@ -77,7 +77,12 @@ public class DFSServer {
 			me.setRole(ServerRole.MASTER);
 			me.setIp(args[1]);
 
-			repository.saveServer(me);
+			try {
+				repository.saveServer(me);
+			} catch (Exception e) {
+				log.error("Saving the server to repository failed with an error: " + e.getMessage());
+				System.exit(1);
+			}
 
 			// create empty object for storage handler
 

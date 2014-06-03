@@ -56,6 +56,7 @@ import rso.dfs.model.dao.psql.DFSRepositoryImpl;
 import rso.dfs.server.storage.EmptyStorageHandler;
 import rso.dfs.server.storage.StorageHandler;
 import rso.dfs.server.utils.SelectStorageServers;
+import rso.dfs.status.InfrastructureModificationCommand;
 import rso.dfs.status.MasterChecker;
 import rso.dfs.status.ServerStatusCheckerService;
 import rso.dfs.utils.DFSArrayUtils;
@@ -179,9 +180,13 @@ public class ServerHandler implements Service.Iface {
 
 	@Override
 	public SystemStatus getStatus() throws TException {
+		log.debug("Got getStatus request");
 		SystemStatus ss = new SystemStatus();
 		ss.setFilesNumber(repository.getAllFiles().size());		
 		Server master = repository.getMasterServer();
+		
+		log.debug("Master server is " + master);
+		
 		ss.addToServersStatuses(
 				new ServerStatus(
 						ServerType.Master,master.getFilesNumber(), 
@@ -226,11 +231,12 @@ public class ServerHandler implements Service.Iface {
 		{
 			log.info("Server not found in repository");
 		}
+			 		 	
 		
 	 	List<Server> shadows = null;
 	 	try
 	 	{
-	 		 shadows = repository.getShadows();
+	 		 shadows= repository.getShadows();
 	 	}
 	 	catch(Exception e)
 	 	{
@@ -262,16 +268,8 @@ public class ServerHandler implements Service.Iface {
 		}
 		
 
-	 	if(shadows == null || shadows.size() + awaitingShadowsCounter < DFSProperties.getProperties().getShadowCount()) 
-	 	{
-	 		awaitingShadowsLock.lock();
-	 		awaitingShadowsCounter++;
-	 		awaitingShadowsLock.unlock();
-	 		
-	 		makeShadow(server.getIp());
-	 	}
 
-	 	
+
 		List<Integer> ids = req.getFileIds();
 		List<Integer> idsToRemove = new LinkedList<>();
 		for (int fileId : ids) {
@@ -386,7 +384,7 @@ public class ServerHandler implements Service.Iface {
 				Client client = cclient.getClient();
 				client.updateCoreStatus(coreStatus);
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.debug("Failed to update corestatus of shadow " + shadow.getIp());
 			}
 		}
 		
@@ -398,7 +396,7 @@ public class ServerHandler implements Service.Iface {
 				Client client = cclient.getClient();
 				client.updateCoreStatus(coreStatus);
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.debug("Failed to update corestatus of slave " + slave.getIp());
 			}
 		}
 		
@@ -1204,6 +1202,10 @@ public class ServerHandler implements Service.Iface {
 	
 	public void makeShadow(String slaveIpAddress){
 		final String slaveIp = slaveIpAddress;
+		Server serverByIp = repository.getServerByIp(slaveIpAddress);
+		serverByIp.setRole(ServerRole.SHADOW);
+		repository.updateServer(serverByIp);
+		
 		Thread thread = new Thread(new Runnable() {
 			public void run(){
 				log.info("Order " + slaveIp + " to become Shadow");
@@ -1234,12 +1236,9 @@ public class ServerHandler implements Service.Iface {
 						slaveDao.executeQuery(sql.getSql());
 					}
 					Server slave = repository.getServerByIp(slaveIp);
-					
-					awaitingShadowsLock.lock();
-					awaitingShadowsCounter--;
 					repository.addShadow(slave);
-					awaitingShadowsLock.unlock();
 					
+					awaitingShadowsLock.unlock();
 					Service.Client serviceClient = dfscClient.getClient();
 					
 					log.debug("Executing becomeShadow on " + slaveIp + ".");
@@ -1292,20 +1291,24 @@ public class ServerHandler implements Service.Iface {
 	}
 
 	public void becomeMaster() {
+		log.debug("Me, " + me + ", becoming a master.");
 		this.me.setRole(ServerRole.MASTER);
 		
 		masterCheckerService.stopService();
 		
+		log.debug(me.getIp() + ", new master, getting a repo...");
 		//first, I'll get myself a repo (maybe inform first?)
 		BlockingQueue<DFSTask> blockingQueue = new LinkedBlockingQueue<>();
 		repository = new DFSRepositoryImpl(me, blockingQueue);
 		Server masterServer = repository.getMasterServer();
 		masterServer.setRole(ServerRole.DOWN);
 		repository.updateServer(masterServer);
+		log.debug(me.getIp() + ", new master, got a repo.");
 		
 		repository.updateServer(me);
 		storageHandler = new EmptyStorageHandler(); //just not to do serving any more
 
+		log.debug(me.getIp() + ", new master, updating core status of followers..");
 		try {
 			DFSRepositoryImpl.dbSemaphore.acquire(DFSRepositoryImpl.MAX_THREADS);
 		
@@ -1317,7 +1320,7 @@ public class ServerHandler implements Service.Iface {
 		
 		List<Server> shadows = repository.getShadows();
 		
-		
+		log.debug(me.getIp() + ", new master, will tell shadows what to do.");
 		for(Server shadow: shadows)
 		{
 			String shadowIP = shadow.getIp();
@@ -1338,7 +1341,7 @@ public class ServerHandler implements Service.Iface {
 				e.printStackTrace();
 			}
 		}
-		
+		log.debug(me.getIp() + ", new master, told shadows what to do.");
 
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
@@ -1350,6 +1353,7 @@ public class ServerHandler implements Service.Iface {
 		
 		serverCheckerService = new ServerStatusCheckerService(this);
 		serverCheckerService.runService();
+		log.debug(me.getIp() + ", new master, rund followers checking service.");
 	}
 	
 }

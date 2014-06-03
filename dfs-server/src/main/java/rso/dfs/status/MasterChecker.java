@@ -3,8 +3,11 @@ package rso.dfs.status;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -17,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rso.dfs.commons.DFSProperties;
+import rso.dfs.event.DFSTask;
 import rso.dfs.generated.CoreStatus;
 import rso.dfs.generated.Service.Client;
 import rso.dfs.model.File;
@@ -115,11 +119,47 @@ public class MasterChecker {
 		if (shadowsAddresses.get(0).equals(serverHandler.getServer().getIp()))
 		{
 			log.info(serverHandler.getServer().getIp() + " says: I AM THE ONE");
-			/*if(CheckServerStatus.checkAlive(shadowsAddresses.get(1)))
+			
+			BlockingQueue<DFSTask> blockingQueue = new LinkedBlockingQueue<>();
+			DFSRepositoryImpl temprepository = 
+					new DFSRepositoryImpl(serverHandler.getServer(), blockingQueue);
+			
+			//checking if I am connected to anyone else
+			int connectedServers = 0;
+			Iterator<Server> iterator = temprepository.getShadows().iterator();
+			iterator.next(); //skip first elem - this shadow server
+			log.debug("Checking other shadows!");
+			while(iterator.hasNext())
 			{
-				
-			}*/
-			serverHandler.becomeMaster();
+				Server server = iterator.next();	
+				log.debug("Checking " + server);
+				if (CheckServerStatus.checkAlive(server.getIp()))
+				{
+					connectedServers++;
+				}
+			}
+			
+			iterator = temprepository.getSlaves().iterator();
+			log.debug("Checking other slaves!");
+			while(iterator.hasNext())
+			{
+				Server server = iterator.next();
+				log.debug("Checking " + server);
+				if (CheckServerStatus.checkAlive(server.getIp()))
+				{
+					connectedServers++;
+				}
+			}
+			
+			if(connectedServers > 0) //TODO: maybe > 1/2 of all servers?
+			{
+				log.debug("Becoming a master!");
+				serverHandler.becomeMaster();
+			}
+			else
+			{
+				log.debug("Not becoming a master - no servers connected!");
+			}
 		}
 		
 		//FIXME: case if first shadow AND master are down

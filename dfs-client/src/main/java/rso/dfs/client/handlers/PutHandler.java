@@ -44,23 +44,21 @@ public class PutHandler extends HandlerBase {
 		}
 		
 		
-		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
-			dfstSocket.open();
-			TProtocol protocol = new TBinaryProtocol(dfstSocket);
-			Service.Client serviceClient = new Service.Client(protocol);
+		try (DFSClosingClient dfscClient = new DFSClosingClient(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
+			Service.Client serviceClient = dfscClient.getClient();
 			putFileParams = serviceClient.putFile(filePathDst, fileSize);
 
+		} catch (TTransportException tte) {
+			Log.error("Unable to connect to the naming server. Please restart the application and try again. (" + tte.getMessage() + ")");
+			return;
+			//e.printStackTrace();
 		} catch (TException te) {
 			System.err.println("Caught an exception from the remote end while attempting to upload a file: " + te.getMessage());
 			return;
-		}
+		} 
 		
-		try {
-			if (!putFileParams.isCanPut()) // excuse me?
-				throw new Exception("Can't insert another new file into the system.");
-		} catch (Exception e) {
-			Log.error(e);
-			//e.printStackTrace();
+		if (!putFileParams.isCanPut()) { // excuse me?
+			Log.error("Can't insert another new file into the system.");
 			return;
 		}
 			
@@ -110,16 +108,17 @@ public class PutHandler extends HandlerBase {
 				
 			} catch (TTransportException tte) {
 				System.err.println("There was an error connecting to the associated storage server!");
-				try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
-					dfstSocket.open();
-					TProtocol protocol = new TBinaryProtocol(dfstSocket);
-					Service.Client serviceClient = new Service.Client(protocol);
+				try (DFSClosingClient dfscClient = new DFSClosingClient(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
+					Service.Client serviceClient = dfscClient.getClient();
 					putFileParams = serviceClient.putFileFailure(putFileParams);
 
 				} catch (TTransportException te) {
 					System.err.println("Unable to contact the naming service server. Please reload the client application and try again.");
 					return;
-				}
+				} catch (TException te) {
+					System.err.println("Caught an exception from the remote end: " + te.getMessage());
+					return;
+				} 
 				
 			} catch (IOException ioe) {
 				System.err.println("[ERROR] There was an issue reading the requested file.");

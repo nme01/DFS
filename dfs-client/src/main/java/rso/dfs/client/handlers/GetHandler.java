@@ -13,6 +13,7 @@ import jline.internal.Log;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TTransportException;
 
 import rso.dfs.client.handlers.error.FileNotFoundError;
 import rso.dfs.client.handlers.error.FileOperationError;
@@ -41,16 +42,18 @@ public class GetHandler extends HandlerBase {
 
 		GetFileParams getFileParams = null;
 
-		try (DFSTSocket dfstSocket = new DFSTSocket(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
-			dfstSocket.open();
-			TProtocol protocol = new TBinaryProtocol(dfstSocket);
-			Service.Client serviceClient = new Service.Client(protocol);
+		try (DFSClosingClient dfscClient = new DFSClosingClient(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
+			Service.Client serviceClient = dfscClient.getClient();
 			getFileParams = serviceClient.getFile(filePathSrc);
 
-		} catch (Exception e) {
-			Log.error(e);
+		} catch (TTransportException tte) {
+			Log.error("Unable to connect to the naming server. Please restart the application and try again. (" + tte.getMessage() + ")");
+			return;
 			//e.printStackTrace();
-		}
+		} catch (TException te) {
+			Log.error("There was an error processing your download request by the naming server: " + te.getMessage());
+			return;
+		} 
 
 		// TODO: it's temporary handling of 'file not found case'
 		if (getFileParams.getFileId() < 0) {
@@ -96,8 +99,8 @@ public class GetHandler extends HandlerBase {
 				try (DFSClosingClient ccClient1 = new DFSClosingClient(masterIpAddress, DFSProperties.getProperties().getNamingServerPort())) {
 					Service.Client client = ccClient1.getClient();
 					getFileParams = client.getFileFailure(getFileParams);
-				} catch (Exception e) {
-					System.err.println("Could not establish a connection with the naming server. Please restart the application and try again.");
+				} catch (TTransportException tte) {
+					System.err.println("Could not establish a connection with the naming server. Please restart the application and try again. (" + tte.getMessage() + ")");
 					raf.close();
 					return;
 				}
