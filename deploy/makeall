@@ -1,18 +1,24 @@
 if [[ $1 == '-s' ]]
 then
     cd ../dfs-server
-    mvn install
+    echo "Making dfs-server..."
+    mvn install -q
 elif [[ $1 == '-c' ]]
 then
     cd ../dfs-client
-    mvn install
+    echo "Making dfs-client..."
+    mvn install -q
 else
     cd ../dfs-thrift
-    mvn install
+    echo "Making dfs-thrift..."
+    mvn install -q
     cd ../dfs-utils
-    mvn install
+    echo "Making dfs-utils..."
+    mvn install -q
     cd ../dfs-server
-    mvn install
+    echo "Making dfs-server..."
+    mvn install -q
     cd ../dfs-client
-    mvn install
+    echo "Making dfs-client..."
+    mvn install -q
 fi

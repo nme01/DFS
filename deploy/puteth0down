@@ -1,1 +1,1 @@
-ssh ubuntu@$1 "nohup sudo bash -c 'ifconfig eth0 down; sleep $2; ifconfig eth0 up'"
+ssh ubuntu@$1 "nohup sudo bash -c 'ifconfig eth0 down; sleep $2; ifconfig eth0 up'" &
