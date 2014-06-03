@@ -1,5 +1,7 @@
 package rso.dfs.client.handlers;
 
+import jline.internal.Log;
+
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 
@@ -29,7 +31,8 @@ public class RemoveHandler extends HandlerBase {
 			}
 			
 		}catch (Exception e) {
-			e.printStackTrace();
+			Log.error(e);
+			//e.printStackTrace();
 		}
 	}
 

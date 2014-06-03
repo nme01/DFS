@@ -125,7 +125,8 @@ public class DFSClient {
 						clientAction.performCommand(line,masterIPAddress);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Log.error(e);
+						//e.printStackTrace();
 					}
 					commandPerformed = true;
 				}
